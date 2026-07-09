@@ -167,7 +167,8 @@ export default function Editor() {
         x: xi,
         z: zi,
         radius: 200,
-        modules: [{ type: ZONE_MODULES[0].type, budget: 2 }],
+        // explicit type — ZONE_MODULES[0] is Defense Group, not the default
+        modules: [{ type: "TS_ScenarioFrameworkPluginAIPatrol", budget: 2 }],
       };
       setMission((m) => (m ? { ...m, zones: [...m.zones, zone] } : m));
       setSelectedZoneId(zone.id);

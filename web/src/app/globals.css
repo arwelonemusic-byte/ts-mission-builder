@@ -16,6 +16,24 @@ body {
   background: #0d0f11;
 }
 
+/* Zone dot tooltip (Figma 106:216): dark chip card instead of Leaflet's
+ * white bubble. Double-class selectors outrank leaflet.css regardless of
+ * import order. */
+.leaflet-tooltip.zone-tip {
+  background: #14181a;
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.4);
+  color: #fff;
+  /* hug the chip row — don't let the absolutely-positioned box squash it */
+  width: max-content;
+  max-width: none;
+}
+.leaflet-tooltip-top.zone-tip::before {
+  border-top-color: #14181a;
+}
+
 /* Default cursor for all enabled buttons + labels with a role of switch /
  * checkbox / radio. Tailwind v4 preflight resets `button` to the browser
  * default cursor; this overrides it. Wrapped in @layer base so Lightning

@@ -70,6 +70,7 @@ const MISSION = {
       pos: "2795.307 74.075 1628.664",
       radius: 200,
       plugins: [
+        { type: "DefenseGroup" },
         { type: "TS_ScenarioFrameworkPluginAIPatrol", attrs: { m_iBudget: 2 } },
         { type: "TS_ScenarioFrameworkPluginSmartGarrison", attrs: { m_iBudget: 2 } },
         { type: "TS_ScenarioFrameworkPluginFortification", attrs: { m_iBudget: 2 } },

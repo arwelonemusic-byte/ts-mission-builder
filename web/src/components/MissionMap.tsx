@@ -3,10 +3,11 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { layoutSpawnBundle, itemWorldCorners, FACTIONS } from "mission-gen";
+import { layoutSpawnBundle, itemWorldCorners, FACTIONS, ZONE_MODULES } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
 import type { MissionMarker, Zone } from "@/lib/mission";
 import { findColor, findIcon, militaryIconUrl, VANILLA_ATLAS } from "@/lib/markers";
+import { DISABLED_ICON_FILTER, MODULE_ICONS } from "@/lib/zoneModules";
 
 // Coordinate mapping (same convention as ts-ops-planner): lat = world Z
 // (northing), lng = world X, 1 map unit = 1 meter. For tile pyramids we use a
@@ -156,12 +157,16 @@ export default function MissionMap(props: MapProps) {
         interactive: false,
       }).addTo(overlay);
 
-      const idx = props.zones.indexOf(zone) + 1;
       const dot = L.marker([zone.z, zone.x], {
         icon: zoneDotIcon(selected),
         draggable: true,
       })
-        .bindTooltip(`Area${idx} (${zone.modules.length} modules)`, { direction: "top" })
+        .bindTooltip(zoneTooltipHtml(zone), {
+          direction: "top",
+          offset: [0, -10],
+          opacity: 1,
+          className: "zone-tip",
+        })
         .addTo(overlay);
       dot.on("click", (e) => {
         L.DomEvent.stopPropagation(e);
@@ -242,6 +247,18 @@ function markerDivIcon(mk: MissionMarker, selected: boolean) {
     iconAnchor: [size / 2, size / 2],
     html: `<div style="position:relative;width:${size}px;height:${size}px;">${halo}${iconHtml}${labelHtml}</div>`,
   });
+}
+
+/** Zone dot hover tooltip: module chip row, disabled modules greyed with 0
+ * (Figma 106:216). Styled via the .zone-tip rules in globals.css. */
+function zoneTooltipHtml(zone: Zone) {
+  const chips = ZONE_MODULES.map((def) => {
+    const mod = zone.modules.find((mm) => mm.type === def.type);
+    const iconStyle = `width:16px;height:16px;flex:none;${mod ? "" : `filter:${DISABLED_ICON_FILTER};opacity:0.45;`}`;
+    const countStyle = `font:400 12px/1 var(--font-roboto),sans-serif;color:${mod ? "#fff" : "#6a767c"};`;
+    return `<span style="display:flex;align-items:center;gap:3px;flex:none;"><img src="${MODULE_ICONS[def.type]}" alt="" style="${iconStyle}" /><span style="${countStyle}">${mod?.budget ?? 0}</span></span>`;
+  }).join("");
+  return `<div style="display:flex;align-items:center;gap:12px;width:max-content;">${chips}</div>`;
 }
 
 /** Small round handle at a zone's center — the only clickable/draggable part. */

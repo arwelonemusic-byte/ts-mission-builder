@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal } from "./layout.mjs";
-export { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool };
+export { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleSizeClass } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -402,9 +402,29 @@ ${farpBlock}`;
     return s + `      }`;
   }
 
+  const isSlotAIModule = (p) => ZONE_MODULES.find((d) => d.type === p.type)?.kind === "slotai";
+
   const aoLayer = mission.zones
     .map((z, i) => {
-      const plugins = z.plugins.map(pluginBlock).join("\n");
+      const pluginMods = z.plugins.filter((p) => !isSlotAIModule(p));
+      const plugins = pluginMods.map(pluginBlock).join("\n");
+      const pluginsBlock = pluginMods.length ? `\n     m_aPlugins {\n${plugins}\n     }` : "";
+      // Defense Group: a vanilla SlotAI child of the Layer spawning the
+      // largest selected enemy squad in place — the slot's default defend
+      // waypoint (30 m radius) keeps it holding the zone center.
+      const defenseBlock = z.plugins.some(isSlotAIModule)
+        ? `
+   {
+    GenericEntity SlotAI${i + 1} : "${K.SLOTAI_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotAI "${K.CMP_SF_SLOTAI}" {
+       m_sObjectToSpawn "${resolveDefenseGroup(mission.enemyFaction, mission.enemyGroupSets ?? mission.enemyGroupSet)}"
+      }
+     }
+     coords 0 0 0
+    }
+   }`
+        : "";
       return `GenericEntity ${z.name ?? `Area${i + 1}`} : "${K.AREA_PREFAB}" {
  components {
   SCR_ScenarioFrameworkArea "${K.CMP_SF_AREA}" {
@@ -417,13 +437,10 @@ ${farpBlock}`;
  {
   GenericEntity Layer${i + 1} : "${K.LAYER_PREFAB}" {
    components {
-    SCR_ScenarioFrameworkLayerBase "${K.CMP_SF_LAYER}" {
-     m_aPlugins {
-${plugins}
-     }
+    SCR_ScenarioFrameworkLayerBase "${K.CMP_SF_LAYER}" {${pluginsBlock}
     }
    }
-   coords 0 0 0
+   coords 0 0 0${defenseBlock}
   }
  }
 }

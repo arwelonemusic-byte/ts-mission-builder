@@ -238,6 +238,7 @@ export const FACTIONS = {
       US_Army: {
         label: "US Army",
         sentry: `{3BF36BDEEB33AEC9}${P_BLUFOR}/Group_US_SentryTeam.et`,
+        defense: { ref: `{DDF3799FA1387848}${P_BLUFOR}/Group_US_RifleSquad.et`, size: 9 },
         small: [
           `{F72EF3429D8C8DF5}${P_BLUFOR}/Group_US_AmmoTeam.et`,
           `{6B2A6EE5002D200F}${P_BLUFOR}/Group_US_EngineerTeam.et`,
@@ -262,6 +263,7 @@ export const FACTIONS = {
       GreenBerets: {
         label: "Green Berets",
         sentry: `{35681BE27C302FF5}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_SentryTeam.et`,
+        defense: { ref: `{D0886786634E55AE}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_Squad.et`, size: 6 },
         small: [`{35681BE27C302FF5}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_SentryTeam.et`],
         medium: [`{D0886786634E55AE}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_Squad.et`],
         large: [`{D0886786634E55AE}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_Squad.et`],
@@ -269,6 +271,7 @@ export const FACTIONS = {
       GreenBerets_Suppressed: {
         label: "Green Berets (suppressed)",
         sentry: `{35681BE27C302FF5}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_SentryTeam.et`, // parent set team (no suppressed variant)
+        defense: { ref: `{1F468430E5AB477E}${P_BLUFOR}/GreenBerets/Suppressed/Group_US_GreenBeret_ReconSquad.et`, size: 6 },
         small: [`{AC473DE5F4B24E82}${P_BLUFOR}/GreenBerets/Suppressed/Group_US_GreenBeret_ReconTeam.et`],
         medium: [`{1F468430E5AB477E}${P_BLUFOR}/GreenBerets/Suppressed/Group_US_GreenBeret_ReconSquad.et`],
         large: [`{1F468430E5AB477E}${P_BLUFOR}/GreenBerets/Suppressed/Group_US_GreenBeret_ReconSquad.et`],
@@ -440,6 +443,7 @@ export const FACTIONS = {
       USSR_Army: {
         label: "USSR Army",
         sentry: `{CB58D90EA14430AD}${P_OPFOR}/Group_USSR_SentryTeam.et`,
+        defense: { ref: `{E552DABF3636C2AD}${P_OPFOR}/Group_USSR_RifleSquad.et`, size: 6 },
         small: [
           `{C8622D0595B48437}${P_OPFOR}/Group_USSR_AmmoTeam.et`,
           `{344B4B6F787CFB23}${P_OPFOR}/Group_USSR_EngineerTeam.et`,
@@ -467,6 +471,7 @@ export const FACTIONS = {
       KLMK: {
         label: "USSR (KLMK)",
         sentry: `{61E209AA5933AC95}${P_OPFOR}/KLMK/Group_USSR_SentryTeam_KLMK.et`,
+        defense: { ref: `{97D45056CFC22FF2}${P_OPFOR}/KLMK/Group_USSR_RifleSquad_KLMK.et`, size: 6 },
         small: [
           `{17F51B6521F7194A}${P_OPFOR}/KLMK/Group_USSR_AmmoTeam_KLMK.et`,
           `{5B08C42EA0661A20}${P_OPFOR}/KLMK/Group_USSR_LightFireTeam_KLMK.et`,
@@ -492,6 +497,7 @@ export const FACTIONS = {
       Naval_Infantry: {
         label: "Naval Infantry",
         sentry: `{85384D373DB6EBBB}${P_OPFOR}/Naval_Infantry/Group_USSR_SentryTeam_NI.et`,
+        defense: { ref: `{250BBF11AA24076F}${P_OPFOR}/Naval_Infantry/Group_USSR_RifleSquad_NI.et`, size: 6 },
         small: [
           `{AEC45E0050F58730}${P_OPFOR}/Naval_Infantry/Group_USSR_AmmoTeam_NI.et`,
           `{8E1B1AEBBB1AA155}${P_OPFOR}/Naval_Infantry/Group_USSR_LightFireTeam_NI.et`,
@@ -516,6 +522,7 @@ export const FACTIONS = {
       Spetsnaz: {
         label: "Spetsnaz",
         sentry: `{4C44B4D8F2820F25}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_SentryTeam.et`,
+        defense: { ref: `{4D3BBEC1A955626A}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_Squad.et`, size: 6 },
         small: [`{4C44B4D8F2820F25}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_SentryTeam.et`],
         medium: [`{4D3BBEC1A955626A}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_Squad.et`],
         large: [`{4D3BBEC1A955626A}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_Squad.et`],
@@ -523,6 +530,7 @@ export const FACTIONS = {
       Spetsnaz_Suppressed: {
         label: "Spetsnaz (suppressed)",
         sentry: `{4C44B4D8F2820F25}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_SentryTeam.et`, // parent set team (no suppressed variant)
+        defense: { ref: `{666A2B0A6B1967AE}${P_OPFOR}/Spetsnaz/Suppressed/Group_USSR_Spetsnaz_ReconSquad.et`, size: 6 },
         small: [`{B721D5A8C1B556CE}${P_OPFOR}/Spetsnaz/Suppressed/Group_USSR_Spetsnaz_ReconTeam.et`],
         medium: [`{666A2B0A6B1967AE}${P_OPFOR}/Spetsnaz/Suppressed/Group_USSR_Spetsnaz_ReconSquad.et`],
         large: [`{666A2B0A6B1967AE}${P_OPFOR}/Spetsnaz/Suppressed/Group_USSR_Spetsnaz_ReconSquad.et`],
@@ -617,6 +625,7 @@ export const FACTIONS = {
       FIA: {
         label: "FIA",
         sentry: `{6E725D44CA973C24}${P_INDFOR}/Group_FIA_SentryTeam.et`,
+        defense: { ref: `{CE41AF625D05D0F0}${P_INDFOR}/Group_FIA_RifleSquad.et`, size: 7 },
         small: [
           `{C1E39427E43B1E79}${P_INDFOR}/Group_FIA_AmmoTeam.et`,
           `{1BB20A4B3A53D0F5}${P_INDFOR}/Group_FIA_LightFireTeam.et`,
@@ -648,12 +657,14 @@ export const K = {
   LAYER_PREFAB: "{5F9FFF4BF027B3A3}Prefabs/Systems/ScenarioFramework/Components/Layer.et",
   SLOT_PREFAB: "{AA01691FDC4E9167}Prefabs/Systems/ScenarioFramework/Components/Slot.et",
   SLOTMARKER_PREFAB: "{E537867C6E760514}Prefabs/Systems/ScenarioFramework/Components/SlotMarker.et",
+  SLOTAI_PREFAB: "{8D43830F02C3F114}Prefabs/Systems/ScenarioFramework/Components/SlotAI.et",
   CMP_SF_AREA: "{59E8CDC50969206E}",
   CMP_SF_LAYER: "{5A2283EA2A0B4B14}",
   CMP_SF_SLOT: "{5A22E1D67E712EC8}",
   // SlotMarker.et prefab-instance GUIDs (fixed, same on every marker — see
   // Operation Crayfish Markers.layer)
   CMP_SF_SLOTMARKER: "{5EA2BD9901E5E82E}",
+  CMP_SF_SLOTAI: "{5A26B3E02AC77BA0}",
   MARKER_TYPE_GUID: "{697E675AD7054FB0}",
   FARP_COMP: "{0C16FFB1B07F4A89}Prefabs/Compositions/Slotted/TS_FARP_Comp.et",
   // Loadout system (conf-based): missions spawn the toolkit's LoadoutCrates_Conf.et
@@ -689,11 +700,16 @@ export const K = {
 // kind "fortification" pools come from FACTIONS[*].fortifications (road +
 // roadside compositions) + groupSets[*].sentry AI teams; only the budget is
 // user-facing (maxBudget caps the UI input).
+// kind "slotai" (Defense Group) is NOT a toolkit plugin: it emits a vanilla
+// SlotAI child entity inside the zone's Layer spawning the largest enemy
+// group (groupSets[*].defense, resolved by resolveDefenseGroup); the slot's
+// default defend waypoint (30 m) does the rest. On/off only (noBudget).
 // QRF (sizes: ["large"], needs TS_QRFSpawnAnchor placement) is deferred.
 export const ZONE_MODULES = [
-  { type: "TS_ScenarioFrameworkPluginAIPatrol", label: "AI Foot Patrols", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small", "medium", "large"] },
-  { type: "TS_ScenarioFrameworkPluginSmartGarrison", label: "Smart Garrison", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small"] },
-  { type: "TS_ScenarioFrameworkPluginMountedPatrol", label: "Mounted Patrols", kind: "vehicle", pool: "m_aVehiclePrefabPool" },
+  { type: "DefenseGroup", label: "Defense Group", kind: "slotai", noBudget: true },
+  { type: "TS_ScenarioFrameworkPluginAIPatrol", label: "Foot Patrols", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small", "medium", "large"] },
+  { type: "TS_ScenarioFrameworkPluginSmartGarrison", label: "Garrison", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small"] },
+  { type: "TS_ScenarioFrameworkPluginMountedPatrol", label: "Vehicle Patrols", kind: "vehicle", pool: "m_aVehiclePrefabPool" },
   { type: "TS_ScenarioFrameworkPluginFortification", label: "Fortifications", kind: "fortification", maxBudget: 4 },
 ];
 
@@ -723,6 +739,25 @@ export function resolveGroupPool(factionKey, groupSetKeys, sizes) {
  * Sentry-team pool for the Fortification plugin: one team per selected enemy
  * group set (suppressed SF sets carry their parent's team, so dedupe).
  */
+/**
+ * Defense-group prefab for the Defense Group SlotAI: the largest squad among
+ * the selected enemy group sets (ties resolve to the first selected set).
+ */
+export function resolveDefenseGroup(factionKey, groupSetKeys) {
+  const faction = FACTIONS[factionKey];
+  if (!faction) throw new Error(`Unknown faction: ${factionKey}`);
+  let keys = groupSetKeys;
+  if (typeof keys === "string") keys = [keys];
+  if (!keys?.length) keys = [faction.defaultGroupSet];
+  let best = null;
+  for (const k of keys) {
+    const set = faction.groupSets[k];
+    if (!set) throw new Error(`Unknown group set ${factionKey}/${k}`);
+    if (!best || set.defense.size > best.size) best = set.defense;
+  }
+  return best.ref;
+}
+
 export function resolveSentryPool(factionKey, groupSetKeys) {
   const faction = FACTIONS[factionKey];
   if (!faction) throw new Error(`Unknown faction: ${factionKey}`);

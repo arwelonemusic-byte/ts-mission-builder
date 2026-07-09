@@ -18,7 +18,14 @@ declare module "mission-gen" {
       defaultGroupSet: string;
       groupSets: Record<
         string,
-        { label: string; sentry: string; small: string[]; medium: string[]; large: string[] }
+        {
+          label: string;
+          sentry: string;
+          defense: { ref: string; size: number };
+          small: string[];
+          medium: string[];
+          large: string[];
+        }
       >;
     }
   >;
@@ -26,13 +33,15 @@ declare module "mission-gen" {
   export const ZONE_MODULES: {
     type: string;
     label: string;
-    kind: "infantry" | "vehicle" | "fortification";
+    kind: "infantry" | "vehicle" | "fortification" | "slotai";
     pool?: string;
     sizes?: string[];
     maxBudget?: number;
+    noBudget?: boolean;
   }[];
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];
+  export function resolveDefenseGroup(factionKey: string, groupSetKeys: string | string[] | undefined): string;
   export function mintGuid(): string;
   export function buildMissionFiles(
     mission: unknown,

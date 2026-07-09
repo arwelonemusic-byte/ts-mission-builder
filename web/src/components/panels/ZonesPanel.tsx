@@ -3,15 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import type { Mission, Zone, ZoneModule } from "@/lib/mission";
+import { MODULE_DESCRIPTIONS, MODULE_ICONS } from "@/lib/zoneModules";
 import { CheckRow, GhostButton, Hint, Slider } from "../ui";
-
-/** Collapsed-card chip icons per zone module (Figma node 106:24). */
-const MODULE_ICONS: Record<string, string> = {
-  TS_ScenarioFrameworkPluginAIPatrol: "/icons/zones/foot-patrol.svg",
-  TS_ScenarioFrameworkPluginSmartGarrison: "/icons/zones/garrison.svg",
-  TS_ScenarioFrameworkPluginMountedPatrol: "/icons/zones/mounted-patrol.svg",
-  TS_ScenarioFrameworkPluginFortification: "/icons/zones/fortification.svg",
-};
 
 /** Module budget spinner. Allows clearing the field while typing (backspace);
  * an empty field commits 1 on blur. Typed values clamp to [1, max]. */
@@ -169,19 +162,19 @@ export default function ZonesPanel({
               onChange={(v) => updateZone(zn.id, { radius: v })}
             />
 
-            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string; maxBudget?: number }) => {
+            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string; maxBudget?: number; noBudget?: boolean }) => {
               const mod = zn.modules.find((mm) => mm.type === def.type);
               return (
                 <div key={def.type} className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0" title={MODULE_DESCRIPTIONS[def.type]}>
                       <CheckRow
                         checked={!!mod}
                         onChange={(on) => {
                           const fresh: ZoneModule =
                             def.kind === "vehicle"
                               ? { type: def.type, budget: 2, vehicles: enemy?.patrolVehicleKeys.slice(0, 1) ?? [] }
-                              : { type: def.type, budget: 2 };
+                              : { type: def.type, budget: def.noBudget ? 1 : 2 };
                           const modules = on
                             ? [...zn.modules, fresh]
                             : zn.modules.filter((mm) => mm.type !== def.type);
@@ -191,7 +184,7 @@ export default function ZonesPanel({
                         {def.label}
                       </CheckRow>
                     </div>
-                    {mod && (
+                    {mod && !def.noBudget && (
                       <BudgetInput
                         value={mod.budget}
                         max={def.maxBudget ?? 10}
