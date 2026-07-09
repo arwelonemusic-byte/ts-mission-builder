@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import type { Mission, Zone, ZoneModule } from "@/lib/mission";
-import { CheckRow, GhostButton, Hint, Slider, XButton } from "../ui";
+import { CheckRow, GhostButton, Hint, Slider } from "../ui";
+
+/** Collapsed-card chip icons per zone module (Figma node 106:24). */
+const MODULE_ICONS: Record<string, string> = {
+  TS_ScenarioFrameworkPluginAIPatrol: "/icons/zones/foot-patrol.svg",
+  TS_ScenarioFrameworkPluginSmartGarrison: "/icons/zones/garrison.svg",
+  TS_ScenarioFrameworkPluginMountedPatrol: "/icons/zones/mounted-patrol.svg",
+  TS_ScenarioFrameworkPluginFortification: "/icons/zones/fortification.svg",
+};
 
 /** Module budget spinner. Allows clearing the field while typing (backspace);
  * an empty field commits 1 on blur. Typed values clamp to [1, max]. */
@@ -95,33 +103,55 @@ export default function ZonesPanel({
               else cardRefs.current.delete(zn.id);
             }}
             onClick={() => onSelectZone(zn.id)}
-            className={`bg-[#14181a] rounded-[8px] p-3 flex flex-col gap-2 border cursor-pointer transition-colors ${
-              selected ? "border-[#f4db50]" : "border-transparent hover:border-[#2e3439]"
+            className={`bg-[#14181a] rounded-[8px] p-4 flex flex-col border cursor-pointer transition-colors ${
+              selected ? "gap-2 border-[#f4db50]" : "gap-3 border-transparent hover:border-[#2e3439]"
             }`}
           >
             <div className="flex items-center gap-2">
-              <span className="flex-1 text-[14px] font-medium text-white">Area{i + 1}</span>
-              <XButton
-                ariaLabel="Delete zone"
+              <span className="text-[14px] font-bold text-white">Area{i + 1}</span>
+              {!selected && (
+                <span className="flex items-center gap-[3px]">
+                  <img src="/icons/zones/radius.svg" alt="" style={{ width: 16, height: 16 }} />
+                  <span className="text-[12px] text-white">{zn.radius} m</span>
+                </span>
+              )}
+              <span className="flex-1" />
+              <button
+                type="button"
+                aria-label="Delete zone"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeZone(zn.id);
                 }}
-              />
+                className="size-[24px] shrink-0 flex items-center justify-center rounded-[4px] hover:bg-[#2e3439] transition-colors"
+              >
+                <img src="/icons/zones/trash.svg" alt="" style={{ width: 16, height: 16 }} />
+              </button>
             </div>
 
-            {/* Collapsed: one-line summary. Expanded (= selected): full controls. */}
+            {/* Collapsed: icon chips for every module — disabled ones greyed
+                with 0 (Figma 106:24). Expanded (= selected): full controls. */}
             {!selected && (
-              <div className="text-[11px] leading-[16px] text-white/50">
-                {[
-                  `${zn.radius} m`,
-                  ...zn.modules.map((mm) => {
-                    const def = ZONE_MODULES.find(
-                      (d: { type: string; label: string }) => d.type === mm.type
-                    );
-                    return `${mm.budget}× ${def?.label ?? mm.type}`;
-                  }),
-                ].join(" · ")}
+              <div className="flex items-center gap-3">
+                {ZONE_MODULES.map((d: { type: string; label: string }) => {
+                  const mm = zn.modules.find((m2) => m2.type === d.type);
+                  return (
+                    <span key={d.type} className="flex items-center gap-[3px]" title={d.label}>
+                      <img
+                        src={MODULE_ICONS[d.type]}
+                        alt={d.label}
+                        style={{
+                          width: 16,
+                          height: 16,
+                          ...(mm ? {} : { filter: "grayscale(1) brightness(0.8)", opacity: 0.45 }),
+                        }}
+                      />
+                      <span className={`text-[12px] ${mm ? "text-white" : "text-white/40"}`}>
+                        {mm?.budget ?? 0}
+                      </span>
+                    </span>
+                  );
+                })}
               </div>
             )}
 

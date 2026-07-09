@@ -691,7 +691,7 @@ export const K = {
 // user-facing (maxBudget caps the UI input).
 // QRF (sizes: ["large"], needs TS_QRFSpawnAnchor placement) is deferred.
 export const ZONE_MODULES = [
-  { type: "TS_ScenarioFrameworkPluginAIPatrol", label: "AI Foot Patrols", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small", "medium"] },
+  { type: "TS_ScenarioFrameworkPluginAIPatrol", label: "AI Foot Patrols", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small", "medium", "large"] },
   { type: "TS_ScenarioFrameworkPluginSmartGarrison", label: "Smart Garrison", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small"] },
   { type: "TS_ScenarioFrameworkPluginMountedPatrol", label: "Mounted Patrols", kind: "vehicle", pool: "m_aVehiclePrefabPool" },
   { type: "TS_ScenarioFrameworkPluginFortification", label: "Fortifications", kind: "fortification", maxBudget: 4 },
