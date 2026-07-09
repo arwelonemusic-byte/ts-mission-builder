@@ -207,10 +207,18 @@ ${briefEntries}
 
   function factionEntry(key) {
     const f = FACTIONS[key];
-    if (key !== mission.playableFaction) return `  SCR_Faction "${f.entryGuid}" {\n  }`;
+    // m_bIsAssignedRandomly defaults to 1 — turn it OFF on every faction so
+    // squads take callsigns in order (1'1, 1'2, ...) instead of at random.
+    if (key !== mission.playableFaction)
+      return `  SCR_Faction "${f.entryGuid}" {
+   m_CallsignInfo SCR_FactionCallsignInfo "${f.callsignGuid}" {
+    m_bIsAssignedRandomly 0
+   }
+  }`;
     return `  SCR_Faction "${f.entryGuid}" {
    m_bIsPlayable 1
    m_CallsignInfo SCR_FactionCallsignInfo "${f.callsignGuid}" {
+    m_bIsAssignedRandomly 0
     m_aSquadNames {
 ${squadNamesBlock}
     }
