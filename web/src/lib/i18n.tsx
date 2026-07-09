@@ -37,8 +37,8 @@ export function saveLang(lang: Lang) {
 const RU: Record<string, string> = {
   // App chrome
   "Mission Builder": "Конструктор миссий",
-  GENERATE: "СОЗДАТЬ",
-  "GENERATING…": "СОЗДАНИЕ…",
+  Generate: "Создать",
+  "Generating…": "Создание…",
 
   // Tabs
   Mission: "Миссия",

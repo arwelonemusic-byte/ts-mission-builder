@@ -386,7 +386,6 @@ export default function Editor() {
         onStep={goStep}
         onGenerate={doGenerate}
         busy={busy}
-        ready={mission.spawn.placed && mission.loadouts.length > 0}
         dots={{ spawn: !mission.spawn.placed, players: mission.loadouts.length === 0 }}
         lang={lang}
         onLang={setLang}

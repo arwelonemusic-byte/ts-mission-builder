@@ -12,8 +12,9 @@ say the word if you want that too.
 | EN | RU |
 |---|---|
 | Mission Builder | Конструктор миссий |
-| GENERATE | СОЗДАТЬ |
-| GENERATING… | СОЗДАНИЕ… |
+| Generate | Создать |
+| Generating… | Создание… |
+| Tactical Shift *(Discord button — not translated)* | Tactical Shift |
 
 ## Tabs
 
