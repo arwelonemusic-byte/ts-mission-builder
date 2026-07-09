@@ -45,7 +45,7 @@ Full curated character rosters live in `catalogue.mjs` `loadoutSets` per faction
 
 ## Arsenal
 
-MVP: one baked item set per faction (no UI). Source of truth = `input/arsenal-items.md` (bare `{GUID}path` lines under headings; edit there, then re-harvest into `catalogue.mjs` `FACTIONS[*].arsenalItems` as `{mode, ref}` — modes come from reforger-item-database `data/items.json` `itemMode`, valid `SCR_EArsenalItemMode` tokens, omitted when empty). The generator writes the playable faction's set into the `TS_CustomArsenal.conf` override: first entry reuses the toolkit base conf's member instance GUID `{69092805DE3E6A13}` (Workbench pattern), the rest are fresh-GUID members with `m_iSupplyCost 0`. Clothing is excluded by design (loadouts cover it). Item database tool: `D:\VSCode_dev\arma-reforger\reforger-item-database` (browsable catalog + its own conf generator).
+MVP: one baked item set per faction (no UI). Source of truth = `input/arsenal-items.md` (bare `{GUID}path` lines under `## Faction` headings). After editing it, run `node generator/tools/harvest-arsenal.mjs` to re-sync `catalogue.mjs` `FACTIONS[*].arsenalItems` as `{mode, ref}` (modes come from reforger-item-database `data/items.json` `itemMode`, valid `SCR_EArsenalItemMode` tokens, omitted when empty). The generator writes the playable faction's set into the `TS_CustomArsenal.conf` override: first entry reuses the toolkit base conf's member instance GUID `{69092805DE3E6A13}` (Workbench pattern), the rest are fresh-GUID members with `m_iSupplyCost 0`. Clothing is excluded by design (loadouts cover it). Item database tool: `D:\VSCode_dev\arma-reforger\reforger-item-database` (browsable catalog + its own conf generator).
 
 ## Vehicles
 
