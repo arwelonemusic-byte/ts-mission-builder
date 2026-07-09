@@ -1,0 +1,117 @@
+import { FACTIONS, mintGuid } from "mission-gen";
+
+export type ZoneModule = { type: string; budget: number; vehicles?: string[] };
+export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[] };
+export type SpawnVehicle = { type: string };
+
+export type MissionMarker = {
+  id: string;
+  x: number;
+  z: number;
+  kind: "military" | "custom";
+  text: string;
+  /** military */
+  faction: string;
+  type: string;
+  /** custom (vanilla) */
+  quad: string;
+  color: string;
+  rotation: number;
+};
+
+export type Mission = {
+  version: 1;
+  displayName: string;
+  author: string;
+  playerCount: number;
+  terrain: string; // arland | eden | cain
+  playableFaction: string;
+  playableSubfaction: string;
+  enemyFaction: string;
+  enemyGroupSets: string[];
+  briefing: {
+    situation: string;
+    objectives: string;
+    threats: string;
+    /** Additional custom briefing sections (in-game journal tabs), ids 3+ */
+    extra: { title: string; text: string }[];
+  };
+  /** Selected loadout prefab refs (from the playable subfaction's loadout set) */
+  loadouts: string[];
+  spawn: { placed: boolean; x: number; z: number; yaw: number; farp: boolean; vehicles: SpawnVehicle[] };
+  zones: Zone[];
+  markers: MissionMarker[];
+  guids: { addon: string; world: string; missionConf: string };
+};
+
+/** Default loadout selection for a subfaction: its first (rifleman) entry. */
+export function defaultLoadouts(faction: string, subfaction: string): string[] {
+  const set = FACTIONS[faction]?.loadoutSets[subfaction] ?? [];
+  return set.slice(0, 1).map((l) => l.prefab);
+}
+
+export function newMission(): Mission {
+  return {
+    version: 1,
+    displayName: "My Mission",
+    author: "",
+    playerCount: 24,
+    terrain: "arland",
+    playableFaction: "US",
+    playableSubfaction: "US_Army",
+    enemyFaction: "USSR",
+    enemyGroupSets: ["USSR_Army"],
+    briefing: { situation: "", objectives: "", threats: "", extra: [] },
+    loadouts: defaultLoadouts("US", "US_Army"),
+    spawn: { placed: false, x: 0, z: 0, yaw: 0, farp: true, vehicles: [] },
+    zones: [],
+    markers: [],
+    guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid() },
+  };
+}
+
+const LS_KEY = "ts-mission-builder-v1";
+
+export function loadMission(): Mission {
+  if (typeof window === "undefined") return newMission();
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return newMission();
+    const m = JSON.parse(raw) as Mission & { enemyGroupSet?: string };
+    if (m.version !== 1) return newMission();
+    if (!m.enemyGroupSets?.length) {
+      m.enemyGroupSets = [m.enemyGroupSet ?? FACTIONS[m.enemyFaction]?.defaultGroupSet ?? "USSR_Army"];
+      delete m.enemyGroupSet;
+    }
+    if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
+    if (!m.briefing.extra) m.briefing.extra = [];
+    if (!m.markers) m.markers = [];
+    if (typeof m.spawn.yaw !== "number") m.spawn.yaw = 0;
+    // Mounted-patrol modules gained per-zone vehicle selection; default old saves
+    for (const zn of m.zones) {
+      for (const mod of zn.modules) {
+        if (mod.type === "TS_ScenarioFrameworkPluginMountedPatrol" && !mod.vehicles?.length) {
+          mod.vehicles = FACTIONS[m.enemyFaction]?.patrolVehicleKeys.slice(0, 1) ?? [];
+        }
+      }
+    }
+    return m;
+  } catch {
+    return newMission();
+  }
+}
+
+export function saveMission(m: Mission) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(m));
+  } catch {
+    // storage full/blocked — non-fatal
+  }
+}
+
+/** Sanitized identifiers derived from the display name. */
+export function missionIds(m: Mission) {
+  const compact = m.displayName.replace(/[^A-Za-z0-9]+/g, "") || "TSMission";
+  const underscored = m.displayName.trim().replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "TS_Mission";
+  return { addonId: compact, dirName: underscored, name: underscored };
+}

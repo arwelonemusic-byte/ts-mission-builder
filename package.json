@@ -1,0 +1,8 @@
+{
+  "name": "ts-mission-builder",
+  "private": true,
+  "workspaces": [
+    "generator",
+    "web"
+  ]
+}
