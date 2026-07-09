@@ -9,11 +9,13 @@ import {
   MARKER_COLORS,
   MARKER_FACTIONS,
   MARKER_ICONS,
+  MARKER_LABEL_OUTLINE,
   maskIconStyle,
   MILITARY_TYPES,
   militaryIconUrl,
 } from "@/lib/markers";
-import { Field, GhostButton, Hint, Slider, TextInput } from "../ui";
+import { useT } from "@/lib/i18n";
+import { Field, GhostButton, Slider, TextInput } from "../ui";
 
 /** Template for new markers — a MissionMarker minus id/position. */
 export type MarkerDraft = Omit<MissionMarker, "id" | "x" | "z">;
@@ -73,8 +75,7 @@ export default function MarkersPanel({
   selectedMarkerId,
   updateMarker,
   removeMarker,
-  placeMode,
-  setPlaceMode,
+  onDragStart,
 }: {
   mission: Mission;
   draft: MarkerDraft;
@@ -82,11 +83,12 @@ export default function MarkersPanel({
   selectedMarkerId: string | null;
   updateMarker: (id: string, patch: Partial<MissionMarker>) => void;
   removeMarker: (id: string) => void;
-  placeMode: "spawn" | "zone" | "marker" | null;
-  setPlaceMode: (m: "spawn" | "zone" | "marker" | null) => void;
+  /** Starts the drag-a-marker-onto-the-map interaction (handled by the page) */
+  onDragStart: (e: React.PointerEvent) => void;
 }) {
+  const t = useT();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const placing = placeMode === "marker";
+  const [wellHover, setWellHover] = useState(false);
 
   const selected = mission.markers.find((mk) => mk.id === selectedMarkerId) ?? null;
   // Panel edits the selected marker live, or the new-marker template.
@@ -101,23 +103,13 @@ export default function MarkersPanel({
 
   return (
     <>
-      {selected ? (
+      {selected && (
         <div className="flex items-center justify-between">
-          <span className="text-[14px] text-white/60">Editing marker</span>
+          <span className="text-[14px] text-white/60">{t("Editing marker")}</span>
           <GhostButton small destructive onClick={() => removeMarker(selected.id)}>
-            Delete
+            {t("Delete")}
           </GhostButton>
         </div>
-      ) : (
-        <>
-          <GhostButton active={placing} onClick={() => setPlaceMode(placing ? null : "marker")}>
-            {placing ? "Click the map… (done)" : "+ Add marker (click map)"}
-          </GhostButton>
-          <Hint>
-            Placement stays active so you can drop several markers in a row. Click a placed marker to
-            edit it.
-          </Hint>
-        </>
       )}
 
       <div className="bg-[#14181a] rounded-[8px] h-[40px] p-1 flex items-center w-full">
@@ -132,7 +124,7 @@ export default function MarkersPanel({
                 activeTab ? "bg-[#f4db50] text-[#202427]" : "text-white/60 hover:text-white"
               }`}
             >
-              {kind === "military" ? "Military" : "Vanilla"}
+              {kind === "military" ? t("Military") : t("Vanilla")}
             </button>
           );
         })}
@@ -140,10 +132,10 @@ export default function MarkersPanel({
 
       {active.kind === "military" ? (
         <>
-          <Field label="Faction">
+          <Field label={t("Faction")}>
             <IconSelect
               value={active.faction}
-              options={MARKER_FACTIONS}
+              options={MARKER_FACTIONS.map((o) => ({ key: o.key, label: t(o.label) }))}
               preview={
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -156,10 +148,10 @@ export default function MarkersPanel({
               onChange={(faction) => apply({ faction })}
             />
           </Field>
-          <Field label="Type">
+          <Field label={t("Type")}>
             <IconSelect
               value={active.type}
-              options={MILITARY_TYPES}
+              options={MILITARY_TYPES.map((o) => ({ key: o.key, label: t(o.label) }))}
               preview={
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -175,7 +167,7 @@ export default function MarkersPanel({
         </>
       ) : (
         <>
-          <Field label="Marker">
+          <Field label={t("Marker")}>
             <button
               type="button"
               onClick={() => setPickerOpen(!pickerOpen)}
@@ -190,7 +182,7 @@ export default function MarkersPanel({
             <div className="bg-[#14181a] border border-[#2e3439] rounded-[4px] p-2 flex flex-col gap-2 max-h-[280px] overflow-y-auto ts-thin-scrollbar">
               {MARKER_CATEGORIES.map((cat) => (
                 <div key={cat.key} className="flex flex-col gap-1">
-                  <div className="text-[11px] text-white/40">{cat.label}</div>
+                  <div className="text-[11px] text-white/40">{t(cat.label)}</div>
                   <div className="grid grid-cols-6 gap-1">
                     {MARKER_ICONS.filter((i) => i.category === cat.key).map((i) => (
                       <button
@@ -213,7 +205,7 @@ export default function MarkersPanel({
               ))}
             </div>
           )}
-          <Field label="Color">
+          <Field label={t("Color")}>
             <div className="grid grid-cols-7 gap-2">
               {MARKER_COLORS.map((c) => {
                 const sel = c.name === active.color;
@@ -246,11 +238,11 @@ export default function MarkersPanel({
         </>
       )}
 
-      <Field label="Text">
+      <Field label={t("Text")}>
         <TextInput
           value={active.text}
           maxLength={32}
-          placeholder="Empty"
+          placeholder={t("Empty")}
           onChange={(e) => apply({ text: e.target.value })}
         />
       </Field>
@@ -258,23 +250,57 @@ export default function MarkersPanel({
       {active.kind === "custom" && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-[12px] text-white">Rotation</span>
+            <span className="text-[12px] text-white">{t("Rotation")}</span>
             <span className="text-[12px] text-white/60">{active.rotation}°</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Slider
-              min={0}
-              max={359}
-              step={1}
-              value={active.rotation}
-              onChange={(v) => apply({ rotation: ((Math.round(v) % 360) + 360) % 360 })}
-            />
-            <div
-              className="shrink-0"
-              style={maskIconStyle(icon, 28, color.hex, active.rotation)}
-              title="Preview"
-            />
+          <Slider
+            min={0}
+            max={359}
+            step={1}
+            value={active.rotation}
+            onChange={(v) => apply({ rotation: ((Math.round(v) % 360) + 360) % 360 })}
+          />
+        </div>
+      )}
+
+      {!selected && (
+        <div
+          onPointerDown={onDragStart}
+          onMouseEnter={() => setWellHover(true)}
+          onMouseLeave={() => setWellHover(false)}
+          className="rounded-[8px] p-5 flex flex-col items-center gap-2 text-center cursor-grab touch-none transition-colors"
+          style={{
+            border: `1px dashed ${wellHover ? "#f4db50" : "rgba(244,219,80,0.55)"}`,
+            background: wellHover ? "linear-gradient(rgba(244,219,80,0.06),rgba(244,219,80,0.02))" : undefined,
+          }}
+        >
+          {/* Live preview of the draft: icon + label, exactly as it lands on the map */}
+          <div className="pointer-events-none flex items-center gap-[6px] min-h-[40px]">
+            {active.kind === "military" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={militaryIconUrl(active.faction, active.type)}
+                alt=""
+                style={{ width: 40, height: 40 }}
+              />
+            ) : (
+              <div style={maskIconStyle(icon, 40, color.hex, active.rotation)} />
+            )}
+            {active.text.trim() && (
+              <span
+                className="text-[12px] leading-[1.2] font-semibold text-black"
+                style={{ textShadow: MARKER_LABEL_OUTLINE }}
+              >
+                {active.text.trim()}
+              </span>
+            )}
           </div>
+          <span className="text-[13px] font-semibold text-[#f4db50] pointer-events-none">
+            {t("Drag me onto the map!")}
+          </span>
+          <span className="text-[11px] leading-[15px] text-white/40 pointer-events-none">
+            {t("Drop anywhere on the map · click a marker to edit")}
+          </span>
         </div>
       )}
     </>

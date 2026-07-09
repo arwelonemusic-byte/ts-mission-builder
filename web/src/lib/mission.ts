@@ -1,6 +1,8 @@
 import { FACTIONS, mintGuid } from "mission-gen";
 
 export type ZoneModule = { type: string; budget: number; vehicles?: string[] };
+export type ArtyShell = { on: boolean; count: number };
+export type ArtySupport = { enabled: boolean; he: ArtyShell; smoke: ArtyShell; illum: ArtyShell };
 export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[] };
 export type SpawnVehicle = { type: string };
 
@@ -38,6 +40,8 @@ export type Mission = {
   };
   /** Selected loadout prefab refs (from the playable subfaction's loadout set) */
   loadouts: string[];
+  /** Artillery support → TS_FireSupportManagerComponent on GameModeSF */
+  arty: ArtySupport;
   spawn: { placed: boolean; x: number; z: number; yaw: number; farp: boolean; vehicles: SpawnVehicle[] };
   zones: Zone[];
   markers: MissionMarker[];
@@ -48,6 +52,18 @@ export type Mission = {
 export function defaultLoadouts(faction: string, subfaction: string): string[] {
   const set = FACTIONS[faction]?.loadoutSets[subfaction] ?? [];
   return set.slice(0, 1).map((l) => l.prefab);
+}
+
+// Counts mirror the toolkit GameModeSF prefab's TS_FireSupportManagerComponent
+// values (HE 60 / Smoke 30 / Illum 30) so the UI defaults equal what the
+// mission gets anyway.
+export function defaultArty(): ArtySupport {
+  return {
+    enabled: false,
+    he: { on: true, count: 60 },
+    smoke: { on: true, count: 30 },
+    illum: { on: true, count: 30 },
+  };
 }
 
 export function newMission(): Mission {
@@ -63,6 +79,7 @@ export function newMission(): Mission {
     enemyGroupSets: ["USSR_Army"],
     briefing: { situation: "", objectives: "", threats: "", extra: [] },
     loadouts: defaultLoadouts("US", "US_Army"),
+    arty: defaultArty(),
     spawn: { placed: false, x: 0, z: 0, yaw: 0, farp: true, vehicles: [] },
     zones: [],
     markers: [],
@@ -86,6 +103,17 @@ export function loadMission(): Mission {
     if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
     if (!m.briefing.extra) m.briefing.extra = [];
     if (!m.markers) m.markers = [];
+    if (!m.arty) m.arty = defaultArty();
+    // Early builds shipped invented defaults (60/40/40); if the user never
+    // touched artillery, silently swap in the prefab-matching counts.
+    if (
+      !m.arty.enabled &&
+      m.arty.he.on && m.arty.he.count === 60 &&
+      m.arty.smoke.on && m.arty.smoke.count === 40 &&
+      m.arty.illum.on && m.arty.illum.count === 40
+    ) {
+      m.arty = defaultArty();
+    }
     if (typeof m.spawn.yaw !== "number") m.spawn.yaw = 0;
     // Mounted-patrol modules gained per-zone vehicle selection; default old saves
     for (const zn of m.zones) {

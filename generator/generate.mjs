@@ -64,6 +64,8 @@ const MISSION = {
       { type: "M923A1_transport_covered" },
     ],
   },
+  // Artillery support (smoke 30 = prefab default → omitted; illum 0 = removed)
+  arty: { he: 40, smoke: 30, illum: 0 },
   zones: [
     {
       name: "Area1",

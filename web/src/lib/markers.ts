@@ -34,6 +34,12 @@ export function militaryIconUrl(faction: string, type: string): string {
   return `/icons/military/land-${faction}-${type}.png`;
 }
 
+/** 8-direction white text-shadow "outline" for marker labels — readable on
+ * both dark terrain and light map areas. Shared by the map divIcons and the
+ * panel's drop-well preview. */
+export const MARKER_LABEL_OUTLINE =
+  "-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,-1px 0 0 #fff,1px 0 0 #fff,0 -1px 0 #fff,0 1px 0 #fff";
+
 /** Vanilla marker atlas (1248×1520, 128px sprites on a 136px grid). */
 export const VANILLA_ATLAS = { url: "/icons/vanilla-markers.png", width: 1248, height: 1520 };
 

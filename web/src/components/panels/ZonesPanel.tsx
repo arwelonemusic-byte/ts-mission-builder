@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import type { Mission, Zone, ZoneModule } from "@/lib/mission";
 import { MODULE_DESCRIPTIONS, MODULE_ICONS } from "@/lib/zoneModules";
-import { CheckRow, GhostButton, Hint, Slider } from "../ui";
+import { useT } from "@/lib/i18n";
+import { CheckRow, GhostButton, PlusIcon, Slider } from "../ui";
 
 /** Module budget spinner. Allows clearing the field while typing (backspace);
  * an empty field commits 1 on blur. Typed values clamp to [1, max]. */
@@ -67,6 +68,7 @@ export default function ZonesPanel({
   updateZone: (id: string, patch: Partial<Zone>) => void;
   removeZone: (id: string) => void;
 }) {
+  const t = useT();
   const enemy = FACTIONS[mission.enemyFaction];
   const placing = placeMode === "zone";
 
@@ -80,10 +82,23 @@ export default function ZonesPanel({
   return (
     <>
       <GhostButton active={placing} onClick={() => setPlaceMode(placing ? null : "zone")}>
-        {placing ? "Click the map… (cancel)" : "+ Add zone (click map)"}
+        {!placing && <PlusIcon />}
+        {placing ? t("Click the map… (cancel)") : t("Add zone (click map)")}
       </GhostButton>
       {mission.zones.length === 0 && (
-        <Hint>AI zones spawn enemy activity — garrisons, patrols, fortifications — around a map point.</Hint>
+        <div className="border border-dashed border-[#2e3439] rounded-[8px] px-4 py-6 flex flex-col items-center gap-[10px] text-center">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#e04b4b" strokeWidth="1.5" aria-hidden>
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="12" r="6" />
+            <circle cx="12" cy="12" r="2" fill="#e04b4b" stroke="none" />
+          </svg>
+          <span className="text-[13px] font-medium text-white">{t("No AI zones yet")}</span>
+          <span className="text-[11px] leading-4 text-white/40 max-w-[260px]">
+            {t(
+              "AI zones spawn enemy activity — garrisons, patrols, fortifications — around a map point. Drop one near an objective."
+            )}
+          </span>
+        </div>
       )}
 
       {mission.zones.map((zn, i) => {
@@ -96,8 +111,10 @@ export default function ZonesPanel({
               else cardRefs.current.delete(zn.id);
             }}
             onClick={() => onSelectZone(zn.id)}
-            className={`bg-[#14181a] rounded-[8px] p-4 flex flex-col border cursor-pointer transition-colors ${
-              selected ? "gap-2 border-[#f4db50]" : "gap-3 border-transparent hover:border-[#2e3439]"
+            className={`bg-[#14181a] rounded-[8px] p-4 flex flex-col border cursor-pointer transition-[border-color,transform] animate-[mbFadeSlide_0.3s_ease] ${
+              selected
+                ? "gap-2 border-[#f4db50]"
+                : "gap-3 border-transparent hover:border-[#2e3439] hover:-translate-y-px"
             }`}
           >
             <div className="flex items-center gap-2">
@@ -111,7 +128,7 @@ export default function ZonesPanel({
               <span className="flex-1" />
               <button
                 type="button"
-                aria-label="Delete zone"
+                aria-label={t("Delete zone")}
                 onClick={(e) => {
                   e.stopPropagation();
                   removeZone(zn.id);
@@ -129,10 +146,10 @@ export default function ZonesPanel({
                 {ZONE_MODULES.map((d: { type: string; label: string }) => {
                   const mm = zn.modules.find((m2) => m2.type === d.type);
                   return (
-                    <span key={d.type} className="flex items-center gap-[3px]" title={d.label}>
+                    <span key={d.type} className="flex items-center gap-[3px]" title={t(d.label)}>
                       <img
                         src={MODULE_ICONS[d.type]}
-                        alt={d.label}
+                        alt={t(d.label)}
                         style={{
                           width: 16,
                           height: 16,
@@ -151,7 +168,7 @@ export default function ZonesPanel({
             {selected && (
               <>
             <div className="flex items-center justify-between">
-              <span className="text-[12px] text-white">Radius</span>
+              <span className="text-[12px] text-white">{t("Radius")}</span>
               <span className="text-[12px] text-white/60">{zn.radius} m</span>
             </div>
             <Slider
@@ -167,7 +184,7 @@ export default function ZonesPanel({
               return (
                 <div key={def.type} className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
-                    <div className="flex-1 min-w-0" title={MODULE_DESCRIPTIONS[def.type]}>
+                    <div className="flex-1 min-w-0" title={t(MODULE_DESCRIPTIONS[def.type])}>
                       <CheckRow
                         checked={!!mod}
                         onChange={(on) => {
@@ -181,7 +198,7 @@ export default function ZonesPanel({
                           updateZone(zn.id, { modules });
                         }}
                       >
-                        {def.label}
+                        {t(def.label)}
                       </CheckRow>
                     </div>
                     {mod && !def.noBudget && (

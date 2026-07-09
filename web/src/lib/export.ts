@@ -97,6 +97,15 @@ export async function toGeneratorMission(m: Mission) {
       farp: m.spawn.farp,
       vehicles: m.spawn.vehicles.map((v) => ({ type: v.type })),
     },
+    // Artillery: unchecked shell types flatten to 0 rounds (removes the round
+    // type in-game — the component has no per-type enable flags)
+    arty: m.arty.enabled
+      ? {
+          he: m.arty.he.on ? m.arty.he.count : 0,
+          smoke: m.arty.smoke.on ? m.arty.smoke.count : 0,
+          illum: m.arty.illum.on ? m.arty.illum.count : 0,
+        }
+      : null,
     zones,
     markers,
   };
@@ -129,7 +138,7 @@ export async function spawnSlopeDelta(m: Mission): Promise<number> {
 }
 
 /** Generate the addon and write it into a user-picked directory (File System Access API). */
-export async function exportMission(m: Mission): Promise<string> {
+export async function exportMission(m: Mission): Promise<{ fileCount: number; dirName: string }> {
   const gen = await toGeneratorMission(m);
   const sampler = await getSampler(m.terrain);
   const { files, addonDirName } = buildMissionFiles(gen, {
@@ -154,5 +163,5 @@ export async function exportMission(m: Mission): Promise<string> {
     await ws.write(content);
     await ws.close();
   }
-  return `${Object.keys(files).length} files written to ${addonDirName}/`;
+  return { fileCount: Object.keys(files).length, dirName: addonDirName };
 }

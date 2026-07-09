@@ -667,6 +667,10 @@ export const K = {
   CMP_SF_SLOTAI: "{5A26B3E02AC77BA0}",
   MARKER_TYPE_GUID: "{697E675AD7054FB0}",
   FARP_COMP: "{0C16FFB1B07F4A89}Prefabs/Compositions/Slotted/TS_FARP_Comp.et",
+  // TS_FireSupportManagerComponent instance GUID inside the toolkit's
+  // GameModeSF.et. Prefab-effective round counts: HE 60, Smoke 30, Illum 30
+  // (m_bEnabled defaults to 0 in script — omit the block to keep arty off).
+  CMP_FIRE_SUPPORT: "{6995258B6DFFBB1F}",
   // Loadout system (conf-based): missions spawn the toolkit's LoadoutCrates_Conf.et
   // and override the toolkit's loadout .conf with the selected loadouts. The crate
   // prefab is only overridden to set faction affiliation (1.7 arsenal validation).

@@ -1,33 +1,54 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
-import { defaultLoadouts, loadMission, newMission, saveMission, type Mission, type MissionMarker, type Zone } from "@/lib/mission";
-import type { MapFocus } from "@/components/MissionMap";
-import type { MarkerDraft } from "@/components/panels/MarkersPanel";
+import {
+  defaultLoadouts,
+  loadMission,
+  newMission,
+  saveMission,
+  type Mission,
+  type MissionMarker,
+  type Zone,
+} from "@/lib/mission";
 import { exportMission, spawnSlopeDelta } from "@/lib/export";
-import StepTabs, { type StepId } from "@/components/StepTabs";
-import { PANEL_SHADOW, XButton } from "@/components/ui";
+import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
+import { LangProvider, loadLang, saveLang, tr, zonesCountLabel, type Lang } from "@/lib/i18n";
+import AppBar, { type StepId } from "@/components/AppBar";
+import GenerateOverlay, { GEN_STAGES, type GenState } from "@/components/GenerateOverlay";
+import { XButton } from "@/components/ui";
+import type { MapApi } from "@/components/MissionMap";
 import MissionPanel from "@/components/panels/MissionPanel";
-import FactionsPanel from "@/components/panels/FactionsPanel";
+import PlayersPanel from "@/components/panels/PlayersPanel";
+import EnemyPanel from "@/components/panels/EnemyPanel";
 import SpawnPanel from "@/components/panels/SpawnPanel";
 import ZonesPanel from "@/components/panels/ZonesPanel";
-import MarkersPanel from "@/components/panels/MarkersPanel";
+import MarkersPanel, { type MarkerDraft } from "@/components/panels/MarkersPanel";
 import BriefingPanel from "@/components/panels/BriefingPanel";
 
 const MissionMap = dynamic(() => import("@/components/MissionMap"), { ssr: false });
 
-let zoneCounter = 0;
-const zoneId = () => `z${Date.now().toString(36)}${(zoneCounter++).toString(36)}`;
+let idCounter = 0;
+const freshId = () => `z${Date.now().toString(36)}${(idCounter++).toString(36)}`;
 
 const STEP_TITLES: Record<StepId, string> = {
   mission: "Mission setup",
-  factions: "Factions & loadouts",
+  players: "Players & loadouts",
+  enemy: "Enemy forces",
   spawn: "Spawn",
   zones: "AI Zones",
   markers: "Markers",
   briefing: "Briefing",
+};
+const STEP_NUMS: Record<StepId, string> = {
+  mission: "01",
+  players: "02",
+  spawn: "03",
+  enemy: "04",
+  zones: "05",
+  markers: "06",
+  briefing: "07",
 };
 
 const DEFAULT_MARKER_DRAFT: MarkerDraft = {
@@ -40,28 +61,72 @@ const DEFAULT_MARKER_DRAFT: MarkerDraft = {
   rotation: 0,
 };
 
+type Status = { msg: string; kind: "warn" | "info"; n: number } | null;
+type Ghost = { x: number; y: number; over: boolean } | null;
+
 export default function Editor() {
   const [mission, setMission] = useState<Mission | null>(null);
+  const [lang, setLangState] = useState<Lang>("en");
   const [step, setStep] = useState<StepId>("mission");
   const [placeMode, setPlaceMode] = useState<"spawn" | "zone" | "marker" | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [markerDraft, setMarkerDraftState] = useState<MarkerDraft>(DEFAULT_MARKER_DRAFT);
-  const setMarkerDraft = (patch: Partial<MarkerDraft>) =>
-    setMarkerDraftState((d) => ({ ...d, ...patch }));
-  const [status, setStatus] = useState<string>("");
+  const [status, setStatus] = useState<Status>(null);
   const [slope, setSlope] = useState<number | null>(null);
-  const [focus, setFocus] = useState<MapFocus | null>(null);
+  const [focus, setFocus] = useState<{ x: number; z: number; radius: number; seq: number } | null>(null);
+  const [gen, setGen] = useState<GenState>(null);
+  const [ghost, setGhost] = useState<Ghost>(null);
+  // Freshly placed map elements ("spawn" / zone id / marker id) — drives the
+  // drop/stamp entrance animations; flags expire after 650ms (design v2).
+  const [fresh, setFresh] = useState<Record<string, boolean>>({});
+  const mapApi = useRef<MapApi | null>(null);
+  const genRef = useRef<GenState>(null);
+  genRef.current = gen;
+
+  const setMarkerDraft = (patch: Partial<MarkerDraft>) => setMarkerDraftState((d) => ({ ...d, ...patch }));
+  const t = (s: string) => tr(lang, s);
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    saveLang(l);
+  };
+  const say = (msg: string, kind: "warn" | "info" = "info") =>
+    setStatus((s) => ({ msg, kind, n: (s?.n ?? 0) + 1 }));
 
   const focusOn = (x: number, z: number, radius: number) =>
     setFocus((f) => ({ x, z, radius, seq: (f?.seq ?? 0) + 1 }));
 
+  const markFresh = (id: string) => {
+    setFresh((f) => ({ ...f, [id]: true }));
+    window.setTimeout(
+      () =>
+        setFresh((f) => {
+          const next = { ...f };
+          delete next[id];
+          return next;
+        }),
+      650
+    );
+  };
+
   useEffect(() => {
     setMission(loadMission());
+    setLangState(loadLang());
   }, []);
   useEffect(() => {
     if (mission) saveMission(mission);
   }, [mission]);
+
+  // Esc: cancel placement / dismiss the finished generate overlay
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (genRef.current?.phase === "done") setGen(null);
+      else setPlaceMode(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Slope check across the bundle footprint whenever spawn placement changes
   useEffect(() => {
@@ -102,9 +167,7 @@ export default function Editor() {
     setSelectedMarkerId((cur) => (cur === id ? null : cur));
   };
 
-  /** Everything that must change together when the enemy faction changes:
-   * troop sets reset to the faction default, per-zone patrol-vehicle
-   * selections reset (vehicle keys are faction-specific). */
+  /** Everything that must change together when the enemy faction changes. */
   const enemyPatch = (ef: string, zones: Zone[]): Partial<Mission> => ({
     enemyFaction: ef,
     enemyGroupSets: [FACTIONS[ef].defaultGroupSet],
@@ -125,8 +188,6 @@ export default function Editor() {
       loadouts: defaultLoadouts(pf, sub),
       spawn: { ...mission.spawn, vehicles: [] },
     };
-    // Playable and enemy factions can't match — bump the enemy to the next
-    // available faction in the same update (no intermediate invalid state).
     if (pf === mission.enemyFaction) {
       const nextEnemy = factionKeys.find((f) => f !== pf);
       if (nextEnemy) Object.assign(patch, enemyPatch(nextEnemy, mission.zones));
@@ -140,14 +201,13 @@ export default function Editor() {
   };
 
   const goStep = (s: StepId) => {
-    setPlaceMode(null); // don't leave a stray click-to-place mode behind
+    setPlaceMode(null);
     setStep(s);
   };
 
   const onMapClick = (x: number, z: number) => {
     if (!mission) return;
     if (!placeMode) {
-      // Plain map click deselects everything (marker + zone — all cards collapse)
       setSelectedMarkerId(null);
       setSelectedZoneId(null);
       return;
@@ -156,14 +216,12 @@ export default function Editor() {
     const zi = +z.toFixed(1);
     if (placeMode === "spawn") {
       updateSpawn({ placed: true, x: xi, z: zi });
+      mapApi.current?.addPing(xi, zi, "#3fa9f5");
+      markFresh("spawn");
       setPlaceMode(null);
-    } else if (placeMode === "marker") {
-      // Marker placement stays active so several can be dropped in a row
-      const mk: MissionMarker = { ...markerDraft, id: zoneId(), x: xi, z: zi };
-      setMission((m) => (m ? { ...m, markers: [...m.markers, mk] } : m));
-    } else {
+    } else if (placeMode === "zone") {
       const zone: Zone = {
-        id: zoneId(),
+        id: freshId(),
         x: xi,
         z: zi,
         radius: 200,
@@ -172,12 +230,14 @@ export default function Editor() {
       };
       setMission((m) => (m ? { ...m, zones: [...m.zones, zone] } : m));
       setSelectedZoneId(zone.id);
+      mapApi.current?.addPing(xi, zi, "#e04b4b");
+      markFresh(zone.id);
       setPlaceMode(null);
     }
   };
 
   // Bumped on every map zone-click so the panel re-reveals the card even when
-  // the same zone is clicked again (selectedZoneId alone wouldn't change).
+  // the same zone is clicked again.
   const [zoneRevealSeq, setZoneRevealSeq] = useState(0);
   const onZoneClick = (id: string) => {
     setSelectedZoneId(id);
@@ -185,67 +245,130 @@ export default function Editor() {
     setStep("zones");
   };
 
-  const onMarkerClick = (id: string) => {
-    setSelectedMarkerId((cur) => (cur === id ? null : id));
-    setStep("markers");
-  };
-
-  /** Zone-card click in the panel: select + pan/zoom the map to the zone. */
   const selectAndFocusZone = (id: string) => {
     setSelectedZoneId(id);
     const zn = mission?.zones.find((z) => z.id === id);
     if (zn) focusOn(zn.x, zn.z, zn.radius * 1.5);
   };
 
-  const busy = status === "Generating…";
+  const onMarkerClick = (id: string) => {
+    setSelectedMarkerId((cur) => (cur === id ? null : id));
+    setStep("markers");
+  };
 
-  const doExport = async () => {
+  /* ----- marker drag-and-drop from the panel ----- */
+  const onMarkerDragStart = useCallback(
+    (e: React.PointerEvent) => {
+      e.preventDefault();
+      const move = (ev: PointerEvent) => {
+        const over = !!mapApi.current?.screenToWorld(ev.clientX, ev.clientY) && ev.clientX >= 392;
+        setGhost({ x: ev.clientX, y: ev.clientY, over });
+      };
+      const up = (ev: PointerEvent) => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+        setGhost(null);
+        const world = mapApi.current?.screenToWorld(ev.clientX, ev.clientY);
+        if (world && ev.clientX >= 392) {
+          const id = freshId();
+          setMission((m) =>
+            m ? { ...m, markers: [...m.markers, { ...markerDraft, id, x: world.x, z: world.z }] } : m
+          );
+          mapApi.current?.addPing(world.x, world.z, "#f4db50");
+          markFresh(id);
+        }
+      };
+      setGhost({ x: e.clientX, y: e.clientY, over: false });
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    },
+    [markerDraft]
+  );
+
+  /* ----- generate flow ----- */
+  // Generate = validation + the staged progress theater ending in the MISSION
+  // READY state; the real folder-pick export runs from the Download button
+  // (its click provides the user activation showDirectoryPicker needs).
+  const busy = gen?.phase === "run";
+  const doGenerate = () => {
     if (!mission || busy) return;
     if (!mission.spawn.placed) {
-      setStatus("Place a spawn point first (Spawn tab).");
-      setStep("spawn");
+      say(t("Place a spawn point first (Spawn tab)."), "warn");
+      goStep("spawn");
       return;
     }
     if (mission.loadouts.length === 0) {
-      setStatus("Select at least one loadout (Factions tab).");
-      setStep("factions");
+      say(t("Select at least one loadout (Players tab)."), "warn");
+      goStep("players");
       return;
     }
+    setGen({ phase: "run", stage: 0 });
+    let stage = 0;
+    const ticker = window.setInterval(() => {
+      stage += 1;
+      if (stage >= GEN_STAGES.length) {
+        window.clearInterval(ticker);
+        setGen((g) => (g && g.phase === "run" ? { ...g, stage: GEN_STAGES.length } : g));
+        window.setTimeout(() => setGen((g) => (g && g.phase === "run" ? { ...g, phase: "done" } : g)), 350);
+      } else {
+        setGen((g) => (g && g.phase === "run" ? { ...g, stage } : g));
+      }
+    }, 480);
+  };
+
+  const doDownload = async () => {
+    if (!mission) return;
     try {
-      setStatus("Generating…");
-      const result = await exportMission(mission);
-      setStatus(`Done: ${result}. Open the project in Workbench once, then publish.`);
+      const { fileCount, dirName } = await exportMission(mission);
+      setGen(null);
+      say(
+        t("Mission written to {dir}/ ({n} files).")
+          .replace("{dir}", dirName)
+          .replace("{n}", String(fileCount))
+      );
     } catch (err) {
-      setStatus(`Export failed: ${err instanceof Error ? err.message : String(err)}`);
+      const aborted = err instanceof DOMException && err.name === "AbortError";
+      if (aborted) return; // picker cancelled — stay on the ready screen
+      // t() maps known error messages (e.g. the folder-export one) to RU;
+      // unknown messages pass through untranslated.
+      setGen(null);
+      const msg = t(err instanceof Error ? err.message : String(err));
+      say(t("Export failed: {error}").replace("{error}", msg), "warn");
     }
   };
 
   const onReset = () => {
-    if (confirm("Reset the whole mission?")) {
+    if (confirm(t("Reset the whole mission?"))) {
       setMission(newMission());
       setSelectedZoneId(null);
       setSelectedMarkerId(null);
       setPlaceMode(null);
-      setStatus("");
+      setStatus(null);
       setStep("mission");
     }
   };
 
   if (!mission) {
-    return <main className="grid place-items-center h-dvh bg-slate-900 text-white/60">Loading…</main>;
+    return <main className="grid place-items-center h-dvh bg-[#0d0f11] text-white/60">Loading…</main>;
   }
 
+  const placeNoun = placeMode === "spawn" ? t("the spawn point") : t("an AI zone");
+
   return (
-    <main className="relative h-dvh w-full overflow-hidden bg-slate-900">
-      <div className="absolute inset-0">
+    <LangProvider value={lang}>
+    <main className="relative h-dvh w-full overflow-hidden bg-[#0d0f11] select-none">
+      {/* map (below the 56px app bar) */}
+      <div className="absolute left-0 right-0 bottom-0 top-[56px]">
         <MissionMap
           terrainKey={mission.terrain}
+          lang={lang}
           playableFaction={mission.playableFaction}
           spawn={mission.spawn}
           zones={mission.zones}
           selectedZoneId={selectedZoneId}
           markers={mission.markers}
           selectedMarkerId={selectedMarkerId}
+          fresh={fresh}
           placeMode={placeMode}
           focus={focus}
           onMapClick={onMapClick}
@@ -254,30 +377,43 @@ export default function Editor() {
           onSpawnMoved={(x, z) => updateSpawn({ x, z })}
           onMarkerClick={onMarkerClick}
           onMarkerMoved={(id, x, z) => updateMarker(id, { x, z })}
+          onApi={(api) => (mapApi.current = api)}
         />
       </div>
 
+      <AppBar
+        step={step}
+        onStep={goStep}
+        onGenerate={doGenerate}
+        busy={busy}
+        ready={mission.spawn.placed && mission.loadouts.length > 0}
+        dots={{ spawn: !mission.spawn.placed, players: mission.loadouts.length === 0 }}
+        lang={lang}
+        onLang={setLang}
+      />
+
+      {/* placement banner */}
       {placeMode && (
-        <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-[1400] pointer-events-none bg-[rgba(32,36,39,0.95)] text-white text-[12px] px-4 py-2 rounded-[8px] ${PANEL_SHADOW}`}>
-          Click the map to place{" "}
-          <span className="text-[#f4db50] font-medium">
-            {placeMode === "spawn" ? "the spawn point" : placeMode === "zone" ? "an AI zone" : "markers"}
-          </span>{" "}
-          — or press the button again to {placeMode === "marker" ? "finish" : "cancel"}.
+        <div className="absolute top-[72px] left-1/2 -translate-x-1/2 z-[1700] pointer-events-none flex items-center gap-[10px] bg-[rgba(32,36,39,0.95)] rounded-[8px] px-4 py-[9px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease]">
+          <span className="w-2 h-2 rounded-full bg-[#f4db50] animate-[mbPulseDot_1.2s_ease-in-out_infinite]" />
+          <span className="text-[12px] leading-[1.4] text-white">
+            {t("Click the map to place")} <span className="text-[#f4db50] font-medium">{placeNoun}</span>
+            <span className="text-white/45"> {t("· press the button again to cancel")}</span>
+          </span>
         </div>
       )}
 
-      <div className="pointer-events-none absolute left-4 top-4 bottom-4 w-[360px] z-[1500] flex flex-col gap-4">
-        <div className="pointer-events-auto">
-          <StepTabs step={step} onStep={goStep} onGenerate={doExport} busy={busy} />
-        </div>
-
-        {/* [&>*]:shrink-0 — panel children keep their natural height; overflow
-            scrolls instead of flex-squeezing fixed-height buttons/inputs */}
-        <div className={`pointer-events-auto min-h-0 bg-[#202427] rounded-[12px] p-5 flex flex-col gap-4 overflow-y-auto ts-thin-scrollbar [&>*]:shrink-0 ${PANEL_SHADOW}`}>
-          <div className="flex items-center justify-between shrink-0">
-            <h1 className="font-slab text-[20px] leading-[24px] font-medium text-white">
-              {STEP_TITLES[step]}
+      {/* left column */}
+      <div className="pointer-events-none absolute left-4 top-[72px] bottom-4 w-[360px] z-[1650] flex flex-col gap-3">
+        <div
+          className={`pointer-events-auto min-h-0 bg-[#202427] rounded-[12px] p-5 flex flex-col gap-4 overflow-y-auto ts-thin-scrollbar [&>*]:shrink-0 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]`}
+        >
+          <div className="flex items-center gap-[10px] shrink-0">
+            <span className="font-mono text-[11px] leading-none font-semibold text-[#f4db50] bg-[rgba(244,219,80,0.12)] rounded-[4px] px-[6px] py-[5px] tracking-[0.08em]">
+              {STEP_NUMS[step]}
+            </span>
+            <h1 className="font-slab text-[20px] leading-[24px] font-medium text-white flex-1 min-w-0">
+              {t(STEP_TITLES[step])}
             </h1>
             {step === "spawn" && mission.spawn.placed && (
               <button
@@ -285,66 +421,112 @@ export default function Editor() {
                 onClick={() => focusOn(mission.spawn.x, mission.spawn.z, 150)}
                 className="text-[12px] text-[#f4db50] hover:text-[#f9e278] transition-colors"
               >
-                Show on map
+                {t("Show on map")}
               </button>
             )}
+            {step === "zones" && mission.zones.length > 0 && (
+              <span className="text-[12px] text-white/40">
+                {zonesCountLabel(lang, mission.zones.length)}
+              </span>
+            )}
           </div>
-          {step === "mission" && (
-            <MissionPanel mission={mission} update={update} onReset={onReset} />
-          )}
-          {step === "factions" && (
-            <FactionsPanel
-              mission={mission}
-              update={update}
-              onPlayableFaction={setPlayableFaction}
-              onEnemyFaction={setEnemyFaction}
-            />
-          )}
-          {step === "spawn" && (
-            <SpawnPanel
-              mission={mission}
-              placeMode={placeMode}
-              setPlaceMode={setPlaceMode}
-              updateSpawn={updateSpawn}
-              slope={slope}
-            />
-          )}
-          {step === "zones" && (
-            <ZonesPanel
-              mission={mission}
-              placeMode={placeMode}
-              setPlaceMode={setPlaceMode}
-              selectedZoneId={selectedZoneId}
-              revealSeq={zoneRevealSeq}
-              onSelectZone={selectAndFocusZone}
-              updateZone={updateZone}
-              removeZone={removeZone}
-            />
-          )}
-          {step === "markers" && (
-            <MarkersPanel
-              mission={mission}
-              draft={markerDraft}
-              setDraft={setMarkerDraft}
-              selectedMarkerId={selectedMarkerId}
-              updateMarker={updateMarker}
-              removeMarker={removeMarker}
-              placeMode={placeMode}
-              setPlaceMode={setPlaceMode}
-            />
-          )}
-          {step === "briefing" && <BriefingPanel mission={mission} update={update} />}
+
+          <div key={step} className="flex flex-col gap-4 [&>*]:shrink-0 animate-[mbFadeSlide_0.28s_cubic-bezier(0.22,1,0.36,1)]">
+            {step === "mission" && <MissionPanel mission={mission} update={update} onReset={onReset} />}
+            {step === "players" && (
+              <PlayersPanel mission={mission} update={update} onPlayableFaction={setPlayableFaction} />
+            )}
+            {step === "enemy" && (
+              <EnemyPanel mission={mission} update={update} onEnemyFaction={setEnemyFaction} />
+            )}
+            {step === "spawn" && (
+              <SpawnPanel
+                mission={mission}
+                placeMode={placeMode}
+                setPlaceMode={setPlaceMode}
+                updateSpawn={updateSpawn}
+                slope={slope}
+              />
+            )}
+            {step === "zones" && (
+              <ZonesPanel
+                mission={mission}
+                placeMode={placeMode}
+                setPlaceMode={setPlaceMode}
+                selectedZoneId={selectedZoneId}
+                revealSeq={zoneRevealSeq}
+                onSelectZone={selectAndFocusZone}
+                updateZone={updateZone}
+                removeZone={removeZone}
+              />
+            )}
+            {step === "markers" && (
+              <MarkersPanel
+                mission={mission}
+                draft={markerDraft}
+                setDraft={setMarkerDraft}
+                selectedMarkerId={selectedMarkerId}
+                updateMarker={updateMarker}
+                removeMarker={removeMarker}
+                onDragStart={onMarkerDragStart}
+              />
+            )}
+            {step === "briefing" && <BriefingPanel mission={mission} update={update} />}
+          </div>
         </div>
 
         {status && (
-          <div className={`pointer-events-auto shrink-0 bg-[#202427] rounded-[12px] p-4 flex items-start gap-2 ${PANEL_SHADOW}`}>
-            <div className="flex-1 min-w-0 text-[12px] leading-[16px] text-white/80 whitespace-pre-wrap">
-              {status}
-            </div>
-            <XButton ariaLabel="Dismiss" onClick={() => setStatus("")} />
+          <div
+            key={status.n}
+            className="pointer-events-auto shrink-0 bg-[#202427] rounded-[12px] px-[14px] py-3 flex items-start gap-[10px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbShake_0.4s_ease]"
+          >
+            <span className={`text-[13px] leading-4 ${status.kind === "warn" ? "text-[#f4db50]" : "text-white/60"}`}>
+              {status.kind === "warn" ? "⚠" : "ⓘ"}
+            </span>
+            <div className="flex-1 min-w-0 text-[12px] leading-4 text-white/80 whitespace-pre-wrap">{status.msg}</div>
+            <XButton ariaLabel={t("Dismiss")} onClick={() => setStatus(null)} />
           </div>
         )}
       </div>
+
+      {/* marker drag ghost */}
+      {ghost && (
+        <div
+          className="fixed z-[2500] pointer-events-none"
+          style={{
+            left: ghost.x,
+            top: ghost.y,
+            transform: `translate(-50%,-50%) scale(${ghost.over ? 1 : 0.8})`,
+            opacity: ghost.over ? 0.95 : 0.5,
+            transition: "transform 0.12s ease, opacity 0.12s ease",
+          }}
+        >
+          {ghost.over && (
+            <div className="absolute -inset-2 rounded-full border border-dashed border-[#f4db50]" />
+          )}
+          {markerDraft.kind === "military" ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={militaryIconUrl(markerDraft.faction, markerDraft.type)}
+              alt=""
+              style={{ width: 40, height: 40 }}
+            />
+          ) : (
+            <div style={maskIconStyle(findIcon(markerDraft.quad), 40, findColor(markerDraft.color).hex, markerDraft.rotation)} />
+          )}
+          {markerDraft.text.trim() && (
+            <div
+              className="absolute left-[44px] top-1/2 -translate-y-1/2 whitespace-nowrap text-[12px] leading-[1.2] font-semibold text-black"
+              style={{ textShadow: MARKER_LABEL_OUTLINE }}
+            >
+              {markerDraft.text.trim()}
+            </div>
+          )}
+        </div>
+      )}
+
+      <GenerateOverlay gen={gen} onClose={() => setGen(null)} onDownload={doDownload} />
     </main>
+    </LangProvider>
   );
 }

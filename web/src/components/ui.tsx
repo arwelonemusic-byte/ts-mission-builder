@@ -181,10 +181,19 @@ export function GhostButton({
     <button
       type="button"
       onClick={onClick}
-      className={`${small ? "h-[32px] px-3" : "h-[40px] px-4"} rounded-[8px] text-[12px] leading-[20px] font-medium transition-colors ${activeCls} ${className ?? ""}`}
+      className={`${small ? "h-[32px] px-3" : "h-[40px] px-4"} rounded-[8px] text-[12px] leading-[20px] font-medium flex items-center justify-center gap-[6px] transition-colors ${activeCls} ${className ?? ""}`}
     >
       {children}
     </button>
+  );
+}
+
+/** 12×12 plus glyph for "add" GhostButtons (design v2). */
+export function PlusIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden className="shrink-0">
+      <path d="M6 1.2v9.6M1.2 6h9.6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
   );
 }
 

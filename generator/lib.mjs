@@ -35,6 +35,27 @@ function entryText(lines, indent) {
 
 const posStr = (p) => (Array.isArray(p) ? p.map((n) => +n.toFixed(3)).join(" ") : p);
 
+// Artillery support: component override on the GameModeSF entity instance.
+// m_bEnabled defaults to 0 in script (the prefab doesn't set it), so a
+// disabled toggle = no block at all. Round counts are written only when they
+// differ from the prefab-effective values (HE 60, Smoke 30, Illum 30); 0 is a
+// valid explicit value that removes that round type from the game.
+// mission.arty = { he, smoke, illum } round counts, or null/undefined = off.
+function fireSupportBlock(arty) {
+  if (!arty) return "";
+  const prefabDefaults = { he: 60, smoke: 30, illum: 30 };
+  const names = { he: "m_iRoundsHE", smoke: "m_iRoundsSmoke", illum: "m_iRoundsIllum" };
+  let rounds = "";
+  for (const key of ["he", "smoke", "illum"]) {
+    const n = Math.max(0, Math.floor(arty[key] ?? 0));
+    if (n !== prefabDefaults[key]) rounds += `\n   ${names[key]} ${n}`;
+  }
+  return `
+  TS_FireSupportManagerComponent "${K.CMP_FIRE_SUPPORT}" {
+   m_bEnabled 1${rounds}
+  }`;
+}
+
 export function buildMissionFiles(mission, options = {}) {
   const F = FACTIONS[mission.playableFaction];
   const ENEMY = FACTIONS[mission.enemyFaction];
@@ -260,7 +281,7 @@ SCR_BaseGameMode GameModeSF : "{ECEEDB2D3737204B}Prefabs/Systems/ScenarioFramewo
   SCR_RespawnSystemComponent "{56B2B4793051E7C9}" {
    m_SpawnLogic SCR_MenuSpawnLogic "{5D36888CC966608A}" {
    }
-  }
+  }${fireSupportBlock(mission.arty)}
  }
  coords ${mgr(-20, 0, -21)}
 }

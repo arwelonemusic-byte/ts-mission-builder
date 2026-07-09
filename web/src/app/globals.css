@@ -29,6 +29,7 @@ body {
   /* hug the chip row — don't let the absolutely-positioned box squash it */
   width: max-content;
   max-width: none;
+  animation: mbFadeIn 0.15s ease;
 }
 .leaflet-tooltip-top.zone-tip::before {
   border-top-color: #14181a;
@@ -170,3 +171,19 @@ body {
     cursor: not-allowed;
   }
 }
+
+/* Design v2 animation keyframes (from Mission Builder v2 design mock) */
+@keyframes mbFadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes mbPing { 0% { transform: scale(0.12); opacity: 0.9; } 75% { opacity: 0.3; } 100% { transform: scale(1); opacity: 0; } }
+@keyframes mbDrop { 0% { transform: translateY(-14px) scale(1.35); opacity: 0; } 65% { transform: translateY(2px) scale(0.96); opacity: 1; } 100% { transform: translateY(0) scale(1); } }
+@keyframes mbCircleIn { 0% { opacity: 0; } 40% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes mbPulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* Fade-in for freshly placed Leaflet vector layers (zone circles, spawn bundle) */
+.mb-fresh-path { animation: mbCircleIn 0.5s ease; }
+@keyframes mbGlow { 0%, 100% { box-shadow: 0px 16px 32px 0px rgba(191, 162, 0, 0.6); } 50% { box-shadow: 0px 8px 36px 2px rgba(244, 219, 80, 0.8); } }
+@keyframes mbShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(4px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+@keyframes mbSpin { to { transform: rotate(360deg); } }
+@keyframes mbStamp { 0% { transform: rotate(-6deg) scale(1.7); opacity: 0; } 55% { transform: rotate(-6deg) scale(0.94); opacity: 1; } 100% { transform: rotate(-6deg) scale(1); } }
+@keyframes mbPop { from { transform: scale(0.3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes mbFadeIn { from { opacity: 0; } to { opacity: 1; } }
