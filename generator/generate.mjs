@@ -72,6 +72,7 @@ const MISSION = {
       plugins: [
         { type: "TS_ScenarioFrameworkPluginAIPatrol", attrs: { m_iBudget: 2 } },
         { type: "TS_ScenarioFrameworkPluginSmartGarrison", attrs: { m_iBudget: 2 } },
+        { type: "TS_ScenarioFrameworkPluginFortification", attrs: { m_iBudget: 2 } },
       ],
     },
     {

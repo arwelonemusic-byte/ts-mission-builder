@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal } from "./layout.mjs";
-export { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool };
+export { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleSizeClass } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -355,26 +355,42 @@ ${farpBlock}`;
   function pluginBlock(p) {
     const def = ZONE_MODULES.find((d) => d.type === p.type);
     if (!def) throw new Error(`Unknown zone module type: ${p.type}`);
-    let refs;
     const enemySets = mission.enemyGroupSets ?? mission.enemyGroupSet;
+    let pools; // [attrName, refs][]
     if (def.kind === "infantry") {
-      refs = resolveGroupPool(mission.enemyFaction, enemySets, def.sizes);
+      pools = [[def.pool, resolveGroupPool(mission.enemyFaction, enemySets, def.sizes)]];
+    } else if (def.kind === "fortification") {
+      // Composition pools are baked per enemy faction; the AI pool is the
+      // sentry team of each SELECTED enemy group set. Tuning attrs (roadside
+      // offset 15 / min road width 4 / min spacing 50 / single side) equal
+      // the plugin's class defaults and are omitted (Enfusion omits defaults;
+      // see Operation Last Light AO.layer for the reference serialization).
+      pools = [
+        ["m_aRoadFortifications", ENEMY.fortifications.road],
+        ["m_aRoadsideFortifications", ENEMY.fortifications.roadside],
+        ["m_aAIGroupPool", resolveSentryPool(mission.enemyFaction, enemySets)],
+      ];
     } else {
       // Per-zone vehicle selection (keys into the enemy faction's vehicle dict);
       // falls back to all patrol candidates if the mission doesn't specify.
       const keys = p.vehicles?.length ? p.vehicles : ENEMY.patrolVehicleKeys;
-      refs = keys.map((k) => {
+      const refs = keys.map((k) => {
         const ref = ENEMY.vehicles[k];
         if (!ref) throw new Error(`Unknown patrol vehicle ${mission.enemyFaction}/${k}`);
         return ref;
       });
+      pools = [[def.pool, refs]];
     }
-    if (!refs?.length) throw new Error(`Empty pool for ${p.type} (${mission.enemyFaction})`);
+    for (const [, refs] of pools) {
+      if (!refs?.length) throw new Error(`Empty pool for ${p.type} (${mission.enemyFaction})`);
+    }
     let s = `      ${p.type} "{${mintGuid()}}" {\n`;
     for (const [k, v] of Object.entries(p.attrs ?? {})) s += `       ${k} ${v}\n`;
-    s += `       ${def.pool} {\n`;
-    for (const ref of refs) s += `        "${ref}"\n`;
-    s += `       }\n`;
+    for (const [name, refs] of pools) {
+      s += `       ${name} {\n`;
+      for (const ref of refs) s += `        "${ref}"\n`;
+      s += `       }\n`;
+    }
     return s + `      }`;
   }
 

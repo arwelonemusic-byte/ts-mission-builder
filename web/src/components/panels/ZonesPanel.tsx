@@ -1,9 +1,50 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import type { Mission, Zone, ZoneModule } from "@/lib/mission";
 import { CheckRow, GhostButton, Hint, Slider, XButton } from "../ui";
+
+/** Module budget spinner. Allows clearing the field while typing (backspace);
+ * an empty field commits 1 on blur. Typed values clamp to [1, max]. */
+function BudgetInput({
+  value,
+  max,
+  onCommit,
+}: {
+  value: number;
+  max: number;
+  onCommit: (v: number) => void;
+}) {
+  const [text, setText] = useState(String(value));
+  useEffect(() => setText(String(value)), [value]);
+  return (
+    <input
+      type="number"
+      min={1}
+      max={max}
+      value={text}
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => {
+        const raw = e.target.value;
+        if (raw === "") {
+          setText("");
+          return;
+        }
+        const v = Math.min(max, Math.max(1, Math.floor(+raw) || 1));
+        setText(String(v));
+        onCommit(v);
+      }}
+      onBlur={() => {
+        if (text === "") {
+          setText("1");
+          onCommit(1);
+        }
+      }}
+      className="w-[52px] h-[28px] shrink-0 bg-[#202427] border border-[#2e3439] rounded-[4px] px-2 text-[12px] text-white text-center focus:border-[#f4db50] focus:outline-none"
+    />
+  );
+}
 
 export default function ZonesPanel({
   mission,
@@ -98,7 +139,7 @@ export default function ZonesPanel({
               onChange={(v) => updateZone(zn.id, { radius: v })}
             />
 
-            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string }) => {
+            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string; maxBudget?: number }) => {
               const mod = zn.modules.find((mm) => mm.type === def.type);
               return (
                 <div key={def.type} className="flex flex-col gap-1">
@@ -121,20 +162,16 @@ export default function ZonesPanel({
                       </CheckRow>
                     </div>
                     {mod && (
-                      <input
-                        type="number"
-                        min={1}
-                        max={20}
+                      <BudgetInput
                         value={mod.budget}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) =>
+                        max={def.maxBudget ?? 10}
+                        onCommit={(v) =>
                           updateZone(zn.id, {
                             modules: zn.modules.map((mm) =>
-                              mm.type === def.type ? { ...mm, budget: +e.target.value || 1 } : mm
+                              mm.type === def.type ? { ...mm, budget: v } : mm
                             ),
                           })
                         }
-                        className="w-[52px] h-[28px] shrink-0 bg-[#202427] border border-[#2e3439] rounded-[4px] px-2 text-[12px] text-white text-center focus:border-[#f4db50] focus:outline-none"
                       />
                     )}
                   </div>

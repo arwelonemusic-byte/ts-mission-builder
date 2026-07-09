@@ -10,17 +10,29 @@ declare module "mission-gen" {
       spawnPoint: string;
       riflemen: Record<string, string>;
       loadoutSets: Record<string, { name: string; prefab: string }[]>;
-      arsenalItems: string[];
+      arsenalItems: { mode: string; ref: string }[];
       vehicles: Record<string, string>;
       vehicleLabels: Record<string, string>;
       patrolVehicleKeys: string[];
+      fortifications: { road: string[]; roadside: string[] };
       defaultGroupSet: string;
-      groupSets: Record<string, { label: string; small: string[]; medium: string[]; large: string[] }>;
+      groupSets: Record<
+        string,
+        { label: string; sentry: string; small: string[]; medium: string[]; large: string[] }
+      >;
     }
   >;
   export const K: Record<string, unknown>;
-  export const ZONE_MODULES: { type: string; label: string; kind: "infantry" | "vehicle"; pool: string; sizes?: string[] }[];
+  export const ZONE_MODULES: {
+    type: string;
+    label: string;
+    kind: "infantry" | "vehicle" | "fortification";
+    pool?: string;
+    sizes?: string[];
+    maxBudget?: number;
+  }[];
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
+  export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];
   export function mintGuid(): string;
   export function buildMissionFiles(
     mission: unknown,

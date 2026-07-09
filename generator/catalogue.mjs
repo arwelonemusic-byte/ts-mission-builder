@@ -44,6 +44,16 @@ export const TERRAINS = {
 const P_OPFOR = "Prefabs/Groups/OPFOR";
 const P_BLUFOR = "Prefabs/Groups/BLUFOR";
 const P_INDFOR = "Prefabs/Groups/INDFOR";
+const P_SLOT = "Prefabs/Compositions/Slotted";
+
+// FIA has no own road fortification compositions — it reuses the USSR pool
+// (per the Fortification module brief), so the list is hoisted for sharing.
+const ROAD_FORTS_USSR = [
+  `{9483333BFD9E2D0F}${P_SLOT}/SlotRoadSmall/Checkpoint_S_USSR_01.et`,
+  `{7C85836D444E3797}${P_SLOT}/SlotRoadMedium/Checkpoint_M_USSR_01.et`,
+  `{2A27606856B8A914}${P_SLOT}/SlotRoadLarge/Barricade_L_USSR_01.et`,
+  `{9F9924B626C5FA2C}${P_SLOT}/SlotRoadLarge/Checkpoint_L_USSR_01.et`,
+];
 
 export const FACTIONS = {
   US: {
@@ -233,10 +243,33 @@ export const FACTIONS = {
     // Mounted-patrol candidates (keys into `vehicles`), ordered light -> heavy.
     // Which of these actually patrol is a PER-ZONE selection in the mission.
     patrolVehicleKeys: ["M151A2_M2HB", "M1025_armed_M2HB", "LAV25"],
+    // Fortifications module composition pools (road checkpoints/barricades +
+    // roadside bunkers/MG nests); source: Fortification module brief
+    fortifications: {
+      road: [
+        `{E660DE914A7211EB}${P_SLOT}/SlotRoadSmall/Checkpoint_S_US_01.et`,
+        `{55D508179EF5E64A}${P_SLOT}/SlotRoadMedium/Checkpoint_M_US_01.et`,
+        `{AF770C825EA592CF}${P_SLOT}/SlotRoadLarge/Barricade_L_US_01.et`,
+        `{E74D2F51CD4F03D0}${P_SLOT}/SlotRoadLarge/Checkpoint_L_US_01.et`,
+      ],
+      roadside: [
+        `{C7D38772154D45BB}${P_SLOT}/SlotFlatSmall/Bunker_S_US_01.et`,
+        `{AB87B392A989CA95}${P_SLOT}/SlotFlatSmall/GuardTower_S_US_01.et`,
+        `{AC84AEB35260CEF8}${P_SLOT}/SlotFlatSmall/MachineGunNest_S_US_01.et`,
+        `{9D720679B696FEE1}${P_SLOT}/SlotFlatSmall/MachineGunNest_S_US_01_M2HB.et`,
+        `{4D69F9D77C372BE5}${P_SLOT}/SlotFlatSmall/MachineGunNest_S_US_01_M60.et`,
+        `{C0D09A53EEA441D6}${P_SLOT}/SlotFlatSmall/MachineGunNest_S_US_02.et`,
+        `{917158017F425567}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_US_01.et`,
+        `{FD256CE1C386DA49}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_US_02.et`,
+        `{18B92018CF634D22}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_US_03.et`,
+        `{258D0520BA0FC415}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_US_04.et`,
+      ],
+    },
     defaultGroupSet: "US_Army",
     groupSets: {
       US_Army: {
         label: "US Army",
+        sentry: `{3BF36BDEEB33AEC9}${P_BLUFOR}/Group_US_SentryTeam.et`,
         small: [
           `{F72EF3429D8C8DF5}${P_BLUFOR}/Group_US_AmmoTeam.et`,
           `{6B2A6EE5002D200F}${P_BLUFOR}/Group_US_EngineerTeam.et`,
@@ -260,12 +293,14 @@ export const FACTIONS = {
       },
       GreenBerets: {
         label: "Green Berets",
+        sentry: `{35681BE27C302FF5}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_SentryTeam.et`,
         small: [`{35681BE27C302FF5}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_SentryTeam.et`],
         medium: [`{D0886786634E55AE}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_Squad.et`],
         large: [`{D0886786634E55AE}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_Squad.et`],
       },
       GreenBerets_Suppressed: {
         label: "Green Berets (suppressed)",
+        sentry: `{35681BE27C302FF5}${P_BLUFOR}/GreenBerets/Group_US_GreenBeret_SentryTeam.et`, // parent set team (no suppressed variant)
         small: [`{AC473DE5F4B24E82}${P_BLUFOR}/GreenBerets/Suppressed/Group_US_GreenBeret_ReconTeam.et`],
         medium: [`{1F468430E5AB477E}${P_BLUFOR}/GreenBerets/Suppressed/Group_US_GreenBeret_ReconSquad.et`],
         large: [`{1F468430E5AB477E}${P_BLUFOR}/GreenBerets/Suppressed/Group_US_GreenBeret_ReconSquad.et`],
@@ -455,10 +490,26 @@ export const FACTIONS = {
       Mi8MT_gunship_HEDP: "Mi-8MT Gunship HEDP",
     },
     patrolVehicleKeys: ["UAZ469_PKM", "BRDM2", "BTR70"],
+    fortifications: {
+      road: ROAD_FORTS_USSR,
+      roadside: [
+        `{7492BAA88AFCEDCE}${P_SLOT}/SlotFlatSmall/Bunker_S_USSR_01.et`,
+        `{DFBF655559915333}${P_SLOT}/SlotFlatSmall/GuardTower_S_USSR_01.et`,
+        `{7A40BF128BB47EFD}${P_SLOT}/SlotFlatSmall/MachineGunNest_S_USSR_01.et`,
+        `{114DE81321786CD9}${P_SLOT}/SlotFlatSmall/MachineGunNest_S_USSR_01_PKM.et`,
+        `{16148BF23770F1D3}${P_SLOT}/SlotFlatSmall/MachineGunNest_S_USSR_02.et`,
+        `{084825E68F0FAF86}${P_SLOT}/SlotFlatSmall/MachineGunNest_Scoped_S_USSR_01.et`,
+        `{8E1DF47DD56E69E6}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_USSR_01.et`,
+        `{E249C09D69AAE6C8}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_USSR_02.et`,
+        `{07D58C64654F71A3}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_USSR_03.et`,
+        `{3AE1A95C1023F894}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_USSR_04.et`,
+      ],
+    },
     defaultGroupSet: "USSR_Army",
     groupSets: {
       USSR_Army: {
         label: "USSR Army",
+        sentry: `{CB58D90EA14430AD}${P_OPFOR}/Group_USSR_SentryTeam.et`,
         small: [
           `{C8622D0595B48437}${P_OPFOR}/Group_USSR_AmmoTeam.et`,
           `{344B4B6F787CFB23}${P_OPFOR}/Group_USSR_EngineerTeam.et`,
@@ -485,6 +536,7 @@ export const FACTIONS = {
       },
       KLMK: {
         label: "USSR (KLMK)",
+        sentry: `{61E209AA5933AC95}${P_OPFOR}/KLMK/Group_USSR_SentryTeam_KLMK.et`,
         small: [
           `{17F51B6521F7194A}${P_OPFOR}/KLMK/Group_USSR_AmmoTeam_KLMK.et`,
           `{5B08C42EA0661A20}${P_OPFOR}/KLMK/Group_USSR_LightFireTeam_KLMK.et`,
@@ -509,6 +561,7 @@ export const FACTIONS = {
       },
       Naval_Infantry: {
         label: "Naval Infantry",
+        sentry: `{85384D373DB6EBBB}${P_OPFOR}/Naval_Infantry/Group_USSR_SentryTeam_NI.et`,
         small: [
           `{AEC45E0050F58730}${P_OPFOR}/Naval_Infantry/Group_USSR_AmmoTeam_NI.et`,
           `{8E1B1AEBBB1AA155}${P_OPFOR}/Naval_Infantry/Group_USSR_LightFireTeam_NI.et`,
@@ -532,12 +585,14 @@ export const FACTIONS = {
       },
       Spetsnaz: {
         label: "Spetsnaz",
+        sentry: `{4C44B4D8F2820F25}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_SentryTeam.et`,
         small: [`{4C44B4D8F2820F25}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_SentryTeam.et`],
         medium: [`{4D3BBEC1A955626A}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_Squad.et`],
         large: [`{4D3BBEC1A955626A}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_Squad.et`],
       },
       Spetsnaz_Suppressed: {
         label: "Spetsnaz (suppressed)",
+        sentry: `{4C44B4D8F2820F25}${P_OPFOR}/Spetsnaz/Group_USSR_Spetsnaz_SentryTeam.et`, // parent set team (no suppressed variant)
         small: [`{B721D5A8C1B556CE}${P_OPFOR}/Spetsnaz/Suppressed/Group_USSR_Spetsnaz_ReconTeam.et`],
         medium: [`{666A2B0A6B1967AE}${P_OPFOR}/Spetsnaz/Suppressed/Group_USSR_Spetsnaz_ReconSquad.et`],
         large: [`{666A2B0A6B1967AE}${P_OPFOR}/Spetsnaz/Suppressed/Group_USSR_Spetsnaz_ReconSquad.et`],
@@ -645,10 +700,20 @@ export const FACTIONS = {
       BTR70_FIA: "BTR-70",
     },
     patrolVehicleKeys: ["UAZ469_PKM_FIA", "UAZ469_UK59_FIA", "BRDM2_FIA", "BTR70_FIA"],
+    fortifications: {
+      road: ROAD_FORTS_USSR, // FIA has no own road compositions (per brief)
+      roadside: [
+        `{627A868E7B5D3914}${P_SLOT}/SlotFlatSmall/Bunker_S_FIA_01.et`,
+        `{1A0F6E75C7065DC0}${P_SLOT}/SlotFlatSmall/MachineGunNest_S_FIA_02.et`,
+        `{98976370BD31E739}${P_SLOT}/SlotFlatSmall/MachineGunNest_Scoped_S_FIA_01.et`,
+        `{B04F2A9C5356C02D}${P_SLOT}/SlotFlatSmall/SandbagPosition_S_FIA_01.et`,
+      ],
+    },
     defaultGroupSet: "FIA",
     groupSets: {
       FIA: {
         label: "FIA",
+        sentry: `{6E725D44CA973C24}${P_INDFOR}/Group_FIA_SentryTeam.et`,
         small: [
           `{C1E39427E43B1E79}${P_INDFOR}/Group_FIA_AmmoTeam.et`,
           `{1BB20A4B3A53D0F5}${P_INDFOR}/Group_FIA_LightFireTeam.et`,
@@ -718,12 +783,15 @@ export const K = {
 // Zone modules exposed in the builder UI (MVP set per Mod Defaults spec).
 // kind "infantry" pools are resolved from the enemy groupSet by size rule;
 // kind "vehicle" pools use the enemy faction's patrolVehicles.
-// Fortification (needs composition pools) + QRF (sizes: ["large"], needs
-// TS_QRFSpawnAnchor placement) are deferred.
+// kind "fortification" pools come from FACTIONS[*].fortifications (road +
+// roadside compositions) + groupSets[*].sentry AI teams; only the budget is
+// user-facing (maxBudget caps the UI input).
+// QRF (sizes: ["large"], needs TS_QRFSpawnAnchor placement) is deferred.
 export const ZONE_MODULES = [
   { type: "TS_ScenarioFrameworkPluginAIPatrol", label: "AI Foot Patrols", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small", "medium"] },
   { type: "TS_ScenarioFrameworkPluginSmartGarrison", label: "Smart Garrison", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small"] },
   { type: "TS_ScenarioFrameworkPluginMountedPatrol", label: "Mounted Patrols", kind: "vehicle", pool: "m_aVehiclePrefabPool" },
+  { type: "TS_ScenarioFrameworkPluginFortification", label: "Fortifications", kind: "fortification", maxBudget: 4 },
 ];
 
 /**
@@ -746,4 +814,25 @@ export function resolveGroupPool(factionKey, groupSetKeys, sizes) {
   const refs = collect(sizes);
   if (refs.length) return refs;
   return collect(["small", "medium", "large"]);
+}
+
+/**
+ * Sentry-team pool for the Fortification plugin: one team per selected enemy
+ * group set (suppressed SF sets carry their parent's team, so dedupe).
+ */
+export function resolveSentryPool(factionKey, groupSetKeys) {
+  const faction = FACTIONS[factionKey];
+  if (!faction) throw new Error(`Unknown faction: ${factionKey}`);
+  let keys = groupSetKeys;
+  if (typeof keys === "string") keys = [keys];
+  if (!keys?.length) keys = [faction.defaultGroupSet];
+  return [
+    ...new Set(
+      keys.map((k) => {
+        const set = faction.groupSets[k];
+        if (!set) throw new Error(`Unknown group set ${factionKey}/${k}`);
+        return set.sentry;
+      })
+    ),
+  ];
 }
