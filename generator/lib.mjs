@@ -116,7 +116,7 @@ export function buildMissionFiles(mission, options = {}) {
  m_sLoadingScreen "${K.TOOLKIT_ICON}"
  m_sPreviewImage "${K.TOOLKIT_ICON}"
  m_sGameMode "COOP"
- m_iPlayerCount ${mission.playerCount}
+ m_iPlayerCount ${mission.playerCount ?? 128}
  m_bOverrideScenarioTimeAndWeather 1
  m_bRandomStartingDaytime 1
  m_iMapMarkerLimitPerPlayer 999

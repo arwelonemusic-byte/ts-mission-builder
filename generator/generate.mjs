@@ -22,7 +22,6 @@ const MISSION = {
   playableSubfaction: "US_Army",
   enemyFaction: "USSR",
   enemyGroupSets: ["USSR_Army"],
-  playerCount: 24,
   loadouts: FACTIONS.US.loadoutSets.US_Army.filter((l) =>
     ["Rifleman", "Automatic Rifleman", "Grenadier", "Medic", "FTL", "SL", "PL"].includes(l.name)
   ),

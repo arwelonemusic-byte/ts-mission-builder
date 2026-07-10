@@ -61,7 +61,6 @@ const RU: Record<string, string> = {
   // Mission tab
   Name: "Название",
   Author: "Автор",
-  "Player count": "Количество игроков",
   Terrain: "Карта",
   "Changing terrain clears placements.": "Смена карты удаляет всё размещённое.",
   "Reset mission": "Сбросить миссию",

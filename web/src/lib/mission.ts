@@ -40,7 +40,6 @@ export type Mission = {
   version: 1;
   displayName: string;
   author: string;
-  playerCount: number;
   terrain: string; // arland | eden | cain
   playableFaction: string;
   playableSubfaction: string;
@@ -87,7 +86,6 @@ export function newMission(): Mission {
     version: 1,
     displayName: "My Mission",
     author: "",
-    playerCount: 24,
     terrain: "arland",
     playableFaction: "US",
     playableSubfaction: "US_Army",

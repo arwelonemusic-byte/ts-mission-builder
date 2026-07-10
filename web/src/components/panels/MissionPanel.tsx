@@ -40,15 +40,6 @@ export default function MissionPanel({
       <Field label={t("Author")}>
         <TextInput value={mission.author} onChange={(e) => update({ author: e.target.value })} />
       </Field>
-      <Field label={t("Player count")}>
-        <TextInput
-          type="number"
-          min={1}
-          max={128}
-          value={mission.playerCount}
-          onChange={(e) => update({ playerCount: +e.target.value || 24 })}
-        />
-      </Field>
       <Field label={t("Terrain")}>
         <SelectInput
           value={mission.terrain}

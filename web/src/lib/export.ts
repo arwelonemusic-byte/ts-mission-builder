@@ -98,7 +98,6 @@ export async function toGeneratorMission(m: Mission) {
     playableSubfaction: m.playableSubfaction,
     enemyFaction: m.enemyFaction,
     enemyGroupSets: m.enemyGroupSets,
-    playerCount: m.playerCount,
     loadouts,
     guids: m.guids,
     briefing: {
