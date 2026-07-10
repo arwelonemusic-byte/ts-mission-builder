@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useT, type Lang } from "@/lib/i18n";
 
 export type StepId = "mission" | "players" | "enemy" | "spawn" | "zones" | "markers" | "briefing";
@@ -88,8 +89,10 @@ export default function AppBar({
   onLang: (lang: Lang) => void;
 }) {
   const t = useT();
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <div className="absolute top-0 left-0 right-0 h-[56px] z-[1600] grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 bg-[#202427] border-b border-[#2e3439] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]">
+    <>
+    <div className="absolute top-0 left-0 right-0 h-[56px] z-[1600] hidden md:grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 bg-[#202427] border-b border-[#2e3439] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]">
       <div className="flex items-center gap-[10px] min-w-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/icons/ts-logo.svg" alt="TS" className="shrink-0" style={{ width: 31, height: 24 }} />
@@ -176,5 +179,126 @@ export default function AppBar({
         </a>
       </div>
     </div>
+
+    {/* ----- mobile (<768px) chrome ----- */}
+
+    {/* mobile header: logo (no label) + Generate + "…" */}
+    <div className="md:hidden absolute top-0 left-0 right-0 h-[56px] z-[1600] flex items-center justify-between px-3 bg-[#202427] border-b border-[#2e3439] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/icons/ts-logo.svg" alt="TS" className="shrink-0" style={{ width: 31, height: 24 }} />
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setMenuOpen(false);
+            onGenerate();
+          }}
+          disabled={busy}
+          className={`h-[40px] px-4 rounded-[8px] text-[12px] leading-[20px] font-medium flex items-center gap-[6px] transition-colors ${
+            busy
+              ? "bg-[#2e3439] text-white/30 cursor-default"
+              : "bg-[#f4db50] text-[#202427] hover:bg-[#f9e278]"
+          }`}
+        >
+          <GenerateIcon />
+          {busy ? t("Generating…") : t("Generate")}
+        </button>
+        <button
+          type="button"
+          aria-label={t("More options")}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((o) => !o)}
+          className="w-[40px] h-[40px] rounded-[8px] bg-[#14181a] text-white/80 hover:text-white flex items-center justify-center transition-colors"
+        >
+          <svg width="4" height="16" viewBox="0 0 4 16" fill="currentColor" aria-hidden>
+            <circle cx="2" cy="2" r="1.5" />
+            <circle cx="2" cy="8" r="1.5" />
+            <circle cx="2" cy="14" r="1.5" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    {/* "…" dropdown: language toggle + Discord (siblings of the header so the
+        menu isn't trapped in its stacking context) */}
+    {menuOpen && (
+      <>
+        <div className="md:hidden fixed inset-0 z-[1890]" onClick={() => setMenuOpen(false)} />
+        <div className="md:hidden absolute right-3 top-[60px] z-[1900] min-w-[220px] bg-[#202427] border border-[#2e3439] rounded-[12px] p-3 flex flex-col gap-3 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.2s_ease]">
+          <div className="h-[40px] rounded-[8px] bg-[#14181a] p-[3px] flex items-center">
+            {(["en", "ru"] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => {
+                  onLang(l);
+                  setMenuOpen(false);
+                }}
+                className={`flex-1 h-full rounded-[6px] flex items-center justify-center text-[11px] leading-none font-semibold tracking-[0.04em] transition-colors ${
+                  lang === l ? "bg-[#2e3439] text-white" : "text-white/60 hover:text-white"
+                }`}
+              >
+                {l === "en" ? "ENG" : "RU"}
+              </button>
+            ))}
+          </div>
+          <a
+            href={DISCORD_URL}
+            target="_blank"
+            rel="noopener"
+            onClick={() => setMenuOpen(false)}
+            className="h-[40px] px-4 rounded-[8px] bg-[#5865f2] hover:bg-[#6b77f5] text-white text-[12px] leading-[20px] font-medium flex items-center justify-center gap-[6px] transition-colors"
+          >
+            <DiscordIcon />
+            Tactical Shift
+          </a>
+        </div>
+      </>
+    )}
+
+    {/* icon-only bottom tab bar */}
+    <div
+      role="tablist"
+      className="md:hidden absolute bottom-0 left-0 right-0 z-[1660] h-[var(--mb-tabbar-h)] pb-[env(safe-area-inset-bottom)] bg-[#202427] border-t border-[#2e3439] flex items-stretch"
+    >
+      {STEPS.map((s) => {
+        const active = step === s.id;
+        return (
+          <button
+            key={s.id}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            aria-label={t(s.label)}
+            onClick={() => onStep(s.id)}
+            className="flex-1 flex items-center justify-center active:scale-[0.97] transition-transform"
+          >
+            <span
+              className={`relative w-10 h-10 rounded-[8px] flex items-center justify-center ${
+                active ? "bg-[#2e3439] text-white" : "text-white/60"
+              }`}
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d={s.icon} />
+              </svg>
+              {!active && dots[s.id] && (
+                <span className="absolute top-[3px] right-[3px] w-[5px] h-[5px] rounded-full bg-[#f4db50]" />
+              )}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+    </>
   );
 }

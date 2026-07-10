@@ -39,6 +39,7 @@ const RU: Record<string, string> = {
   "Mission Builder": "Конструктор миссий",
   Generate: "Создать",
   "Generating…": "Создание…",
+  "More options": "Ещё",
 
   // Tabs
   Mission: "Миссия",

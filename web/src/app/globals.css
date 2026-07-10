@@ -7,6 +7,25 @@
 
 body {
   font-family: var(--font-roboto), Arial, Helvetica, sans-serif;
+  /* Body never scrolls (main is h-dvh overflow-hidden; all scrolling is in
+   * inner panels) — this kills mobile pull-to-refresh over the map. */
+  overscroll-behavior-y: none;
+}
+
+/* Mobile (<768px) layout geometry — single source of truth shared by the
+ * bottom tab bar, the bottom panel column and the map wrapper. CSS variables
+ * dodge Tailwind's calc() whitespace-escaping in arbitrary values. */
+:root {
+  /* bottom tab bar height incl. the home-indicator safe area */
+  --mb-tabbar-h: calc(56px + env(safe-area-inset-bottom));
+  /* Bottom edge of the mobile map region: meets the sheet top exactly on
+   * fit-content tabs; clamped at 50dvh on full-height tabs so the covered map
+   * never collapses to zero height (Leaflet dislikes 0-size containers).
+   * --mb-sheet-h is the sheet's measured height, set at RUNTIME by a
+   * ResizeObserver in page.tsx — deliberately NOT declared here: a static
+   * declaration gets inlined by the CSS optimizer, freezing the min(). The
+   * var() fallback covers first paint instead. */
+  --mb-map-bottom: calc(min(var(--mb-sheet-h, 50dvh), 50dvh) + var(--mb-tabbar-h));
 }
 
 /* Leaflet's own stylesheet is unlayered, so it beats Tailwind utilities in
@@ -169,6 +188,19 @@ body {
   }
   .ts-slider:disabled::-moz-range-thumb {
     cursor: not-allowed;
+  }
+  /* Touch devices: bigger thumb for a grabbable target (desktop keeps 16px) */
+  @media (pointer: coarse) {
+    .ts-slider::-webkit-slider-thumb {
+      width: 24px;
+      height: 24px;
+      /* center the 24px thumb over the 10px track: (24-10)/2 */
+      margin-top: -7px;
+    }
+    .ts-slider::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+    }
   }
 }
 

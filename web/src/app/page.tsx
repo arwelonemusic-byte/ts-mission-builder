@@ -51,6 +51,10 @@ const STEP_NUMS: Record<StepId, string> = {
   briefing: "07",
 };
 
+// Mobile bottom-sheet sizing per tab: these fill the whole height (their
+// panels don't need the map); the rest hug their content, capped at 50dvh.
+const FILL_STEPS: ReadonlySet<StepId> = new Set(["mission", "players", "enemy", "briefing"]);
+
 const DEFAULT_MARKER_DRAFT: MarkerDraft = {
   kind: "military",
   text: "",
@@ -83,6 +87,23 @@ export default function Editor() {
   const mapApi = useRef<MapApi | null>(null);
   const genRef = useRef<GenState>(null);
   genRef.current = gen;
+
+  // Mobile: the map region ends at the sheet's top edge — publish the sheet's
+  // measured height as a CSS var (see --mb-map-bottom in globals.css).
+  // Dep: the column only mounts after the mission loads (early "Loading…"
+  // return), so re-run when that flips.
+  const columnRef = useRef<HTMLDivElement>(null);
+  const missionLoaded = mission !== null;
+  useEffect(() => {
+    const el = columnRef.current;
+    if (!el) return;
+    const update = () =>
+      document.documentElement.style.setProperty("--mb-sheet-h", `${el.getBoundingClientRect().height}px`);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [missionLoaded]);
 
   const setMarkerDraft = (patch: Partial<MarkerDraft>) => setMarkerDraftState((d) => ({ ...d, ...patch }));
   const t = (s: string) => tr(lang, s);
@@ -257,19 +278,30 @@ export default function Editor() {
   };
 
   /* ----- marker drag-and-drop from the panel ----- */
+  // Desktop: the 360px panel floats OVER the full-bleed map, so a clientX gate
+  // (392 = 16 + panel + 16) rejects drops over the panel. Mobile (<768px): the
+  // bottom panel doesn't overlap the map, so screenToWorld's rect check is enough.
+  const overPanelGate = (clientX: number) =>
+    !window.matchMedia("(min-width: 768px)").matches || clientX >= 392;
   const onMarkerDragStart = useCallback(
     (e: React.PointerEvent) => {
       e.preventDefault();
       const move = (ev: PointerEvent) => {
-        const over = !!mapApi.current?.screenToWorld(ev.clientX, ev.clientY) && ev.clientX >= 392;
+        const over = !!mapApi.current?.screenToWorld(ev.clientX, ev.clientY) && overPanelGate(ev.clientX);
         setGhost({ x: ev.clientX, y: ev.clientY, over });
       };
-      const up = (ev: PointerEvent) => {
+      const cleanup = () => {
         window.removeEventListener("pointermove", move);
         window.removeEventListener("pointerup", up);
+        window.removeEventListener("pointercancel", cancel);
         setGhost(null);
+      };
+      // OS-interrupted touch (incoming call, gesture takeover): drop nothing
+      const cancel = () => cleanup();
+      const up = (ev: PointerEvent) => {
+        cleanup();
         const world = mapApi.current?.screenToWorld(ev.clientX, ev.clientY);
-        if (world && ev.clientX >= 392) {
+        if (world && overPanelGate(ev.clientX)) {
           const id = freshId();
           setMission((m) =>
             m ? { ...m, markers: [...m.markers, { ...markerDraft, id, x: world.x, z: world.z }] } : m
@@ -281,6 +313,7 @@ export default function Editor() {
       setGhost({ x: e.clientX, y: e.clientY, over: false });
       window.addEventListener("pointermove", move);
       window.addEventListener("pointerup", up);
+      window.addEventListener("pointercancel", cancel);
     },
     [markerDraft]
   );
@@ -357,8 +390,8 @@ export default function Editor() {
   return (
     <LangProvider value={lang}>
     <main className="relative h-dvh w-full overflow-hidden bg-[#0d0f11] select-none">
-      {/* map (below the 56px app bar) */}
-      <div className="absolute left-0 right-0 bottom-0 top-[56px]">
+      {/* map (below the 56px app bar; on mobile it stops above the bottom panel) */}
+      <div className="absolute left-0 right-0 bottom-0 top-[56px] max-md:bottom-[var(--mb-map-bottom)]">
         <MissionMap
           terrainKey={mission.terrain}
           lang={lang}
@@ -393,7 +426,7 @@ export default function Editor() {
 
       {/* placement banner */}
       {placeMode && (
-        <div className="absolute top-[72px] left-1/2 -translate-x-1/2 z-[1700] pointer-events-none flex items-center gap-[10px] bg-[rgba(32,36,39,0.95)] rounded-[8px] px-4 py-[9px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease]">
+        <div className="absolute top-[72px] left-1/2 -translate-x-1/2 z-[1700] pointer-events-none flex items-center gap-[10px] bg-[rgba(32,36,39,0.95)] rounded-[8px] px-4 py-[9px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease] max-md:max-w-[calc(100vw-24px)]">
           <span className="w-2 h-2 rounded-full bg-[#f4db50] animate-[mbPulseDot_1.2s_ease-in-out_infinite]" />
           <span className="text-[12px] leading-[1.4] text-white">
             {t("Click the map to place")} <span className="text-[#f4db50] font-medium">{placeNoun}</span>
@@ -402,10 +435,16 @@ export default function Editor() {
         </div>
       )}
 
-      {/* left column */}
-      <div className="pointer-events-none absolute left-4 top-[72px] bottom-4 w-[360px] z-[1650] flex flex-col gap-3">
+      {/* left column (desktop) / bottom sheet (mobile: full-height for
+          map-less tabs, content-hugging capped at 50dvh for the rest) */}
+      <div
+        ref={columnRef}
+        className={`pointer-events-none absolute left-4 top-[72px] bottom-4 w-[360px] z-[1650] flex flex-col gap-3 max-md:left-0 max-md:right-0 max-md:w-auto max-md:bottom-[var(--mb-tabbar-h)] ${
+          FILL_STEPS.has(step) ? "max-md:top-[56px]" : "max-md:top-auto max-md:max-h-[50dvh]"
+        }`}
+      >
         <div
-          className={`pointer-events-auto min-h-0 bg-[#202427] rounded-[12px] p-5 flex flex-col gap-4 overflow-y-auto ts-thin-scrollbar [&>*]:shrink-0 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]`}
+          className={`pointer-events-auto min-h-0 bg-[#202427] rounded-[12px] p-5 flex flex-col gap-4 overflow-y-auto ts-thin-scrollbar [&>*]:shrink-0 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] max-md:grow max-md:rounded-b-none`}
         >
           <div className="flex items-center gap-[10px] shrink-0">
             <span className="font-mono text-[11px] leading-none font-semibold text-[#f4db50] bg-[rgba(244,219,80,0.12)] rounded-[4px] px-[6px] py-[5px] tracking-[0.08em]">
@@ -477,7 +516,7 @@ export default function Editor() {
         {status && (
           <div
             key={status.n}
-            className="pointer-events-auto shrink-0 bg-[#202427] rounded-[12px] px-[14px] py-3 flex items-start gap-[10px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbShake_0.4s_ease]"
+            className="pointer-events-auto shrink-0 bg-[#202427] rounded-[12px] px-[14px] py-3 flex items-start gap-[10px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbShake_0.4s_ease] max-md:order-first max-md:mx-3"
           >
             <span className={`text-[13px] leading-4 ${status.kind === "warn" ? "text-[#f4db50]" : "text-white/60"}`}>
               {status.kind === "warn" ? "⚠" : "ⓘ"}

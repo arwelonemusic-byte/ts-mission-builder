@@ -126,6 +126,11 @@ export default function MissionMap(props: MapProps) {
     overlayRef.current = overlay;
     worldRef.current = [w, h];
 
+    // Leaflet only tracks WINDOW resizes; the mobile layout resizes the
+    // container itself (sheet height varies per tab) — observe it directly.
+    const ro = new ResizeObserver(() => map.invalidateSize());
+    ro.observe(divRef.current);
+
     // --- HUD: scale bar (bracket sized to a round distance) + coordinates ---
     const updateScale = () => {
       const bar = scaleBarRef.current;
@@ -197,6 +202,7 @@ export default function MissionMap(props: MapProps) {
     });
 
     return () => {
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
       overlayRef.current = null;
@@ -323,8 +329,8 @@ export default function MissionMap(props: MapProps) {
         />
       )}
 
-      {/* zoom / fit controls */}
-      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-px rounded-[8px] overflow-hidden shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]">
+      {/* zoom / fit controls (desktop only — mobile pinch-zooms) */}
+      <div className="max-md:hidden absolute top-4 right-4 z-[1000] flex flex-col gap-px rounded-[8px] overflow-hidden shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]">
         <button
           type="button"
           aria-label={tr(props.lang, "Zoom in")}
@@ -364,8 +370,8 @@ export default function MissionMap(props: MapProps) {
         </button>
       </div>
 
-      {/* scale bar + coordinate readout */}
-      <div className="absolute right-4 bottom-4 z-[1000] pointer-events-none flex flex-col items-end gap-[6px]">
+      {/* scale bar + coordinate readout (desktop only) */}
+      <div className="max-md:hidden absolute right-4 bottom-4 z-[1000] pointer-events-none flex flex-col items-end gap-[6px]">
         <div className="flex flex-col items-start gap-[3px] bg-[rgba(32,36,39,0.9)] rounded-[8px] px-[10px] py-[6px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.4)]">
           <div
             ref={scaleBarRef}
@@ -439,14 +445,20 @@ function zoneTooltipHtml(zone: Zone, name: string, lang: Lang) {
   </div>`;
 }
 
-/** Small round handle at a zone's center — the only clickable/draggable part. */
+/** Small round handle at a zone's center — the only clickable/draggable part.
+ * On touch devices the 14px dot gets a transparent 32px hit box. */
 function zoneDotIcon(selected: boolean) {
   const color = selected ? "#ffcc00" : "#e04b4b";
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  const dot = `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);cursor:move;"></div>`;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [14, 14], iconAnchor: [7, 7], html: dot });
+  }
   return L.divIcon({
     className: "",
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
-    html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);cursor:move;"></div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">${dot}</div>`,
   });
 }
 
@@ -559,7 +571,10 @@ function drawSpawnBundle(
 
 /** Manual drag for the bundle's vector layers (Leaflet paths aren't natively
  * draggable). Mousedown on any layer pauses map panning, mousemove shifts
- * every layer live, mouseup commits the delta via onSpawnMoved. */
+ * every layer live, mouseup commits the delta via onSpawnMoved.
+ * Intentionally mouse-only: on touch devices the spawn is moved via the
+ * SpawnPanel "Move spawn (click map)" button + tap (Leaflet's synthesized
+ * click). Marker/zone drags use native Leaflet draggables (touch-safe). */
 function makeBundleDraggable(
   map: L.Map,
   layers: (L.Polygon | L.Circle)[],

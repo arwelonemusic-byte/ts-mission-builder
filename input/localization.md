@@ -15,6 +15,7 @@ say the word if you want that too.
 | Generate | Создать |
 | Generating… | Создание… |
 | Tactical Shift *(Discord button — not translated)* | Tactical Shift |
+| More options *(mobile "…" button aria-label)* | Ещё |
 
 ## Tabs
 
