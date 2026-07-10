@@ -21,6 +21,21 @@ export type MissionMarker = {
   rotation: number;
 };
 
+/** Map-overlay rectangle (TS_MapOverlay.et): one "ao" + any number of
+ * "objective". Axis mapping (careful — easy to flip): `length` spans the
+ * LOCAL X axis (ShapePoint X = ±length/2, itemWorldCorners `w`), `width`
+ * spans the LOCAL Z axis (ShapePoint Z = ±width/2, itemWorldCorners `len`). */
+export type MissionSector = {
+  id: string;
+  kind: "ao" | "objective";
+  x: number;
+  z: number;
+  length: number;
+  width: number;
+  /** yaw deg 0..359, compass convention (same as spawn.yaw) */
+  rotation: number;
+};
+
 export type Mission = {
   version: 1;
   displayName: string;
@@ -45,6 +60,7 @@ export type Mission = {
   spawn: { placed: boolean; x: number; z: number; yaw: number; farp: boolean; vehicles: SpawnVehicle[] };
   zones: Zone[];
   markers: MissionMarker[];
+  sectors: MissionSector[];
   guids: { addon: string; world: string; missionConf: string };
 };
 
@@ -83,6 +99,7 @@ export function newMission(): Mission {
     spawn: { placed: false, x: 0, z: 0, yaw: 0, farp: true, vehicles: [] },
     zones: [],
     markers: [],
+    sectors: [],
     guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid() },
   };
 }
@@ -103,6 +120,15 @@ export function loadMission(): Mission {
     if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
     if (!m.briefing.extra) m.briefing.extra = [];
     if (!m.markers) m.markers = [];
+    if (!m.sectors) m.sectors = [];
+    // Only one AO sector is allowed — drop extras if a save ever holds more
+    let seenAo = false;
+    m.sectors = m.sectors.filter((s) => {
+      if (s.kind !== "ao") return true;
+      if (seenAo) return false;
+      seenAo = true;
+      return true;
+    });
     if (!m.arty) m.arty = defaultArty();
     // Early builds shipped invented defaults (60/40/40); if the user never
     // touched artillery, silently swap in the prefab-matching counts.

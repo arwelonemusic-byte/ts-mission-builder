@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import type { Mission, Zone, ZoneModule } from "@/lib/mission";
 import { MODULE_DESCRIPTIONS, MODULE_ICONS } from "@/lib/zoneModules";
-import { useT } from "@/lib/i18n";
+import { useLang, useT, zoneName } from "@/lib/i18n";
 import { CheckRow, GhostButton, PlusIcon, Slider } from "../ui";
 
 /** Module budget spinner. Allows clearing the field while typing (backspace);
@@ -69,6 +69,7 @@ export default function ZonesPanel({
   removeZone: (id: string) => void;
 }) {
   const t = useT();
+  const lang = useLang();
   const enemy = FACTIONS[mission.enemyFaction];
   const placing = placeMode === "zone";
 
@@ -87,10 +88,10 @@ export default function ZonesPanel({
       </GhostButton>
       {mission.zones.length === 0 && (
         <div className="border border-dashed border-[#2e3439] rounded-[8px] px-4 py-6 flex flex-col items-center gap-[10px] text-center">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#e04b4b" strokeWidth="1.5" aria-hidden>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#9333ea" strokeWidth="1.5" aria-hidden>
             <circle cx="12" cy="12" r="10" />
             <circle cx="12" cy="12" r="6" />
-            <circle cx="12" cy="12" r="2" fill="#e04b4b" stroke="none" />
+            <circle cx="12" cy="12" r="2" fill="#9333ea" stroke="none" />
           </svg>
           <span className="text-[13px] font-medium text-white">{t("No AI zones yet")}</span>
           <span className="text-[11px] leading-4 text-white/40 max-w-[260px]">
@@ -118,7 +119,7 @@ export default function ZonesPanel({
             }`}
           >
             <div className="flex items-center gap-2">
-              <span className="text-[14px] font-bold text-white">Area{i + 1}</span>
+              <span className="text-[14px] font-bold text-white">{zoneName(lang, i + 1)}</span>
               {!selected && (
                 <span className="flex items-center gap-[3px]">
                   <img src="/icons/zones/radius.svg" alt="" style={{ width: 16, height: 16 }} />

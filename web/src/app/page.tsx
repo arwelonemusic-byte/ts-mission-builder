@@ -10,6 +10,7 @@ import {
   saveMission,
   type Mission,
   type MissionMarker,
+  type MissionSector,
   type Zone,
 } from "@/lib/mission";
 import { exportMission, spawnSlopeDelta } from "@/lib/export";
@@ -24,7 +25,7 @@ import PlayersPanel from "@/components/panels/PlayersPanel";
 import EnemyPanel from "@/components/panels/EnemyPanel";
 import SpawnPanel from "@/components/panels/SpawnPanel";
 import ZonesPanel from "@/components/panels/ZonesPanel";
-import MarkersPanel, { type MarkerDraft } from "@/components/panels/MarkersPanel";
+import MarkersPanel, { type MarkerDraft, type MarkersTab } from "@/components/panels/MarkersPanel";
 import BriefingPanel from "@/components/panels/BriefingPanel";
 
 const MissionMap = dynamic(() => import("@/components/MissionMap"), { ssr: false });
@@ -76,6 +77,11 @@ export default function Editor() {
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [markerDraft, setMarkerDraftState] = useState<MarkerDraft>(DEFAULT_MARKER_DRAFT);
+  // Markers-panel sub-tab lives here (not in the panel) so map-side sector
+  // clicks can force the panel onto the Sectors tab.
+  const [markersTab, setMarkersTab] = useState<MarkersTab>("military");
+  const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
+  const [sectorDraw, setSectorDraw] = useState<"ao" | "objective" | null>(null);
   const [status, setStatus] = useState<Status>(null);
   const [slope, setSlope] = useState<number | null>(null);
   const [focus, setFocus] = useState<{ x: number; z: number; radius: number; seq: number } | null>(null);
@@ -143,7 +149,10 @@ export default function Editor() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (genRef.current?.phase === "done") setGen(null);
-      else setPlaceMode(null);
+      else {
+        setPlaceMode(null);
+        setSectorDraw(null);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -187,6 +196,44 @@ export default function Editor() {
     setMission((m) => (m ? { ...m, markers: m.markers.filter((mk) => mk.id !== id) } : m));
     setSelectedMarkerId((cur) => (cur === id ? null : cur));
   };
+  const updateSector = (id: string, patch: Partial<MissionSector>) =>
+    setMission((m) =>
+      m ? { ...m, sectors: m.sectors.map((s) => (s.id === id ? { ...s, ...patch } : s)) } : m
+    );
+  const removeSector = (id: string) => {
+    setMission((m) => (m ? { ...m, sectors: m.sectors.filter((s) => s.id !== id) } : m));
+    setSelectedSectorId((cur) => (cur === id ? null : cur));
+  };
+
+  /* ----- sector (TS_MapOverlay rectangle) placement + selection ----- */
+  // Arming the draw mode and arming a click-place mode are mutually exclusive.
+  const armSectorDraw = (kind: "ao" | "objective") => {
+    setPlaceMode(null);
+    setSelectedSectorId(null);
+    setSectorDraw((cur) => (cur === kind ? null : kind));
+  };
+  const armPlaceMode = (m: "spawn" | "zone" | "marker" | null) => {
+    setSectorDraw(null);
+    setPlaceMode(m);
+  };
+  const onSectorDrawn = (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => {
+    const id = freshId();
+    setMission((m) => (m ? { ...m, sectors: [...m.sectors, { id, kind, x, z, length, width, rotation: 0 }] } : m));
+    setSelectedSectorId(id);
+    setSectorDraw(null);
+    markFresh(id);
+  };
+  // Leaving the Sectors sub-tab disarms a pending draw mode.
+  const goMarkersTab = (tab: MarkersTab) => {
+    if (tab !== "sectors") setSectorDraw(null);
+    setMarkersTab(tab);
+  };
+  const onSectorClick = (id: string) => {
+    setSelectedSectorId(id);
+    setSelectedMarkerId(null);
+    setMarkersTab("sectors");
+    setStep("markers");
+  };
 
   /** Everything that must change together when the enemy faction changes. */
   const enemyPatch = (ef: string, zones: Zone[]): Partial<Mission> => ({
@@ -223,6 +270,7 @@ export default function Editor() {
 
   const goStep = (s: StepId) => {
     setPlaceMode(null);
+    setSectorDraw(null);
     setStep(s);
   };
 
@@ -231,6 +279,7 @@ export default function Editor() {
     if (!placeMode) {
       setSelectedMarkerId(null);
       setSelectedZoneId(null);
+      setSelectedSectorId(null);
       return;
     }
     const xi = +x.toFixed(1);
@@ -251,7 +300,7 @@ export default function Editor() {
       };
       setMission((m) => (m ? { ...m, zones: [...m.zones, zone] } : m));
       setSelectedZoneId(zone.id);
-      mapApi.current?.addPing(xi, zi, "#e04b4b");
+      mapApi.current?.addPing(xi, zi, "#9333ea");
       markFresh(zone.id);
       setPlaceMode(null);
     }
@@ -274,6 +323,9 @@ export default function Editor() {
 
   const onMarkerClick = (id: string) => {
     setSelectedMarkerId((cur) => (cur === id ? null : id));
+    setSelectedSectorId(null);
+    const mk = mission?.markers.find((m2) => m2.id === id);
+    if (mk) setMarkersTab(mk.kind);
     setStep("markers");
   };
 
@@ -375,6 +427,8 @@ export default function Editor() {
       setMission(newMission());
       setSelectedZoneId(null);
       setSelectedMarkerId(null);
+      setSelectedSectorId(null);
+      setSectorDraw(null);
       setPlaceMode(null);
       setStatus(null);
       setStep("mission");
@@ -386,6 +440,7 @@ export default function Editor() {
   }
 
   const placeNoun = placeMode === "spawn" ? t("the spawn point") : t("an AI zone");
+  const sectorNoun = sectorDraw === "ao" ? t("the AO sector") : t("an objective sector");
 
   return (
     <LangProvider value={lang}>
@@ -401,6 +456,9 @@ export default function Editor() {
           selectedZoneId={selectedZoneId}
           markers={mission.markers}
           selectedMarkerId={selectedMarkerId}
+          sectors={mission.sectors}
+          selectedSectorId={selectedSectorId}
+          sectorDraw={sectorDraw}
           fresh={fresh}
           placeMode={placeMode}
           focus={focus}
@@ -410,6 +468,9 @@ export default function Editor() {
           onSpawnMoved={(x, z) => updateSpawn({ x, z })}
           onMarkerClick={onMarkerClick}
           onMarkerMoved={(id, x, z) => updateMarker(id, { x, z })}
+          onSectorDrawn={onSectorDrawn}
+          onSectorClick={onSectorClick}
+          onSectorChanged={updateSector}
           onApi={(api) => (mapApi.current = api)}
         />
       </div>
@@ -425,11 +486,19 @@ export default function Editor() {
       />
 
       {/* placement banner */}
-      {placeMode && (
+      {(placeMode || sectorDraw) && (
         <div className="absolute top-[72px] left-1/2 -translate-x-1/2 z-[1700] pointer-events-none flex items-center gap-[10px] bg-[rgba(32,36,39,0.95)] rounded-[8px] px-4 py-[9px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease] max-md:max-w-[calc(100vw-24px)]">
           <span className="w-2 h-2 rounded-full bg-[#f4db50] animate-[mbPulseDot_1.2s_ease-in-out_infinite]" />
           <span className="text-[12px] leading-[1.4] text-white">
-            {t("Click the map to place")} <span className="text-[#f4db50] font-medium">{placeNoun}</span>
+            {placeMode ? (
+              <>
+                {t("Click the map to place")} <span className="text-[#f4db50] font-medium">{placeNoun}</span>
+              </>
+            ) : (
+              <>
+                {t("Drag on the map to draw")} <span className="text-[#f4db50] font-medium">{sectorNoun}</span>
+              </>
+            )}
             <span className="text-white/45"> {t("· press the button again to cancel")}</span>
           </span>
         </div>
@@ -481,7 +550,7 @@ export default function Editor() {
               <SpawnPanel
                 mission={mission}
                 placeMode={placeMode}
-                setPlaceMode={setPlaceMode}
+                setPlaceMode={armPlaceMode}
                 updateSpawn={updateSpawn}
                 slope={slope}
               />
@@ -490,7 +559,7 @@ export default function Editor() {
               <ZonesPanel
                 mission={mission}
                 placeMode={placeMode}
-                setPlaceMode={setPlaceMode}
+                setPlaceMode={armPlaceMode}
                 selectedZoneId={selectedZoneId}
                 revealSeq={zoneRevealSeq}
                 onSelectZone={selectAndFocusZone}
@@ -501,12 +570,20 @@ export default function Editor() {
             {step === "markers" && (
               <MarkersPanel
                 mission={mission}
+                tab={markersTab}
+                setTab={goMarkersTab}
                 draft={markerDraft}
                 setDraft={setMarkerDraft}
                 selectedMarkerId={selectedMarkerId}
                 updateMarker={updateMarker}
                 removeMarker={removeMarker}
                 onDragStart={onMarkerDragStart}
+                selectedSectorId={selectedSectorId}
+                sectorDraw={sectorDraw}
+                onArmSectorDraw={armSectorDraw}
+                updateSector={updateSector}
+                removeSector={removeSector}
+                onDeselectMarker={() => setSelectedMarkerId(null)}
               />
             )}
             {step === "briefing" && <BriefingPanel mission={mission} update={update} />}

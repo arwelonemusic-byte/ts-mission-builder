@@ -97,6 +97,12 @@ const MISSION = {
     // custom all-defaults except text
     { kind: "custom", pos: [2000, 50, 2000], text: "OBJ", icon: "CIRCLE", color: "WHITE", rotation: 0 },
   ],
+  sectors: [
+    // AO: prefab defaults — must emit NO component block, no angles (yaw 0)
+    { kind: "ao", pos: [2600, 70, 1700], length: 1400, width: 1000, rotation: 0 },
+    // objective: red component override + rotation (angles 0 30 0)
+    { kind: "objective", pos: [2795.3, 74.1, 1628.7], length: 300, width: 200, rotation: 30 },
+  ],
 };
 
 const { files, addonDirName } = buildMissionFiles(MISSION);

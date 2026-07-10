@@ -66,6 +66,22 @@ export async function toGeneratorMission(m: Mission) {
     });
   }
 
+  // Sectors (TS_MapOverlay rectangles), AO first for a stable layer order
+  const sectors = [];
+  const sortedSectors = [...m.sectors].sort((a, b) =>
+    a.kind === b.kind ? 0 : a.kind === "ao" ? -1 : 1
+  );
+  for (const s of sortedSectors) {
+    const sy = await elevationAt(m.terrain, s.x, s.z);
+    sectors.push({
+      kind: s.kind,
+      pos: [y(s.x), y(sy), y(s.z)],
+      length: s.length,
+      width: s.width,
+      rotation: s.rotation,
+    });
+  }
+
   // Selected loadouts resolved to {name, prefab}, keeping catalogue order
   const loadoutSet = FACTIONS[m.playableFaction]?.loadoutSets[m.playableSubfaction] ?? [];
   const loadouts = loadoutSet.filter((l) => m.loadouts.includes(l.prefab));
@@ -108,6 +124,7 @@ export async function toGeneratorMission(m: Mission) {
       : null,
     zones,
     markers,
+    sectors,
   };
 }
 

@@ -155,6 +155,24 @@ const RU: Record<string, string> = {
   Tactical: "Тактические",
   Arrows: "Стрелки",
 
+  // Markers tab — Sectors sub-tab (TS_MapOverlay rectangles). RU calls them
+  // "Районы": Район операции (AO) / Район задачи (objective).
+  Sectors: "Районы",
+  "Add AO Sector": "Добавить район операции",
+  "Add Objective Sector": "Добавить район задачи",
+  "AO Sector": "Район операции",
+  "Objective Sector": "Район задачи",
+  Objective: "Задача",
+  "Editing sector": "Редактирование района",
+  Width: "Ширина",
+  Length: "Длина",
+  "Sectors are map-only rectangles: the AO sector outlines the playable area, objective sectors highlight target areas.":
+    "Районы — прямоугольники на карте: район операции очерчивает границы миссии, районы задач выделяют цели.",
+  "No sectors yet": "Районы не добавлены",
+  "Drag on the map to draw": "Проведите по карте, чтобы нарисовать",
+  "the AO sector": "район операции",
+  "an objective sector": "район задачи",
+
   // Briefing tab
   Situation: "Ситуация",
   Objectives: "Задачи",
@@ -201,6 +219,13 @@ const RU: Record<string, string> = {
 export function tr(lang: Lang, s: string): string {
   if (lang === "ru") return RU[s] ?? s;
   return s;
+}
+
+/** Display name for AI zone N — "Zone 1" / "Зона 1". Display only: the
+ * generated world entities keep their `Area${n}` names (export.ts). */
+export function zoneName(lang: Lang, n: number): string {
+  if (lang === "ru") return `Зона ${n}`;
+  return `Zone ${n}`;
 }
 
 /** "3 zones" / "3 зоны" with proper Russian plural forms. */

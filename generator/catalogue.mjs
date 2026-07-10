@@ -696,6 +696,19 @@ export const K = {
   ],
   LM_ARSENAL_LOADOUT: "{69070DBB1C884284}",
   LM_RIFLEMAN_LOADOUT: "{6906F4B5E812A159}",
+  // TS_MapOverlay.et — map-only boundary rectangle (AO / objective sectors).
+  // PolylineShapeEntity: component + ShapePoint instance GUIDs are fixed
+  // prefab GUIDs (same on every placed instance). Sector size is written as
+  // per-instance ShapePoint Position overrides — X = ±length/2, Z = ±width/2
+  // (sign pattern below) — so length/width stay independent (never `scale`).
+  MAPOVERLAY_PREFAB: "{9DF03DB4B7D791C3}Prefabs/TSSystems/TS_MapOverlay.et",
+  CMP_MAPOVERLAY: "{68568A2C31E137C9}",
+  MAPOVERLAY_POINTS: [
+    { guid: "{68568A2CAE54701B}", sx: 1, sz: 1 },
+    { guid: "{68568A2CAE545584}", sx: 1, sz: -1 },
+    { guid: "{68568A2CAE545D3E}", sx: -1, sz: -1 },
+    { guid: "{68568A2CAE5446CE}", sx: -1, sz: 1 },
+  ],
 };
 
 // Zone modules exposed in the builder UI (MVP set per Mod Defaults spec).

@@ -164,6 +164,7 @@ export function GhostButton({
   active,
   destructive,
   small,
+  disabled,
   children,
   className,
 }: {
@@ -171,17 +172,21 @@ export function GhostButton({
   active?: boolean;
   destructive?: boolean;
   small?: boolean;
+  disabled?: boolean;
   children: ReactNode;
   className?: string;
 }) {
-  const activeCls = active
-    ? "bg-[#f4db50] text-[#202427]"
-    : `bg-[#2e3439] hover:bg-[#3a4249] ${destructive ? "text-[#f26f63]" : "text-white"}`;
+  const stateCls = disabled
+    ? "bg-[#2e3439] text-white/30 cursor-default"
+    : active
+      ? "bg-[#f4db50] text-[#202427]"
+      : `bg-[#2e3439] hover:bg-[#3a4249] ${destructive ? "text-[#f26f63]" : "text-white"}`;
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`${small ? "h-[32px] px-3" : "h-[40px] px-4"} rounded-[8px] text-[12px] leading-[20px] font-medium flex items-center justify-center gap-[6px] transition-colors ${activeCls} ${className ?? ""}`}
+      disabled={disabled}
+      className={`${small ? "h-[32px] px-3" : "h-[40px] px-4"} rounded-[8px] text-[12px] leading-[20px] font-medium flex items-center justify-center gap-[6px] transition-colors ${stateCls} ${className ?? ""}`}
     >
       {children}
     </button>

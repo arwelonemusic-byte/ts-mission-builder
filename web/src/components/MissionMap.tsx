@@ -3,12 +3,12 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { layoutSpawnBundle, itemWorldCorners, FACTIONS, ZONE_MODULES } from "mission-gen";
+import { layoutSpawnBundle, itemWorldCorners, rotateLocal, FACTIONS, ZONE_MODULES } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
-import type { MissionMarker, Zone } from "@/lib/mission";
+import type { MissionMarker, MissionSector, Zone } from "@/lib/mission";
 import { findColor, findIcon, militaryIconUrl, MARKER_LABEL_OUTLINE, VANILLA_ATLAS } from "@/lib/markers";
 import { DISABLED_ICON_FILTER, MODULE_ICONS } from "@/lib/zoneModules";
-import { coordsText, scaleLabel, tr, type Lang } from "@/lib/i18n";
+import { coordsText, scaleLabel, tr, zoneName, type Lang } from "@/lib/i18n";
 
 // Coordinate mapping (same convention as ts-ops-planner): lat = world Z
 // (northing), lng = world X, 1 map unit = 1 meter. For tile pyramids we use a
@@ -46,6 +46,10 @@ export type MapProps = {
   selectedZoneId: string | null;
   markers: MissionMarker[];
   selectedMarkerId: string | null;
+  sectors: MissionSector[];
+  selectedSectorId: string | null;
+  /** Armed sector draw mode: drag on the map creates an AO/objective rectangle */
+  sectorDraw: "ao" | "objective" | null;
   /** Freshly placed ids ("spawn" / zone id / marker id) → entrance animation */
   fresh: Record<string, boolean>;
   placeMode: "spawn" | "zone" | "marker" | null;
@@ -56,6 +60,12 @@ export type MapProps = {
   onSpawnMoved: (x: number, z: number) => void;
   onMarkerClick: (id: string) => void;
   onMarkerMoved: (id: string, x: number, z: number) => void;
+  onSectorDrawn: (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => void;
+  onSectorClick: (id: string) => void;
+  onSectorChanged: (
+    id: string,
+    patch: Partial<Pick<MissionSector, "x" | "z" | "length" | "width" | "rotation">>
+  ) => void;
   onApi?: (api: MapApi) => void;
 };
 
@@ -231,12 +241,117 @@ export default function MissionMap(props: MapProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.focus?.seq]);
 
+  // Sector draw mode: drag an axis-aligned rectangle on the map. Panning is
+  // suspended while armed; pointer events give one code path for mouse+touch.
+  useEffect(() => {
+    const map = mapRef.current;
+    const el = divRef.current;
+    const kind = props.sectorDraw;
+    if (!map || !el || !kind) return;
+    map.dragging.disable();
+    const prevTouchAction = el.style.touchAction;
+    el.style.touchAction = "none"; // stop browser pan/scroll on touch drags
+
+    const [w, h] = worldRef.current;
+    const clampLL = (ll: L.LatLng) =>
+      L.latLng(Math.min(h, Math.max(0, ll.lat)), Math.min(w, Math.max(0, ll.lng)));
+    let anchor: L.LatLng | null = null;
+    let preview: L.Polygon | null = null;
+
+    const ringFor = (a: L.LatLng, b: L.LatLng): [number, number][] => [
+      [a.lat, a.lng],
+      [a.lat, b.lng],
+      [b.lat, b.lng],
+      [b.lat, a.lng],
+    ];
+
+    const onDown = (e: PointerEvent) => {
+      if (!e.isPrimary || (e.pointerType === "mouse" && e.button !== 0)) return;
+      e.preventDefault();
+      el.setPointerCapture(e.pointerId);
+      anchor = clampLL(map.mouseEventToLatLng(e));
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!anchor || !e.isPrimary) return;
+      const ring = ringFor(anchor, clampLL(map.mouseEventToLatLng(e)));
+      if (!preview) {
+        const color = kind === "ao" ? "#000000" : "#9f2828";
+        preview = L.polygon(ring, {
+          color,
+          weight: 2,
+          dashArray: "6 4",
+          fillColor: color,
+          fillOpacity: 0.08,
+          interactive: false,
+        }).addTo(map);
+      } else {
+        preview.setLatLngs(ring);
+      }
+    };
+    const finish = (e: PointerEvent, commit: boolean) => {
+      if (!anchor || !e.isPrimary) return;
+      const a = anchor;
+      const cur = clampLL(map.mouseEventToLatLng(e));
+      anchor = null;
+      preview?.remove();
+      preview = null;
+      if (!commit) return;
+      const length = Math.abs(cur.lng - a.lng); // local X extent
+      const width = Math.abs(cur.lat - a.lat); // local Z extent
+      if (length < 10 || width < 10) return; // too small — cancel silently
+      // Swallow the trailing map click so it can't instantly deselect
+      suppressClickRef.current = true;
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 100);
+      propsRef.current.onSectorDrawn(
+        kind,
+        +((cur.lng + a.lng) / 2).toFixed(1),
+        +((cur.lat + a.lat) / 2).toFixed(1),
+        +length.toFixed(1),
+        +width.toFixed(1)
+      );
+    };
+    const onUp = (e: PointerEvent) => finish(e, true);
+    const onCancel = (e: PointerEvent) => finish(e, false);
+
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onCancel);
+    return () => {
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onCancel);
+      preview?.remove();
+      map.dragging.enable();
+      el.style.touchAction = prevTouchAction;
+    };
+  }, [props.sectorDraw]);
+
   // Redraw spawn footprint + zones on every relevant change
   useEffect(() => {
     const overlay = overlayRef.current;
     const map = mapRef.current;
     if (!overlay || !map) return;
     overlay.clearLayers();
+
+    // Sectors first — their fills are non-interactive and everything else
+    // (spawn bundle, zone dots, markers) must stay clickable above them.
+    for (const s of props.sectors) {
+      drawSector(
+        map,
+        overlay,
+        s,
+        s.id === props.selectedSectorId,
+        worldRef.current,
+        !!props.fresh[s.id],
+        suppressClickRef,
+        (id) => propsRef.current.onSectorClick(id),
+        (id, patch) => propsRef.current.onSectorChanged(id, patch)
+      );
+    }
 
     if (props.spawn.placed) {
       drawSpawnBundle(
@@ -258,9 +373,9 @@ export default function MissionMap(props: MapProps) {
       // center dot marker only.
       const circle = L.circle([zone.z, zone.x], {
         radius: zone.radius,
-        color: selected ? "#ffcc00" : "#e04b4b",
+        color: selected ? "#ffcc00" : "#9333ea",
         weight: selected ? 3 : 2,
-        fillColor: "#e04b4b",
+        fillColor: "#9333ea",
         fillOpacity: 0.12,
         interactive: false,
         className: props.fresh[zone.id] ? "mb-fresh-path" : "",
@@ -270,7 +385,7 @@ export default function MissionMap(props: MapProps) {
         icon: zoneDotIcon(selected),
         draggable: true,
       })
-        .bindTooltip(zoneTooltipHtml(zone, `Area${zi + 1}`, props.lang), {
+        .bindTooltip(zoneTooltipHtml(zone, zoneName(props.lang, zi + 1), props.lang), {
           direction: "top",
           offset: [0, -10],
           opacity: 1,
@@ -308,6 +423,8 @@ export default function MissionMap(props: MapProps) {
     props.selectedZoneId,
     props.markers,
     props.selectedMarkerId,
+    props.sectors,
+    props.selectedSectorId,
     props.playableFaction,
     props.lang,
     props.fresh,
@@ -318,11 +435,11 @@ export default function MissionMap(props: MapProps) {
       <div
         ref={divRef}
         className="mission-map absolute inset-0"
-        style={{ cursor: props.placeMode ? "crosshair" : "grab" }}
+        style={{ cursor: props.placeMode || props.sectorDraw ? "crosshair" : "grab" }}
       />
 
       {/* placement edge glow */}
-      {props.placeMode && (
+      {(props.placeMode || props.sectorDraw) && (
         <div
           className="absolute inset-0 pointer-events-none z-[900]"
           style={{ boxShadow: "inset 0 0 0 2px rgba(244,219,80,0.35), inset 0 0 80px rgba(244,219,80,0.05)" }}
@@ -448,11 +565,292 @@ function zoneTooltipHtml(zone: Zone, name: string, lang: Lang) {
 /** Small round handle at a zone's center — the only clickable/draggable part.
  * On touch devices the 14px dot gets a transparent 32px hit box. */
 function zoneDotIcon(selected: boolean) {
-  const color = selected ? "#ffcc00" : "#e04b4b";
+  const color = selected ? "#ffcc00" : "#9333ea";
   const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   const dot = `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);cursor:move;"></div>`;
   if (!coarse) {
     return L.divIcon({ className: "", iconSize: [14, 14], iconAnchor: [7, 7], html: dot });
+  }
+  return L.divIcon({
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">${dot}</div>`,
+  });
+}
+
+/** Sector (TS_MapOverlay rectangle) rendering + interactions.
+ *
+ * Layer stack per sector: a non-interactive fill (AO = donut darkening
+ * everything OUTSIDE the rect, like the in-game m_FillOutside; objective =
+ * faint red inside), a visible outline, and an invisible fat "hit" outline.
+ * The hit polygon uses fill:false, so ONLY its stroke is hit-testable —
+ * selection and drag-to-move work exclusively on the outline while the
+ * interior stays click-through for zones/markers/map underneath.
+ *
+ * The selected sector gets 4 corner resize handles (center-anchored) and a
+ * rotation handle offset outward from the top edge. All drags live-update the
+ * layer set via one shared `update()`; commits go through onSectorChanged →
+ * React state → full redraw (same pattern as the spawn bundle). */
+function drawSector(
+  map: L.Map,
+  overlay: L.LayerGroup,
+  s: MissionSector,
+  selected: boolean,
+  world: [number, number],
+  freshPlace: boolean,
+  suppressClickRef: { current: boolean },
+  onSectorClick: (id: string) => void,
+  onSectorChanged: (
+    id: string,
+    patch: Partial<Pick<MissionSector, "x" | "z" | "length" | "width" | "rotation">>
+  ) => void
+) {
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  const baseColor = s.kind === "ao" ? "#000000" : "#9f2828";
+  const lineColor = selected ? "#ffcc00" : baseColor;
+  const [w, h] = world;
+
+  type SectorRect = Pick<MissionSector, "x" | "z" | "length" | "width" | "rotation">;
+  // length spans local X, width spans local Z (itemWorldCorners w/len axes)
+  const cornersOf = (sec: SectorRect) =>
+    itemWorldCorners({ x: 0, z: 0, w: sec.length, len: sec.width }, sec.x, sec.z, sec.rotation) as [
+      number,
+      number,
+    ][];
+  const toLatLngs = (corners: [number, number][]) =>
+    corners.map(([x, z]) => [z, x] as [number, number]);
+
+  let temp: SectorRect = { x: s.x, z: s.z, length: s.length, width: s.width, rotation: s.rotation };
+  let rect = toLatLngs(cornersOf(temp));
+
+  // World-bounds outer ring for the AO donut (Leaflet's default evenodd fill
+  // rule turns the rect ring into a hole → dark fill outside the AO only).
+  const worldRing: [number, number][] = [
+    [0, 0],
+    [0, w],
+    [h, w],
+    [h, 0],
+  ];
+
+  const fill =
+    s.kind === "ao"
+      ? L.polygon([worldRing, rect], {
+          stroke: false,
+          fillColor: "#000000",
+          fillOpacity: 0.18,
+          interactive: false,
+        }).addTo(overlay)
+      : L.polygon(rect, {
+          stroke: false,
+          fillColor: baseColor,
+          fillOpacity: 0.09,
+          interactive: false,
+        }).addTo(overlay);
+
+  const outline = L.polygon(rect, {
+    fill: false,
+    color: lineColor,
+    weight: s.kind === "ao" ? 3 : 2,
+    interactive: false,
+    className: freshPlace ? "mb-fresh-path" : "",
+  }).addTo(overlay);
+
+  // fill:false → only the (invisible, fat) stroke is hit-tested
+  const hit = L.polygon(rect, {
+    fill: false,
+    color: "#000000",
+    opacity: 0,
+    weight: coarse ? 24 : 14,
+    interactive: true,
+  }).addTo(overlay);
+
+  const handles: L.Marker[] = [];
+  let rotHandle: L.Marker | null = null;
+  let rotStem: L.Polyline | null = null;
+  // The handle being dragged is NOT repositioned by update() — Leaflet's
+  // Draggable owns its position until dragend (React then redraws everything).
+  let activeHandle: L.Marker | null = null;
+
+  const topMidWorld = (sec: SectorRect): [number, number] => {
+    const [dx, dz] = rotateLocal(0, sec.width / 2, sec.rotation);
+    return [sec.x + dx, sec.z + dz];
+  };
+  const rotHandleWorld = (sec: SectorRect): [number, number] => {
+    const [dx, dz] = rotateLocal(0, sec.width / 2 + Math.max(15, sec.width * 0.15), sec.rotation);
+    return [sec.x + dx, sec.z + dz];
+  };
+
+  const update = () => {
+    rect = toLatLngs(cornersOf(temp));
+    if (s.kind === "ao") fill.setLatLngs([worldRing, rect]);
+    else fill.setLatLngs(rect);
+    outline.setLatLngs(rect);
+    hit.setLatLngs(rect);
+    if (selected) {
+      const corners = cornersOf(temp);
+      handles.forEach((hm, i) => {
+        if (hm !== activeHandle) hm.setLatLng([corners[i][1], corners[i][0]]);
+      });
+      const [rx, rz] = rotHandleWorld(temp);
+      if (rotHandle && rotHandle !== activeHandle) rotHandle.setLatLng([rz, rx]);
+      const [tx, tz] = topMidWorld(temp);
+      rotStem?.setLatLngs([
+        [tz, tx],
+        [rz, rx],
+      ]);
+    }
+  };
+
+  /* ----- outline: click to select, pointer-drag to move ----- */
+  let dragMoved = false;
+  hit.on("click", (e) => {
+    L.DomEvent.stopPropagation(e);
+    if (dragMoved) {
+      dragMoved = false;
+      return;
+    }
+    onSectorClick(s.id);
+  });
+
+  const hitEl = hit.getElement() as SVGElement | null;
+  if (hitEl) {
+    hitEl.style.cursor = "move";
+    let start: L.LatLng | null = null;
+    const onDown = (e: PointerEvent) => {
+      if (!e.isPrimary || (e.pointerType === "mouse" && e.button !== 0)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      hitEl.setPointerCapture(e.pointerId);
+      map.dragging.disable();
+      start = map.mouseEventToLatLng(e);
+      dragMoved = false;
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!start || !e.isPrimary) return;
+      const cur = map.mouseEventToLatLng(e);
+      const dLng = cur.lng - start.lng;
+      const dLat = cur.lat - start.lat;
+      if (Math.abs(dLng) > 0.5 || Math.abs(dLat) > 0.5) dragMoved = true;
+      temp = { ...temp, x: s.x + dLng, z: s.z + dLat };
+      update();
+    };
+    const onUp = (e: PointerEvent) => {
+      if (!start || !e.isPrimary) return;
+      const cur = map.mouseEventToLatLng(e);
+      const dLng = cur.lng - start.lng;
+      const dLat = cur.lat - start.lat;
+      start = null;
+      map.dragging.enable();
+      if (Math.abs(dLng) > 0.5 || Math.abs(dLat) > 0.5) {
+        // Swallow the trailing map click (same trick as the spawn bundle)
+        suppressClickRef.current = true;
+        window.setTimeout(() => {
+          suppressClickRef.current = false;
+        }, 100);
+        onSectorChanged(s.id, { x: +(s.x + dLng).toFixed(1), z: +(s.z + dLat).toFixed(1) });
+      }
+    };
+    const onCancel = () => {
+      if (!start) return;
+      start = null;
+      map.dragging.enable();
+      temp = { ...temp, x: s.x, z: s.z };
+      update();
+    };
+    hitEl.addEventListener("pointerdown", onDown);
+    hitEl.addEventListener("pointermove", onMove);
+    hitEl.addEventListener("pointerup", onUp);
+    hitEl.addEventListener("pointercancel", onCancel);
+  }
+
+  if (!selected) return;
+
+  /* ----- corner resize handles (opposite corner stays fixed) ----- */
+  const corners = cornersOf(temp);
+  for (let ci = 0; ci < 4; ci++) {
+    const hm = L.marker([corners[ci][1], corners[ci][0]], {
+      icon: sectorHandleIcon(coarse),
+      draggable: true,
+    }).addTo(overlay);
+    // World position of the diagonally opposite corner — the resize anchor
+    let anchor: [number, number] = [0, 0];
+    hm.on("dragstart", () => {
+      activeHandle = hm;
+      anchor = cornersOf(temp)[(ci + 2) % 4];
+    });
+    hm.on("drag", () => {
+      const ll = hm.getLatLng();
+      const [ax, az] = anchor;
+      // Anchor→cursor span, un-rotated into the sector's local frame: the
+      // dragged corner's two sides follow the cursor, the other two stay put.
+      const [lx, lz] = rotateLocal(ll.lng - ax, ll.lat - az, -temp.rotation);
+      const sx = lx < 0 ? -1 : 1;
+      const sz = lz < 0 ? -1 : 1;
+      const len = Math.min(10000, Math.max(10, Math.abs(lx)));
+      const wid = Math.min(10000, Math.max(10, Math.abs(lz)));
+      const [cdx, cdz] = rotateLocal((sx * len) / 2, (sz * wid) / 2, temp.rotation);
+      temp = { ...temp, x: ax + cdx, z: az + cdz, length: len, width: wid };
+      update();
+    });
+    hm.on("dragend", () => {
+      activeHandle = null;
+      onSectorChanged(s.id, {
+        x: +temp.x.toFixed(1),
+        z: +temp.z.toFixed(1),
+        length: +temp.length.toFixed(1),
+        width: +temp.width.toFixed(1),
+      });
+    });
+    handles.push(hm);
+  }
+
+  /* ----- rotation handle (outward from the top-edge midpoint) ----- */
+  const [rx, rz] = rotHandleWorld(temp);
+  const [tx, tz] = topMidWorld(temp);
+  rotStem = L.polyline(
+    [
+      [tz, tx],
+      [rz, rx],
+    ],
+    { color: "#ffcc00", weight: 1.5, dashArray: "3 3", interactive: false }
+  ).addTo(overlay);
+  rotHandle = L.marker([rz, rx], { icon: sectorRotateIcon(coarse), draggable: true }).addTo(overlay);
+  rotHandle.on("dragstart", () => (activeHandle = rotHandle));
+  rotHandle.on("drag", () => {
+    const ll = rotHandle!.getLatLng();
+    // Compass yaw of the cursor around the center (matches rotateLocal:
+    // local (0,d) → world (d·sin yaw, d·cos yaw))
+    const yaw =
+      (Math.round((Math.atan2(ll.lng - temp.x, ll.lat - temp.z) * 180) / Math.PI) + 360) % 360;
+    temp = { ...temp, rotation: yaw };
+    update();
+  });
+  rotHandle.on("dragend", () => {
+    activeHandle = null;
+    onSectorChanged(s.id, { rotation: temp.rotation });
+  });
+}
+
+/** Square resize handle for a sector corner (transparent 28px hit box on touch). */
+function sectorHandleIcon(coarse: boolean) {
+  const sq = `<div style="width:10px;height:10px;background:#fff;border:2px solid #202427;box-shadow:0 1px 3px rgba(0,0,0,0.6);cursor:nwse-resize;"></div>`;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [10, 10], iconAnchor: [5, 5], html: sq });
+  }
+  return L.divIcon({
+    className: "",
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    html: `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;">${sq}</div>`,
+  });
+}
+
+/** Round rotation handle with a curved-arrow glyph. */
+function sectorRotateIcon(coarse: boolean) {
+  const dot = `<div style="width:18px;height:18px;border-radius:50%;background:#ffcc00;border:2px solid #202427;box-shadow:0 1px 4px rgba(0,0,0,0.6);cursor:grab;display:flex;align-items:center;justify-content:center;"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="#202427" stroke-width="1.6" stroke-linecap="round"><path d="M10 6a4 4 0 1 1-1.17-2.83"/><path d="M10.2 1.2v2.3H7.9"/></svg></div>`;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [18, 18], iconAnchor: [9, 9], html: dot });
   }
   return L.divIcon({
     className: "",

@@ -547,6 +547,41 @@ ${slotBlocks}
 `;
   }
 
+  // --- Sectors (TS_MapOverlay rectangles), appended top-level to Markers.layer ---
+  // ONE $grp of anonymous prefab instances — plain world entities, no SF Area
+  // wrapper and no entity names (matching hand-placed missions). AO = pure
+  // prefab defaults (black outline, dark fill OUTSIDE); objective = red
+  // override. Rect size = per-instance ShapePoint Position overrides via the
+  // prefab's fixed point GUIDs (±length/2 on X, ±width/2 on Z); point Y is
+  // irrelevant to the map draw and written as 0.
+  const missionSectors = mission.sectors ?? [];
+  if (missionSectors.length) {
+    const sectorInstances = missionSectors
+      .map((s) => {
+        const comp =
+          s.kind === "objective"
+            ? `
+  components {
+   TS_MapOverlayComponent "${K.CMP_MAPOVERLAY}" {
+    m_FillColor 0.623957 0.155932 0.155932 0.094118
+    m_OutlineColor 0.623529 0.156863 0.156863 1
+    m_OutlineWidth 2
+    m_FillOutside 0
+   }
+  }`
+            : "";
+        const yaw = +(((s.rotation ?? 0) % 360).toFixed(1));
+        const angles = yaw ? `\n  angles 0 ${yaw} 0` : "";
+        const pts = K.MAPOVERLAY_POINTS.map(
+          (p) =>
+            `   ShapePoint "${p.guid}" {\n    Position ${+((p.sx * s.length) / 2).toFixed(3)} 0 ${+((p.sz * s.width) / 2).toFixed(3)}\n   }`
+        ).join("\n");
+        return ` {${comp}\n  coords ${posStr(s.pos)}${angles}\n  Points {\n${pts}\n  }\n }`;
+      })
+      .join("\n");
+    markersLayer += `$grp PolylineShapeEntity : "${K.MAPOVERLAY_PREFAB}" {\n${sectorInstances}\n}\n`;
+  }
+
   const layersDir = `Worlds/${mission.name}_Layers`;
   const files = {
     "addon.gproj": gproj,
