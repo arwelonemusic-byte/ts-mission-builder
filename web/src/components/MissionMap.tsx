@@ -131,6 +131,30 @@ export default function MissionMap(props: MapProps) {
       propsRef.current.onMapClick(e.latlng.lng, e.latlng.lat);
     });
 
+    // The tile pyramids are padded to power-of-two squares with a dark-navy
+    // filler baked into the JPGs south/east of the map. Mask everything
+    // outside the world bounds with the page background so that padding never
+    // shows (donut polygon: huge outer ring, world rect as evenodd hole).
+    // Added before the overlay group → renders above tiles, below vectors.
+    const maskMargin = Math.max(w, h) * 4;
+    L.polygon(
+      [
+        [
+          [-maskMargin, -maskMargin],
+          [h + maskMargin, -maskMargin],
+          [h + maskMargin, w + maskMargin],
+          [-maskMargin, w + maskMargin],
+        ],
+        [
+          [0, 0],
+          [h, 0],
+          [h, w],
+          [0, w],
+        ],
+      ],
+      { stroke: false, fillColor: "#0d0f11", fillOpacity: 1, interactive: false }
+    ).addTo(map);
+
     const overlay = L.layerGroup().addTo(map);
     mapRef.current = map;
     overlayRef.current = overlay;

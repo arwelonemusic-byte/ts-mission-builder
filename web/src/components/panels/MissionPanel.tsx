@@ -58,6 +58,7 @@ export default function MissionPanel({
               spawn: { ...mission.spawn, placed: false },
               zones: [],
               markers: [],
+              sectors: [],
             })
           }
         >
