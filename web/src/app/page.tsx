@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import {
   defaultLoadouts,
+  factionMeta,
+  freshenGuids,
   loadMission,
   newMission,
   saveMission,
@@ -175,7 +177,16 @@ export default function Editor() {
     };
   }, [mission?.spawn, mission?.terrain]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const factionKeys = Object.keys(FACTIONS);
+  // Factions offered by the UI: vanilla + factions of enabled mods. Factions
+  // without riflemen (e.g. RHS ION — player-character GUIDs unrecoverable)
+  // are enemy-only.
+  const factionKeys = Object.keys(FACTIONS).filter((k) => {
+    const mod = factionMeta(k).mod;
+    return !mod || (mission?.mods ?? []).includes(mod);
+  });
+  const playableFactionKeys = factionKeys.filter(
+    (k) => Object.keys(FACTIONS[k].riflemen ?? {}).length > 0
+  );
 
   const update = (patch: Partial<Mission>) => setMission((m) => (m ? { ...m, ...patch } : m));
   const updateSpawn = (patch: Partial<Mission["spawn"]>) =>
@@ -266,6 +277,33 @@ export default function Editor() {
   const setEnemyFaction = (ef: string) => {
     if (!mission) return;
     update(enemyPatch(ef, mission.zones));
+  };
+
+  /** Toggle enabled mods; factions of a disabled mod fall back to vanilla
+   * defaults (with the same cascades as a manual faction change). */
+  const setMods = (mods: string[]) => {
+    if (!mission) return;
+    const allowed = (k: string) => {
+      const mod = factionMeta(k).mod;
+      return !mod || mods.includes(mod);
+    };
+    const patch: Partial<Mission> = { mods };
+    let playable = mission.playableFaction;
+    if (!allowed(playable)) {
+      playable = "US";
+      const sub = Object.keys(FACTIONS[playable].riflemen)[0];
+      Object.assign(patch, {
+        playableFaction: playable,
+        playableSubfaction: sub,
+        loadouts: defaultLoadouts(playable, sub),
+        spawn: { ...mission.spawn, vehicles: [] },
+      });
+    }
+    if (!allowed(mission.enemyFaction) || mission.enemyFaction === playable) {
+      const nextEnemy = Object.keys(FACTIONS).find((f) => allowed(f) && f !== playable);
+      if (nextEnemy) Object.assign(patch, enemyPatch(nextEnemy, mission.zones));
+    }
+    update(patch);
   };
 
   const goStep = (s: StepId) => {
@@ -403,8 +441,12 @@ export default function Editor() {
 
   const doDownload = async () => {
     if (!mission) return;
+    // A renamed mission is a new addon — re-mint guids so two exports never
+    // share resource GUIDs; setMission persists them for stable re-exports
+    const m = freshenGuids(mission);
+    if (m !== mission) setMission(m);
     try {
-      const { fileCount, dirName } = await exportMission(mission);
+      const { fileCount, dirName } = await exportMission(m);
       setGen(null);
       say(
         t("Mission written to {dir}/ ({n} files).")
@@ -539,12 +581,24 @@ export default function Editor() {
           </div>
 
           <div key={step} className="flex flex-col gap-4 [&>*]:shrink-0 animate-[mbFadeSlide_0.28s_cubic-bezier(0.22,1,0.36,1)]">
-            {step === "mission" && <MissionPanel mission={mission} update={update} onReset={onReset} />}
+            {step === "mission" && (
+              <MissionPanel mission={mission} update={update} onMods={setMods} onReset={onReset} />
+            )}
             {step === "players" && (
-              <PlayersPanel mission={mission} update={update} onPlayableFaction={setPlayableFaction} />
+              <PlayersPanel
+                mission={mission}
+                update={update}
+                factionKeys={playableFactionKeys}
+                onPlayableFaction={setPlayableFaction}
+              />
             )}
             {step === "enemy" && (
-              <EnemyPanel mission={mission} update={update} onEnemyFaction={setEnemyFaction} />
+              <EnemyPanel
+                mission={mission}
+                update={update}
+                factionKeys={factionKeys}
+                onEnemyFaction={setEnemyFaction}
+              />
             )}
             {step === "spawn" && (
               <SpawnPanel

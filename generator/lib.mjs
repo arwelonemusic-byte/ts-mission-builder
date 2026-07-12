@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal } from "./layout.mjs";
-export { TERRAINS, FACTIONS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleSizeClass } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -72,6 +72,14 @@ export function buildMissionFiles(mission, options = {}) {
     missionConf: mission.guids?.missionConf ?? mintGuid(),
   };
 
+  // Mod content: dependencies + extra FactionManager entries derive from the
+  // factions the mission actually uses (their `mod` tag), NOT from a UI
+  // checkbox — a vanilla-only mission must never force players to install a
+  // mod that merely happened to be enabled in the builder.
+  const usedMods = [...new Set([F.mod, ENEMY.mod].filter(Boolean))];
+  const modDeps = [...new Set(usedMods.flatMap((id) => MODS[id].dependencies))];
+  const modFactionKeys = usedMods.flatMap((id) => Object.keys(MODS[id].factions));
+
   // --- addon.gproj ---
   const gproj = `GameProject {
  ID "${mission.addonId}"
@@ -79,7 +87,7 @@ export function buildMissionFiles(mission, options = {}) {
  TITLE "${mission.addonTitle}"
  Dependencies {
   "${K.BASE_GAME}"
-  "${K.TOOLKIT}"
+  "${K.TOOLKIT}"${modDeps.map((d) => `\n  "${d}"`).join("")}
  }
  Configurations {
   GameProjectConfig PC {
@@ -228,15 +236,25 @@ ${briefEntries}
 
   function factionEntry(key) {
     const f = FACTIONS[key];
+    // entryGuid = override an EXISTING FactionManager_Editor member (vanilla
+    // factions, and mod factions when the mod overrides that prefab — RHS
+    // does). confRef = append a NEW member sourcing the mod's faction .conf
+    // (CIV_ENTRY pattern) — only for mods that DON'T override the prefab;
+    // appending a duplicate FactionKey kills playability at runtime. New
+    // members set m_bIsPlayable 0 explicitly: their conf may inherit
+    // playable=1 from a vanilla base faction.
+    const head = f.confRef
+      ? `  SCR_Faction "{${mintGuid()}}" : "${f.confRef}" {`
+      : `  SCR_Faction "${f.entryGuid}" {`;
     // m_bIsAssignedRandomly defaults to 1 — turn it OFF on every faction so
     // squads take callsigns in order (1'1, 1'2, ...) instead of at random.
     if (key !== mission.playableFaction)
-      return `  SCR_Faction "${f.entryGuid}" {
+      return `${head}${f.confRef ? "\n   m_bIsPlayable 0" : ""}
    m_CallsignInfo SCR_FactionCallsignInfo "${f.callsignGuid}" {
     m_bIsAssignedRandomly 0
    }
   }`;
-    return `  SCR_Faction "${f.entryGuid}" {
+    return `${head}
    m_bIsPlayable 1
    m_CallsignInfo SCR_FactionCallsignInfo "${f.callsignGuid}" {
     m_bIsAssignedRandomly 0
@@ -266,9 +284,7 @@ PerceptionManager PerceptionManager : "{028DAEAD63E056BE}Prefabs/World/Game/Perc
 SCR_FactionManager FactionManager_Editor : "{4A188E44289B9A50}Prefabs/MP/Managers/Factions/FactionManager_Editor.et" {
  coords ${mgr(-19, 0, -17)}
  Factions {
-${factionEntry("US")}
-${factionEntry("USSR")}
-${factionEntry("FIA")}
+${["US", "USSR", "FIA", ...modFactionKeys].map(factionEntry).join("\n")}
   SCR_Faction "${K.CIV_ENTRY}" {
   }
  }

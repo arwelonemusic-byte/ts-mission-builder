@@ -1,21 +1,23 @@
 "use client";
 
 import { FACTIONS } from "mission-gen";
-import type { Mission } from "@/lib/mission";
+import { factionMeta, type Mission } from "@/lib/mission";
 import { useT } from "@/lib/i18n";
 import { CheckRow, Field, SelectInput } from "../ui";
 
 export default function EnemyPanel({
   mission,
   update,
+  factionKeys,
   onEnemyFaction,
 }: {
   mission: Mission;
   update: (patch: Partial<Mission>) => void;
+  /** Vanilla + enabled-mod factions (filtered in page.tsx) */
+  factionKeys: string[];
   onEnemyFaction: (faction: string) => void;
 }) {
   const t = useT();
-  const factionKeys = Object.keys(FACTIONS);
   const enemy = FACTIONS[mission.enemyFaction];
 
   return (
@@ -24,7 +26,7 @@ export default function EnemyPanel({
         <SelectInput value={mission.enemyFaction} onChange={(e) => onEnemyFaction(e.target.value)}>
           {factionKeys.map((f) => (
             <option key={f} value={f} disabled={f === mission.playableFaction}>
-              {f}
+              {factionMeta(f).label ?? f}
               {f === mission.playableFaction ? t(" (playable)") : ""}
             </option>
           ))}

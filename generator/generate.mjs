@@ -1,8 +1,11 @@
 // CLI wrapper: builds the TS_WebSpike test mission via lib.mjs and writes it
 // into the Workbench addons directory.
 //
-// Usage: node generate.mjs [--clean]   (--clean only when Workbench is NOT
-// running: it wipes the addon dir including EnfusionMCP handler scripts)
+// Usage: node generate.mjs [--clean] [--rhs]
+//   --clean  only when Workbench is NOT running: it wipes the addon dir
+//            including EnfusionMCP handler scripts
+//   --rhs    build the RHS variant instead (TS_WebSpikeRHS: RHS_USAF vs
+//            RHS_AFRF, exercises mod deps + FactionManager conf-ref entries)
 
 import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -104,7 +107,48 @@ const MISSION = {
   ],
 };
 
-const { files, addonDirName } = buildMissionFiles(MISSION);
+// RHS spike variant: same layout/zones, RHS factions + RHS content overrides.
+// Separate dirName + stable GUIDs so both spikes can coexist in Workbench.
+const RHS_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeRHS",
+  dirName: "TS_WebSpikeRHS",
+  addonTitle: "TS Web Spike RHS Mission",
+  name: "TS_WebSpikeRHS",
+  displayName: "TS Web Spike RHS",
+  playableFaction: "RHS_USAF",
+  playableSubfaction: "USMC_MEF",
+  enemyFaction: "RHS_AFRF",
+  enemyGroupSets: ["MSV_Flora"],
+  loadouts: FACTIONS.RHS_USAF.loadoutSets.USMC_MEF.filter((l) =>
+    ["Rifleman", "Automatic Rifleman", "Grenadier", "Medic", "FTL", "SL"].includes(l.name)
+  ),
+  guids: {
+    addon: "6A4F669A0BB59F81",
+    world: "6A4F669A51C2D7E3",
+    missionConf: "6A4F669A3E88B1A4",
+  },
+  spawn: {
+    ...MISSION.spawn,
+    vehicles: [
+      { type: "M151A2_transport" },
+      { type: "M151A2_transport" },
+      { type: "M923A1_transport_covered" },
+    ],
+  },
+  zones: [
+    MISSION.zones[0],
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["UAZ469_PKM"] },
+      ],
+    },
+  ],
+};
+
+const BUILT = process.argv.includes("--rhs") ? RHS_MISSION : MISSION;
+const { files, addonDirName } = buildMissionFiles(BUILT);
 const addonDir = join(ADDONS_ROOT, addonDirName);
 
 if (process.argv.includes("--clean") && existsSync(addonDir)) {
@@ -120,4 +164,4 @@ for (const [rel, content] of Object.entries(files)) {
 }
 
 console.log(`\nDone -> ${addonDir}`);
-console.log(`Mission: ${MISSION.displayName} | ${MISSION.terrain} | ${MISSION.playableFaction} vs ${MISSION.enemyFaction}`);
+console.log(`Mission: ${BUILT.displayName} | ${BUILT.terrain} | ${BUILT.playableFaction} vs ${BUILT.enemyFaction}`);

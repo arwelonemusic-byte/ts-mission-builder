@@ -11,6 +11,8 @@
 // Excluded from infantry pools: *_Base templates, Transport, WithDriver,
 // LessArmored (vehicle-bound or template groups).
 
+import { RHS } from "./mods/rhs.mjs";
+
 export const TERRAINS = {
   arland: {
     label: "Arland",
@@ -647,6 +649,24 @@ export const FACTIONS = {
     },
   },
 };
+
+// --- Content mods ----------------------------------------------------------
+// Each mod contributes factions shaped exactly like the vanilla FACTIONS
+// entries. `entryGuid` when the mod overrides the vanilla FactionManager_Editor
+// prefab and its factions are EXISTING members there (RHS does this — override
+// by instance GUID, like vanilla factions); `confRef` only for mods that don't,
+// where the faction must be appended as a NEW member sourcing its .conf.
+// Never append when an entryGuid exists: a second member with the same
+// FactionKey kills faction playability at runtime. Merged below with a `mod`
+// tag so the resolvers, lib.mjs and the web panels work off one registry; the
+// UI offers mod factions only when the mod is enabled, and lib.mjs derives
+// addon.gproj dependencies from the tags of the factions a mission uses.
+export const MODS = { [RHS.id]: RHS };
+for (const mod of Object.values(MODS)) {
+  for (const [key, faction] of Object.entries(mod.factions)) {
+    FACTIONS[key] = { ...faction, mod: mod.id };
+  }
+}
 
 export const K = {
   BASE_GAME: "58D0FB3206B6F859",

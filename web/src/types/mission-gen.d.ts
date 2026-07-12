@@ -3,7 +3,14 @@ declare module "mission-gen" {
   export const FACTIONS: Record<
     string,
     {
-      entryGuid: string;
+      /** Vanilla factions: FactionManager_Editor member instance GUID */
+      entryGuid?: string;
+      /** Mod factions: faction .conf resource ref (new FactionManager member) */
+      confRef?: string;
+      /** MODS key when the faction comes from a mod */
+      mod?: string;
+      /** Display label (mod factions; vanilla factions show their key) */
+      label?: string;
       callsignGuid: string;
       squadBase: string[];
       squadFifth: string | null;
@@ -30,6 +37,16 @@ declare module "mission-gen" {
     }
   >;
   export const K: Record<string, unknown>;
+  export const MODS: Record<
+    string,
+    {
+      id: string;
+      label: string;
+      workshopUrl: string;
+      dependencies: string[];
+      factions: Record<string, unknown>;
+    }
+  >;
   export const ZONE_MODULES: {
     type: string;
     label: string;

@@ -68,6 +68,7 @@ const RU: Record<string, string> = {
   "Important!": "Важно!",
   "Make sure you have the TS Mission Toolkit addon installed and updated:":
     "Убедитесь, что аддон TS Mission Toolkit установлен и обновлён:",
+  "Supported mods": "Поддерживаемые моды",
 
   // Players tab
   "Player Faction": "Фракция игроков",

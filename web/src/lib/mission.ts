@@ -45,6 +45,10 @@ export type Mission = {
   playableSubfaction: string;
   enemyFaction: string;
   enemyGroupSets: string[];
+  /** Enabled content mods (MODS keys, e.g. "rhs") — gates which factions the
+   * UI offers. Dependencies in the generated addon.gproj derive from the
+   * factions actually used, not from this list. */
+  mods: string[];
   briefing: {
     situation: string;
     objectives: string;
@@ -61,7 +65,18 @@ export type Mission = {
   markers: MissionMarker[];
   sectors: MissionSector[];
   guids: { addon: string; world: string; missionConf: string };
+  /** Sanitized mission name the guids were minted for — a renamed mission is
+   * a new addon and must not reuse them (see freshenGuids) */
+  guidsName: string;
 };
+
+/** FACTIONS' TS type is inferred from the vanilla literal in catalogue.mjs;
+ * mod-merged entries carry extra fields (mod tag, display label) the inferred
+ * type doesn't know about — access them through this typed view. */
+export type FactionMeta = { mod?: string; label?: string };
+export function factionMeta(key: string): FactionMeta {
+  return (FACTIONS[key] ?? {}) as FactionMeta;
+}
 
 /** Default loadout selection for a subfaction: its first (rifleman) entry. */
 export function defaultLoadouts(faction: string, subfaction: string): string[] {
@@ -82,7 +97,7 @@ export function defaultArty(): ArtySupport {
 }
 
 export function newMission(): Mission {
-  return {
+  const m: Mission = {
     version: 1,
     displayName: "My Mission",
     author: "",
@@ -91,6 +106,7 @@ export function newMission(): Mission {
     playableSubfaction: "US_Army",
     enemyFaction: "USSR",
     enemyGroupSets: ["USSR_Army"],
+    mods: [],
     briefing: { situation: "", objectives: "", threats: "", extra: [] },
     loadouts: defaultLoadouts("US", "US_Army"),
     arty: defaultArty(),
@@ -98,6 +114,24 @@ export function newMission(): Mission {
     zones: [],
     markers: [],
     sectors: [],
+    guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid() },
+    guidsName: "",
+  };
+  m.guidsName = missionIds(m).name;
+  return m;
+}
+
+/** GUIDs stay stable across re-exports of the SAME mission (so a published
+ * addon can be regenerated in place), but a mission renamed since its guids
+ * were minted is a NEW addon — reusing them gives two missions the same
+ * resource GUIDs and they collide in the game's resource database. Call at
+ * export time; persist the result if a new object comes back. */
+export function freshenGuids(m: Mission): Mission {
+  const name = missionIds(m).name;
+  if (m.guidsName === name) return m;
+  return {
+    ...m,
+    guidsName: name,
     guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid() },
   };
 }
@@ -116,6 +150,17 @@ export function loadMission(): Mission {
       delete m.enemyGroupSet;
     }
     if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
+    // Mods gate: default old saves to none; if a save somehow uses a mod
+    // faction without the mod enabled, enable it rather than break the mission
+    if (!Array.isArray(m.mods)) m.mods = [];
+    for (const fk of [m.playableFaction, m.enemyFaction]) {
+      const mod = factionMeta(fk).mod;
+      if (mod && !m.mods.includes(mod)) m.mods.push(mod);
+    }
+    // Old saves lack guidsName: "" never matches a sanitized name, so the
+    // next export re-mints — also cures duplicates minted before this field
+    // existed (rename-without-reset reused the stored guids verbatim)
+    if (typeof m.guidsName !== "string") m.guidsName = "";
     if (!m.briefing.extra) m.briefing.extra = [];
     if (!m.markers) m.markers = [];
     if (!m.sectors) m.sectors = [];

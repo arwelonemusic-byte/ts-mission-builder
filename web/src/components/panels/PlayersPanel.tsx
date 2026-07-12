@@ -1,7 +1,7 @@
 "use client";
 
 import { FACTIONS } from "mission-gen";
-import { defaultLoadouts, type ArtySupport, type Mission } from "@/lib/mission";
+import { defaultLoadouts, factionMeta, type ArtySupport, type Mission } from "@/lib/mission";
 import { useT } from "@/lib/i18n";
 import { CheckRow, Divider, Field, GhostButton, SelectInput, Toggle } from "../ui";
 
@@ -22,14 +22,16 @@ function ShellInput({ value, onCommit }: { value: number; onCommit: (v: number) 
 export default function PlayersPanel({
   mission,
   update,
+  factionKeys,
   onPlayableFaction,
 }: {
   mission: Mission;
   update: (patch: Partial<Mission>) => void;
+  /** Vanilla + enabled-mod factions (filtered in page.tsx) */
+  factionKeys: string[];
   onPlayableFaction: (faction: string) => void;
 }) {
   const t = useT();
-  const factionKeys = Object.keys(FACTIONS);
   const playable = FACTIONS[mission.playableFaction];
   const loadoutSet = playable?.loadoutSets[mission.playableSubfaction] ?? [];
   const arty = mission.arty;
@@ -53,7 +55,7 @@ export default function PlayersPanel({
         <SelectInput value={mission.playableFaction} onChange={(e) => onPlayableFaction(e.target.value)}>
           {factionKeys.map((f) => (
             <option key={f} value={f}>
-              {f}
+              {factionMeta(f).label ?? f}
             </option>
           ))}
         </SelectInput>

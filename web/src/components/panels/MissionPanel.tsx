@@ -1,17 +1,20 @@
 "use client";
 
+import { MODS } from "mission-gen";
 import { TERRAIN_LIST } from "@/lib/terrains";
 import type { Mission } from "@/lib/mission";
 import { useT } from "@/lib/i18n";
-import { Divider, Field, GhostButton, Hint, SelectInput, TextInput } from "../ui";
+import { CheckRow, Divider, Field, GhostButton, Hint, SelectInput, TextInput } from "../ui";
 
 export default function MissionPanel({
   mission,
   update,
+  onMods,
   onReset,
 }: {
   mission: Mission;
   update: (patch: Partial<Mission>) => void;
+  onMods: (mods: string[]) => void;
   onReset: () => void;
 }) {
   const t = useT();
@@ -61,6 +64,37 @@ export default function MissionPanel({
         </SelectInput>
       </Field>
       <Hint>{t("Changing terrain clears placements.")}</Hint>
+      <Divider />
+      {/* Content mods: gate which factions the builder offers. Disabling a mod
+          resets any faction selections that depend on it (page.tsx setMods). */}
+      <div className="text-[12px] text-white">{t("Supported mods")}</div>
+      <div className="flex flex-col gap-2">
+        {Object.values(MODS).map((mod: { id: string; label: string; workshopUrl: string }) => {
+          const on = mission.mods.includes(mod.id);
+          return (
+            <div key={mod.id} className="flex flex-col gap-1">
+              <CheckRow
+                checked={on}
+                onChange={(next) =>
+                  onMods(next ? [...mission.mods, mod.id] : mission.mods.filter((x) => x !== mod.id))
+                }
+              >
+                {mod.label}
+              </CheckRow>
+              {on && (
+                <a
+                  href={mod.workshopUrl}
+                  target="_blank"
+                  rel="noopener"
+                  className="ml-6 w-max max-w-full text-[12px] leading-[16px] font-medium text-[#f4db50] underline underline-offset-2 hover:text-[#f9e278] transition-colors"
+                >
+                  {mod.label} — Reforger Workshop
+                </a>
+              )}
+            </div>
+          );
+        })}
+      </div>
       <Divider />
       <GhostButton destructive onClick={onReset}>
         {t("Reset mission")}
