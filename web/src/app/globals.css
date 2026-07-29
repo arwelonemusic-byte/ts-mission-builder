@@ -134,14 +134,16 @@ body {
    * fill from 0 → --ts-slider-pct, and the dark track from there to the end.
    * The percentage is driven by an inline style at each call site (see
    * sliderProgressStyle in components/ui.tsx). Default 0% if unset. */
+  /* Empty-track color is a variable so call sites on a #14181a surface (zone
+   * cards) can pick a visible tone via the Slider trackColor prop. */
   .ts-slider::-webkit-slider-runnable-track {
     height: 10px;
     background: linear-gradient(
       to right,
       rgba(244, 219, 80, 0.24) 0%,
       rgba(244, 219, 80, 0.24) var(--ts-slider-pct),
-      #14181a var(--ts-slider-pct),
-      #14181a 100%
+      var(--ts-slider-track, #14181a) var(--ts-slider-pct),
+      var(--ts-slider-track, #14181a) 100%
     );
     border-radius: 99px;
     border: none;
@@ -152,8 +154,8 @@ body {
       to right,
       rgba(244, 219, 80, 0.24) 0%,
       rgba(244, 219, 80, 0.24) var(--ts-slider-pct),
-      #14181a var(--ts-slider-pct),
-      #14181a 100%
+      var(--ts-slider-track, #14181a) var(--ts-slider-pct),
+      var(--ts-slider-track, #14181a) 100%
     );
     border-radius: 99px;
     border: none;

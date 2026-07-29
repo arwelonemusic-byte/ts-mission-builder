@@ -53,6 +53,9 @@ export const RHS = {
       callsignGuid: "{5CC8BB97E017CDBC}",
       squadBase: ["{55CCB792D10AD8F4}", "{55CCB792D13759D8}", "{55CCB792D1218E95}", "{55CCB792D0C8B3CE}"],
       squadFifth: null,
+      // RHS_US_USMC.conf declares m_aFriendlyFactionsIds { "US" } — cleared by
+      // the member override when a mission pits these two against each other
+      friendlyWith: ["US"],
       spawnPoint: "{0CAE96554C7FEB3D}PrefabsEditable/SpawnPoints/E_SpawnPoint_US_USMC.et",
       riflemen: {
         USMC_MEF: `{CB4B1645B748D5D4}${P_USAF_C}/RHS_USAF_USMC_MEF/Character_RHS_USAF_USMC_Rifleman.et`,
@@ -137,7 +140,25 @@ export const RHS = {
         { mode: "CONSUMABLE", ref: "{00E36F41CA310E2A}Prefabs/Items/Medicine/SalineBag_01/SalineBag_US_01.et" },
         { mode: "CONSUMABLE", ref: "{D70216B1B2889129}Prefabs/Items/Medicine/Tourniquet_01/Tourniquet_US_01.et" },
         { mode: "", ref: "{C55821E8E86C074E}Prefabs/Items/Equipment/Radios/Radio_ANPRC152.et" },
+        // Backpacks (faction-wide, from USMC_InventoryItems.conf; FILBE coyote
+        // fits both woodland and desert MEF)
+        { mode: "", ref: "{48602F57998AB597}Prefabs/Items/Equipment/Backpacks/FILBE_Backpack.et" },
+        { mode: "", ref: "{BC4ABD18AF9564D5}Prefabs/Items/Equipment/Backpacks/FILBE_Backpack_Heavy.et" },
+        { mode: "", ref: "{9A26D311900C33EE}Prefabs/Items/Equipment/Backpacks/FILBE_hydration_pack.et" },
+        { mode: "", ref: "{4805E67E2AE30F8D}Prefabs/Items/Equipment/Backpacks/Backpack_Medical_M5.et" },
       ],
+      // Camo-matched backpack extras per playable subfaction (appended to
+      // arsenalItems by lib.mjs) — camo mapping pending visual check
+      subfactionArsenalItems: {
+        USMC_MEF: [
+          { mode: "", ref: "{5C5C6EE05EE2FF1A}Prefabs/Items/Equipment/Backpacks/Backpack_ALICE_Medium_assembled.et" },
+          { mode: "", ref: "{95D4766BBE46F23D}Prefabs/Items/Equipment/Backpacks/Backpack_IIFS_FieldPack.et" },
+        ],
+        MARSOC: [
+          { mode: "", ref: "{46D824AAD12330B2}Prefabs/Items/Equipment/Backpacks/backpack_511_rush12/Backpack_511_rush12_Coy.et" },
+          { mode: "", ref: "{4A93B3F0B33FF104}Prefabs/Items/Equipment/Backpacks/backpack_511_rush12/Backpack_511_rush12_MC.et" },
+        ],
+      },
       vehicles: {
         M151A2: "{F649585ABB3706C4}Prefabs/Vehicles/Wheeled/M151A2/M151A2.et",
         M151A2_transport: "{47D94E1193A88497}Prefabs/Vehicles/Wheeled/M151A2/M151A2_transport.et",
@@ -278,6 +299,9 @@ export const RHS = {
       callsignGuid: "{5977478D568C093C}",
       squadBase: ["{5977478D568C092E}", "{5977478D568C092D}", "{5977478D568D935E}", "{5977478D568D935F}"],
       squadFifth: null,
+      // RHS_RF_MSV.conf declares m_aFriendlyFactionsIds { "USSR" } — cleared by
+      // the member override vs USSR AND vs MEI (alias resolves to USSR)
+      friendlyWith: ["USSR"],
       spawnPoint: "{E86B0E337506B044}PrefabsEditable/SpawnPoints/E_SpawnPoint_RF_MSV.et",
       riflemen: {
         MSV_Flora: `{7CCAB195F5A1D9CA}${P_MSV_C}/Flora/Character_RHS_RF_MSV_Flora_Rifleman.et`,
@@ -382,7 +406,39 @@ export const RHS = {
         { mode: "CONSUMABLE", ref: "{527D7C5D2E476BDC}Prefabs/Items/Medicine/SalineBag_01/SalineBag_USSR_01.et" },
         { mode: "CONSUMABLE", ref: "{80E75A71C29190DB}Prefabs/Items/Medicine/Tourniquet_01/Tourniquet_USSR_01.et" },
         { mode: "", ref: "{54C68E438DD34265}Prefabs/Items/Equipment/Radios/Radio_R107M.et" },
+        // Backpacks (faction-wide, from MSV_InventoryItems.conf)
+        { mode: "", ref: "{3DE0155EC9767B98}Prefabs/Items/Equipment/Backpacks/Backpack_Veshmeshok.et" },
+        { mode: "", ref: "{41A9C55B61F375F0}Prefabs/Items/Equipment/Backpacks/Backpack_Kolobok.et" },
+        { mode: "", ref: "{0D39750E5695B9D8}Prefabs/Items/Equipment/Backpacks/Backpack_RPG_Gunner.et" },
+        { mode: "", ref: "{6A39B5843B3F36DA}Prefabs/Items/Equipment/Backpacks/Backpack_RPG_Assistant.et" },
+        { mode: "", ref: "{7AC107CA7AFC9B59}Prefabs/Items/Equipment/Backpacks/Backpack_Medical_Soviet.et" },
       ],
+      // Camo-matched backpack extras per playable subfaction — camo mapping
+      // pending visual check (Suharka→90s sets, Ratnik/EMR→VKPO is a guess)
+      subfactionArsenalItems: {
+        MSV_Flora: [
+          { mode: "", ref: "{CAEDE923EF4071AE}Prefabs/Items/Equipment/Backpacks/Backpack_Suharka_type1.et" },
+          { mode: "", ref: "{A6B9DDC35384FE80}Prefabs/Items/Equipment/Backpacks/Backpack_Suharka_type2.et" },
+          { mode: "", ref: "{16C7AD0508F53A9B}Prefabs/Items/Equipment/Backpacks/backpack_Wartech_BB102/Backpack_Wartech_BB102_OD.et" },
+        ],
+        MSV_VSR: [
+          { mode: "", ref: "{CAEDE923EF4071AE}Prefabs/Items/Equipment/Backpacks/Backpack_Suharka_type1.et" },
+          { mode: "", ref: "{A6B9DDC35384FE80}Prefabs/Items/Equipment/Backpacks/Backpack_Suharka_type2.et" },
+          { mode: "", ref: "{72DB97161FBA7AF0}Prefabs/Items/Equipment/Backpacks/backpack_Wartech_BB102/Backpack_Wartech_BB102_FG.et" },
+        ],
+        MSV_VKPO_Summer: [
+          { mode: "", ref: "{924B2ABFFF994188}Prefabs/Items/Equipment/Backpacks/backpack_Ratnik_6sh117/Backpack_Ratnik_6sh117.et" },
+          { mode: "", ref: "{064B7836FE60606D}Prefabs/Items/Equipment/Backpacks/backpack_Ratnik_6sh118/Backpack_Ratnik_6sh118.et" },
+          { mode: "", ref: "{43802D2484B1C1A1}Prefabs/Items/Equipment/Backpacks/backpack_Ratnik_6B46/Backpack_Ratnik_6B46.et" },
+          { mode: "", ref: "{45DC01791EBE2349}Prefabs/Items/Equipment/Backpacks/backpack_Wartech_BB102/Backpack_Wartech_BB102_EMR.et" },
+        ],
+        MSV_VKPO_Demiseason: [
+          { mode: "", ref: "{924B2ABFFF994188}Prefabs/Items/Equipment/Backpacks/backpack_Ratnik_6sh117/Backpack_Ratnik_6sh117.et" },
+          { mode: "", ref: "{064B7836FE60606D}Prefabs/Items/Equipment/Backpacks/backpack_Ratnik_6sh118/Backpack_Ratnik_6sh118.et" },
+          { mode: "", ref: "{43802D2484B1C1A1}Prefabs/Items/Equipment/Backpacks/backpack_Ratnik_6B46/Backpack_Ratnik_6B46.et" },
+          { mode: "", ref: "{45DC01791EBE2349}Prefabs/Items/Equipment/Backpacks/backpack_Wartech_BB102/Backpack_Wartech_BB102_EMR.et" },
+        ],
+      },
       vehicles: {
         UAZ469_Camo_uncovered: "{03D9932135924AEF}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469_Camo_uncovered.et",
         UAZ469_Camo: "{E1A99B5F2DC9B38A}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469_Camo.et",

@@ -6,6 +6,14 @@
 //               including EnfusionMCP handler scripts
 //   --rhs       build the RHS variant instead (TS_WebSpikeRHS: RHS_USAF vs
 //               RHS_AFRF, exercises mod deps + FactionManager conf-ref entries)
+//   --uk        build the British Forces variant (TS_WebSpikeUK: UK "1989
+//               Regulars" vs vanilla USSR — UK playable-side path)
+//   --uk-enemy  build the British Forces enemy-side variant (TS_WebSpikeUKEnemy:
+//               vanilla US vs UK — UK groups/fortifications/Land Rover patrols)
+//   --mei       build the Middle East Insurgents variant (TS_WebSpikeMEI: US vs
+//               MEI — the USSR alias faction, exercises alias emission + deps)
+//   --afrf-mei  build the RHS-vs-MEI variant (TS_WebSpikeAFRFMEI: RHS_AFRF vs
+//               MEI — validates the friendly-faction clearing override)
 //   --armenhof  build the modded-terrain variant (TS_WebSpikeArmenhof: vanilla
 //               US vs USSR on Armenhof, exercises terrain dependencies + nav refs)
 //   --chernarus same, on ChernarusMinus (terrain with transitive map-addon deps)
@@ -153,6 +161,146 @@ const RHS_MISSION = {
       ...MISSION.zones[1],
       plugins: [
         { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["UAZ469_PKM"] },
+      ],
+    },
+  ],
+};
+
+// British Forces spike: UK playable vs vanilla USSR — exercises the UK
+// FactionManager member override, UK spawn point, loadout/arsenal/crate
+// overrides and the BF-only dependency list (no Truck Utility).
+const UK_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeUK",
+  dirName: "TS_WebSpikeUK",
+  addonTitle: "TS Web Spike UK Mission",
+  name: "TS_WebSpikeUK",
+  displayName: "TS Web Spike UK",
+  playableFaction: "UK",
+  playableSubfaction: "1989 Regulars",
+  enemyFaction: "USSR",
+  enemyGroupSets: ["USSR_Army"],
+  loadouts: FACTIONS.UK.loadoutSets["1989 Regulars"].filter((l) =>
+    ["Rifleman", "LSW Gunner", "GPMG Gunner", "Medic", "Section Commander", "Section 2IC"].includes(l.name)
+  ),
+  guids: {
+    addon: "985BCD7B10BCEB66",
+    world: "D48FEE1675182286",
+    missionConf: "B6EC273B7493D83D",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    extra: [
+      {
+        title: "Support",
+        text: ["- 2x Land Rover LWB", "- 1x M923A1 Transport Truck"],
+      },
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    vehicles: [
+      { type: "LR3_LWB_transport" },
+      { type: "LR3_LWB_transport" },
+      { type: "M923A1_transport_covered_UK" },
+    ],
+  },
+};
+
+// British Forces enemy-side spike: vanilla US vs UK — exercises UK group
+// pools (defense/sentry/garrison/patrols), UK fortification compositions and
+// Land Rover mounted patrols.
+const UK_ENEMY_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeUKEnemy",
+  dirName: "TS_WebSpikeUKEnemy",
+  addonTitle: "TS Web Spike UK Enemy Mission",
+  name: "TS_WebSpikeUKEnemy",
+  displayName: "TS Web Spike UK Enemy",
+  enemyFaction: "UK",
+  enemyGroupSets: ["Regulars_1989"],
+  guids: {
+    addon: "B8A45354C1D8A35B",
+    world: "06E249959350A16D",
+    missionConf: "6FD8C1E2CEB9F9FD",
+  },
+  zones: [
+    MISSION.zones[0],
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["LR3_SWB_GPMG"] },
+      ],
+    },
+  ],
+};
+
+// Middle East Insurgents spike: vanilla US vs the MEI alias faction — the
+// mission content is identical to the vanilla spike's USSR enemy (alias
+// factions reuse all vanilla USSR refs); only the deps differ (USSR 2 Middle
+// East addon, whose own gproj pulls MiddleEastInsurgents + RussiantoArabic
+// transitively). In-game the USSR troops appear as insurgents with Arabic voices.
+const MEI_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeMEI",
+  dirName: "TS_WebSpikeMEI",
+  addonTitle: "TS Web Spike MEI Mission",
+  name: "TS_WebSpikeMEI",
+  displayName: "TS Web Spike MEI",
+  enemyFaction: "MEI",
+  enemyGroupSets: ["Insurgents"],
+  guids: {
+    addon: "DAE3044250CCAAD6",
+    world: "57022A61BE10B225",
+    missionConf: "EAC58DE935E71F85",
+  },
+  zones: [
+    MISSION.zones[0],
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["UAZ469_PKM_MEI"] },
+      ],
+    },
+  ],
+};
+
+// RHS-vs-MEI spike: playable RHS_AFRF vs the MEI alias faction — validates the
+// m_aFriendlyFactionsIds clearing override (RHS_RF_MSV.conf declares USSR
+// friendly; MEI IS the in-game USSR, so without the override neither side
+// would fight). The AFRF member in default.layer must carry an empty
+// m_aFriendlyFactionsIds block.
+const AFRF_MEI_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeAFRFMEI",
+  dirName: "TS_WebSpikeAFRFMEI",
+  addonTitle: "TS Web Spike AFRF vs MEI Mission",
+  name: "TS_WebSpikeAFRFMEI",
+  displayName: "TS Web Spike AFRF vs MEI",
+  playableFaction: "RHS_AFRF",
+  playableSubfaction: "MSV_Flora",
+  enemyFaction: "MEI",
+  enemyGroupSets: ["Insurgents"],
+  loadouts: FACTIONS.RHS_AFRF.loadoutSets.MSV_Flora.slice(0, 6),
+  guids: {
+    addon: "B9E81D78B9C6F4D6",
+    world: "7DE526B3DBB6BD09",
+    missionConf: "952EBE836AF2E99F",
+  },
+  spawn: {
+    ...MISSION.spawn,
+    vehicles: [
+      { type: "UAZ469_Camo_uncovered" },
+      { type: "UAZ469_Camo_uncovered" },
+      { type: "Ural4320_transport_covered" },
+    ],
+  },
+  zones: [
+    MISSION.zones[0],
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["BRDM2"] },
       ],
     },
   ],
@@ -669,7 +817,15 @@ const BUILT = process.argv.includes("--zarichne")
       ? ARMENHOF_MISSION
       : process.argv.includes("--rhs")
         ? RHS_MISSION
-        : MISSION;
+        : process.argv.includes("--uk-enemy")
+          ? UK_ENEMY_MISSION
+          : process.argv.includes("--uk")
+            ? UK_MISSION
+            : process.argv.includes("--afrf-mei")
+              ? AFRF_MEI_MISSION
+              : process.argv.includes("--mei")
+                ? MEI_MISSION
+                : MISSION;
 const { files, addonDirName } = buildMissionFiles(BUILT);
 const addonDir = join(ADDONS_ROOT, addonDirName);
 

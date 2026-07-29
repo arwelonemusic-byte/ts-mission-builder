@@ -15,6 +15,7 @@ import {
   type MissionSector,
   type Zone,
 } from "@/lib/mission";
+import { rangeLabel, totalEnemyRange } from "@/lib/enemyEstimate";
 import { exportMission, spawnSlopeDelta } from "@/lib/export";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
 import { LangProvider, loadLang, saveLang, tr, zonesCountLabel, type Lang } from "@/lib/i18n";
@@ -187,6 +188,11 @@ export default function Editor() {
   const playableFactionKeys = factionKeys.filter(
     (k) => Object.keys(FACTIONS[k].riflemen ?? {}).length > 0
   );
+  // Alias factions (aliasOf) share their base faction's in-game FactionKey —
+  // both sides of an alias pair in one mission would be the same faction.
+  // The enemy dropdown shows conflicting options disabled (EnemyPanel).
+  const aliasConflict = (a: string, b: string) =>
+    FACTIONS[a]?.aliasOf === b || FACTIONS[b]?.aliasOf === a;
 
   const update = (patch: Partial<Mission>) => setMission((m) => (m ? { ...m, ...patch } : m));
   const updateSpawn = (patch: Partial<Mission["spawn"]>) =>
@@ -267,8 +273,8 @@ export default function Editor() {
       loadouts: defaultLoadouts(pf, sub),
       spawn: { ...mission.spawn, vehicles: [] },
     };
-    if (pf === mission.enemyFaction) {
-      const nextEnemy = factionKeys.find((f) => f !== pf);
+    if (pf === mission.enemyFaction || aliasConflict(pf, mission.enemyFaction)) {
+      const nextEnemy = factionKeys.find((f) => f !== pf && !aliasConflict(f, pf));
       if (nextEnemy) Object.assign(patch, enemyPatch(nextEnemy, mission.zones));
     }
     update(patch);
@@ -299,8 +305,14 @@ export default function Editor() {
         spawn: { ...mission.spawn, vehicles: [] },
       });
     }
-    if (!allowed(mission.enemyFaction) || mission.enemyFaction === playable) {
-      const nextEnemy = Object.keys(FACTIONS).find((f) => allowed(f) && f !== playable);
+    if (
+      !allowed(mission.enemyFaction) ||
+      mission.enemyFaction === playable ||
+      aliasConflict(mission.enemyFaction, playable)
+    ) {
+      const nextEnemy = Object.keys(FACTIONS).find(
+        (f) => allowed(f) && f !== playable && !aliasConflict(f, playable)
+      );
       if (nextEnemy) Object.assign(patch, enemyPatch(nextEnemy, mission.zones));
     }
     update(patch);
@@ -574,8 +586,12 @@ export default function Editor() {
               </button>
             )}
             {step === "zones" && mission.zones.length > 0 && (
-              <span className="text-[12px] text-white/40">
+              <span className="text-[12px] text-white/40" title={t("Estimated enemy count")}>
                 {zonesCountLabel(lang, mission.zones.length)}
+                {(() => {
+                  const total = rangeLabel(totalEnemyRange(mission));
+                  return total ? ` · ${total} ${t("hostiles")}` : "";
+                })()}
               </span>
             )}
           </div>

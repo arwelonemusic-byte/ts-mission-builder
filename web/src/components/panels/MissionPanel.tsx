@@ -40,7 +40,7 @@ export default function MissionPanel({
       <div className="bg-[rgba(244,219,80,0.12)] border border-[rgba(244,219,80,0.4)] rounded-[8px] p-3 flex flex-col gap-1">
         <span className="text-[14px] leading-[20px] font-bold text-[#f4db50]">{t("Important!")}</span>
         <span className="text-[12px] leading-[16px] text-white/80">
-          {t("Make sure you have these addons installed and updated:")}
+          {t("Make sure you have these addons and their dependencies installed and updated:")}
         </span>
         {requiredAddons.map((addon) => (
           <a

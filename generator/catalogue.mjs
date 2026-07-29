@@ -12,6 +12,8 @@
 // LessArmored (vehicle-bound or template groups).
 
 import { RHS } from "./mods/rhs.mjs";
+import { UK } from "./mods/uk.mjs";
+import { MEI } from "./mods/mei.mjs";
 
 export const TERRAINS = {
   arland: {
@@ -795,10 +797,15 @@ export const FACTIONS = {
 // tag so the resolvers, lib.mjs and the web panels work off one registry; the
 // UI offers mod factions only when the mod is enabled, and lib.mjs derives
 // addon.gproj dependencies from the tags of the factions a mission uses.
-export const MODS = { [RHS.id]: RHS };
+// `aliasOf: "<vanillaKey>"` marks a faction that is a RESKIN of a vanilla one
+// (e.g. MEI = USSR + character/voice overrides): the whole vanilla entry is
+// copied underneath the def, and lib.mjs skips it in the FactionManager
+// emission because the vanilla member covers it.
+export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI };
 for (const mod of Object.values(MODS)) {
   for (const [key, faction] of Object.entries(mod.factions)) {
-    FACTIONS[key] = { ...faction, mod: mod.id };
+    const base = faction.aliasOf ? FACTIONS[faction.aliasOf] : undefined;
+    FACTIONS[key] = { ...base, ...faction, mod: mod.id };
   }
 }
 
@@ -878,6 +885,9 @@ export const K = {
 // QRF (sizes: ["large"], needs TS_QRFSpawnAnchor placement) is deferred.
 export const ZONE_MODULES = [
   { type: "DefenseGroup", label: "Defense Group", kind: "slotai", noBudget: true },
+  // Foot Patrols sizes are per-zone via the patrol-weight slider (5 stops:
+  // small / small+medium / all / medium+large / large); this def value is the
+  // default when a mission zone doesn't specify — stop 3, all sizes
   { type: "TS_ScenarioFrameworkPluginAIPatrol", label: "Foot Patrols", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small", "medium", "large"] },
   { type: "TS_ScenarioFrameworkPluginSmartGarrison", label: "Garrison", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small"] },
   { type: "TS_ScenarioFrameworkPluginMountedPatrol", label: "Vehicle Patrols", kind: "vehicle", pool: "m_aVehiclePrefabPool" },

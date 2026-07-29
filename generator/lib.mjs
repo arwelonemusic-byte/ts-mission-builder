@@ -80,7 +80,11 @@ export function buildMissionFiles(mission, options = {}) {
   const modDeps = [
     ...new Set([...usedMods.flatMap((id) => MODS[id].dependencies), ...(TERRAIN.dependencies ?? [])]),
   ];
-  const modFactionKeys = usedMods.flatMap((id) => Object.keys(MODS[id].factions));
+  // Alias factions (aliasOf) are vanilla reskins — their vanilla member is
+  // already in the FactionManager emission, so they must not appear again.
+  const modFactionKeys = usedMods
+    .flatMap((id) => Object.keys(MODS[id].factions))
+    .filter((k) => !FACTIONS[k].aliasOf);
 
   // --- addon.gproj ---
   const gproj = `GameProject {
@@ -168,7 +172,9 @@ ${taskTypes}
   // First entry reuses the base conf's member instance GUID (its supply cost /
   // allocation fields come from the base); new members declare m_iSupplyCost 0.
   // m_eItemMode comes from the vanilla EntityCatalog (omitted when empty).
-  const arsenalItems = F.arsenalItems
+  // subfactionArsenalItems (optional) appends subfaction-specific extras (e.g.
+  // camo-matched backpacks) for the selected playable subfaction.
+  const arsenalItems = [...F.arsenalItems, ...(F.subfactionArsenalItems?.[mission.playableSubfaction] ?? [])]
     .map((item, i) => {
       const guid = i === 0 ? K.ARSENAL_BASE_ENTRY : `{${mintGuid()}}`;
       const mode = item.mode ? `\n   m_eItemMode ${item.mode}` : "";
@@ -227,14 +233,56 @@ ${briefEntries}
     )
     .join("\n");
 
-  const squadCallsigns = ["1'1", "1'2", "1'3", "1'4"].map((cs, i) => [F.squadBase[i], cs]);
-  squadCallsigns.push([F.squadFifth ?? `{${mintGuid()}}`, "1'6"]);
+  // Player squads: mission.groups = [{name, size}] (max 8, size 1-9), default =
+  // the Mod Defaults standard 1'1-1'4 + 1'6 @ 9/9/9/9/3. groups[i] <-> squad
+  // name [i] <-> group preset [i] by index (m_bIsAssignedRandomly 0 assigns
+  // names in array order).
+  const DEFAULT_GROUPS = [
+    { name: "1'1", size: 9 },
+    { name: "1'2", size: 9 },
+    { name: "1'3", size: 9 },
+    { name: "1'4", size: 9 },
+    { name: "1'6", size: 3 },
+  ];
+  const groups = mission.groups?.length ? mission.groups.slice(0, 8) : DEFAULT_GROUPS;
+  const gname = (g, i) => (String(g?.name ?? "").trim().replace(/"/g, "'") || `1'${i + 1}`);
+  // Always override ALL squadBase members even with fewer groups: overflow
+  // auto-created groups pick up un-overridden vanilla names ("3", "4") —
+  // fallback-name the unused slots so numbering stays consistent.
+  const nameCount = Math.max(groups.length, F.squadBase.length);
+  const squadCallsigns = Array.from({ length: nameCount }, (_, i) => {
+    let guid;
+    if (i < F.squadBase.length) guid = F.squadBase[i];
+    else if (i === 4 && F.squadFifth) guid = F.squadFifth;
+    else guid = `{${mintGuid()}}`;
+    return [guid, gname(groups[i], i)];
+  });
   const squadNamesBlock = squadCallsigns
     .map(([guid, cs]) => `     SCR_CallsignInfo "${guid}" {\n      m_sCallsign "${cs}"\n     }`)
     .join("\n");
-  const groupPresets = [9, 9, 9, 9, 3]
-    .map((size) => `    SCR_GroupPreset "{${mintGuid()}}" {\n     m_iGroupSize ${size}\n    }`)
+  const groupPresets = groups
+    .map((g) => {
+      const size = Math.max(1, Math.min(9, Math.floor(+g.size) || 9));
+      return `    SCR_GroupPreset "{${mintGuid()}}" {\n     m_iGroupSize ${size}\n    }`;
+    })
     .join("\n");
+
+  // Faction friendliness (m_aFriendlyFactionsIds) is SYMMETRIC and one-sided
+  // declarations suffice (SCR_Faction.c: "for init it is only required for one
+  // faction") — a declared friendship between the mission's two sides would
+  // make them refuse to fight (UK↔US, RHS_AFRF↔USSR/MEI). When either side's
+  // registry def declares the other side friendly (`friendlyWith`, in-game
+  // keys; aliases resolve to their base key), that member's override clears
+  // the list so the pair is hostile in THIS mission.
+  const effKey = (k) => FACTIONS[k].aliasOf ?? k;
+  const sideKeys = [effKey(mission.playableFaction), effKey(mission.enemyFaction)];
+  function clearedFriendsBlock(key) {
+    const idx = sideKeys.indexOf(key);
+    if (idx === -1) return "";
+    const other = sideKeys[1 - idx];
+    if (!FACTIONS[key].friendlyWith?.includes(other)) return "";
+    return `\n   m_aFriendlyFactionsIds {\n   }`;
+  }
 
   function factionEntry(key) {
     const f = FACTIONS[key];
@@ -251,13 +299,13 @@ ${briefEntries}
     // m_bIsAssignedRandomly defaults to 1 — turn it OFF on every faction so
     // squads take callsigns in order (1'1, 1'2, ...) instead of at random.
     if (key !== mission.playableFaction)
-      return `${head}${f.confRef ? "\n   m_bIsPlayable 0" : ""}
+      return `${head}${f.confRef ? "\n   m_bIsPlayable 0" : ""}${clearedFriendsBlock(key)}
    m_CallsignInfo SCR_FactionCallsignInfo "${f.callsignGuid}" {
     m_bIsAssignedRandomly 0
    }
   }`;
     return `${head}
-   m_bIsPlayable 1
+   m_bIsPlayable 1${clearedFriendsBlock(key)}
    m_CallsignInfo SCR_FactionCallsignInfo "${f.callsignGuid}" {
     m_bIsAssignedRandomly 0
     m_aSquadNames {
@@ -405,7 +453,9 @@ ${farpBlock}`;
     const enemySets = mission.enemyGroupSets ?? mission.enemyGroupSet;
     let pools; // [attrName, refs][]
     if (def.kind === "infantry") {
-      pools = [[def.pool, resolveGroupPool(mission.enemyFaction, enemySets, def.sizes)]];
+      // Per-zone size-class selection (Foot Patrols weight slider); the module
+      // definition's sizes are the default when the mission doesn't specify.
+      pools = [[def.pool, resolveGroupPool(mission.enemyFaction, enemySets, p.sizes ?? def.sizes)]];
     } else if (def.kind === "fortification") {
       // Composition pools are baked per enemy faction; the AI pool is the
       // sentry team of each SELECTED enemy group set. Tuning attrs (roadside

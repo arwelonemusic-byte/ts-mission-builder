@@ -66,13 +66,17 @@ const RU: Record<string, string> = {
   "Reset mission": "Сбросить миссию",
   "Reset the whole mission?": "Сбросить всю миссию?",
   "Important!": "Важно!",
-  "Make sure you have these addons installed and updated:":
-    "Убедитесь, что эти аддоны установлены и обновлены:",
+  "Make sure you have these addons and their dependencies installed and updated:":
+    "Убедитесь, что эти аддоны и их зависимости установлены и обновлены:",
   "Supported mods": "Поддерживаемые моды",
 
   // Players tab
   "Player Faction": "Фракция игроков",
   "Player Subfaction": "Подфракция игроков",
+  Squads: "Отряды",
+  "Squad name": "Название отряда",
+  "Add squad": "Добавить отряд",
+  "Remove squad": "Удалить отряд",
   Loadouts: "Снаряжение",
   "· {n} selected": "· выбрано: {n}",
   All: "Все",
@@ -85,6 +89,7 @@ const RU: Record<string, string> = {
   // Enemy tab
   "Enemy Faction": "Фракция противника",
   " (playable)": " (игроки)",
+  " (incompatible with playable ": " (несовместимо с фракцией игроков ",
   "Enemy troops (mix any)": "Войска противника (можно несколько)",
 
   // Spawn tab
@@ -124,6 +129,13 @@ const RU: Record<string, string> = {
   "Vehicles patrolling roads in the area": "Техника, патрулирующая дороги в зоне",
   "Bunkers, sandbag positions, MG nests etc.": "Бункеры, укрепы, пулемётные гнёзда и т.п.",
   "Delete zone": "Удалить зону",
+  "Small groups only": "Только малые группы",
+  "Small to medium groups": "Малые и средние группы",
+  "Mix of all group sizes": "Группы всех размеров",
+  "Medium to large groups": "Средние и крупные группы",
+  "Only large groups": "Только крупные группы",
+  "Estimated enemy count": "Примерная численность противника",
+  hostiles: "противников",
 
   // Markers tab
   Military: "Военные",

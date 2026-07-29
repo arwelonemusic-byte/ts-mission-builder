@@ -18,6 +18,12 @@ declare module "mission-gen" {
       confRef?: string;
       /** MODS key when the faction comes from a mod */
       mod?: string;
+      /** Vanilla faction key this faction is a reskin-alias of (e.g. MEI → USSR) */
+      aliasOf?: string;
+      /** In-game faction keys this faction's conf declares friendly (symmetric!)
+       *  — lib.mjs clears the list via member override when the mission pits
+       *  such a pair against each other */
+      friendlyWith?: string[];
       /** Display label (mod factions; vanilla factions show their key) */
       label?: string;
       callsignGuid: string;
@@ -27,6 +33,8 @@ declare module "mission-gen" {
       riflemen: Record<string, string>;
       loadoutSets: Record<string, { name: string; prefab: string }[]>;
       arsenalItems: { mode: string; ref: string }[];
+      /** Optional subfaction-specific arsenal extras (e.g. camo-matched backpacks), keyed like riflemen */
+      subfactionArsenalItems?: Record<string, { mode: string; ref: string }[]>;
       vehicles: Record<string, string>;
       vehicleLabels: Record<string, string>;
       patrolVehicleKeys: string[];

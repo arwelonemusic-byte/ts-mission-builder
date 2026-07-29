@@ -3,9 +3,26 @@
 import { useEffect, useRef, useState } from "react";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import type { Mission, Zone, ZoneModule } from "@/lib/mission";
+import { rangeLabel, zoneEnemyRange } from "@/lib/enemyEstimate";
 import { MODULE_DESCRIPTIONS, MODULE_ICONS } from "@/lib/zoneModules";
 import { useLang, useT, zoneName } from "@/lib/i18n";
 import { CheckRow, GhostButton, PlusIcon, Slider } from "../ui";
+
+/** Foot Patrols weight slider: 5 stops over contiguous size-class windows.
+ * Only the selected stop's label is shown. Stop 3 (all sizes) = default. */
+const PATROL_WEIGHT_STOPS: { sizes: string[]; label: string }[] = [
+  { sizes: ["small"], label: "Small groups only" },
+  { sizes: ["small", "medium"], label: "Small to medium groups" },
+  { sizes: ["small", "medium", "large"], label: "Mix of all group sizes" },
+  { sizes: ["medium", "large"], label: "Medium to large groups" },
+  { sizes: ["large"], label: "Only large groups" },
+];
+function weightStop(sizes?: string[]): number {
+  if (!sizes?.length) return 3;
+  const key = [...sizes].sort().join(",");
+  const idx = PATROL_WEIGHT_STOPS.findIndex((s) => [...s.sizes].sort().join(",") === key);
+  return idx === -1 ? 3 : idx + 1;
+}
 
 /** Module budget spinner. Allows clearing the field while typing (backspace);
  * an empty field commits 1 on blur. Typed values clamp to [1, max]. */
@@ -104,6 +121,7 @@ export default function ZonesPanel({
 
       {mission.zones.map((zn, i) => {
         const selected = zn.id === selectedZoneId;
+        const est = rangeLabel(zoneEnemyRange(zn, mission.enemyFaction, mission.enemyGroupSets));
         return (
           <div
             key={zn.id}
@@ -124,6 +142,12 @@ export default function ZonesPanel({
                 <span className="flex items-center gap-[3px]">
                   <img src="/icons/zones/radius.svg" alt="" style={{ width: 16, height: 16 }} />
                   <span className="text-[12px] text-white">{zn.radius} m</span>
+                </span>
+              )}
+              {est && (
+                <span className="flex items-center gap-[3px]" title={t("Estimated enemy count")}>
+                  <img src="/icons/zones/skull.svg" alt="" style={{ width: 16, height: 16 }} />
+                  <span className="text-[12px] text-white/60">{est}</span>
                 </span>
               )}
               <span className="flex-1" />
@@ -178,9 +202,10 @@ export default function ZonesPanel({
               step={25}
               value={zn.radius}
               onChange={(v) => updateZone(zn.id, { radius: v })}
+              trackColor="#2e3439"
             />
 
-            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string; maxBudget?: number; noBudget?: boolean }) => {
+            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string; sizes?: string[]; maxBudget?: number; noBudget?: boolean }) => {
               const mod = zn.modules.find((mm) => mm.type === def.type);
               return (
                 <div key={def.type} className="flex flex-col gap-1">
@@ -216,6 +241,29 @@ export default function ZonesPanel({
                       />
                     )}
                   </div>
+                  {mod && def.kind === "infantry" && (def.sizes?.length ?? 0) > 1 && (
+                    <div className="ml-1 pl-4 border-l border-[#2e3439] flex flex-col gap-1">
+                      <Slider
+                        min={1}
+                        max={5}
+                        step={1}
+                        value={weightStop(mod.sizes)}
+                        onChange={(v) =>
+                          updateZone(zn.id, {
+                            modules: zn.modules.map((mm) =>
+                              mm.type === def.type
+                                ? { ...mm, sizes: PATROL_WEIGHT_STOPS[v - 1].sizes }
+                                : mm
+                            ),
+                          })
+                        }
+                        trackColor="#2e3439"
+                      />
+                      <span className="text-[11px] text-white/40">
+                        {t(PATROL_WEIGHT_STOPS[weightStop(mod.sizes) - 1].label)}
+                      </span>
+                    </div>
+                  )}
                   {mod && def.kind === "vehicle" && (
                     <div className="ml-1 pl-4 border-l border-[#2e3439] flex flex-col gap-1">
                       {(enemy?.patrolVehicleKeys ?? []).map((vk: string) => {

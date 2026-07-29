@@ -46,6 +46,7 @@ export async function toGeneratorMission(m: Mission) {
         type: mod.type,
         attrs: { m_iBudget: mod.budget },
         vehicles: mod.vehicles,
+        sizes: mod.sizes,
       })),
     });
   }
@@ -99,6 +100,7 @@ export async function toGeneratorMission(m: Mission) {
     enemyFaction: m.enemyFaction,
     enemyGroupSets: m.enemyGroupSets,
     loadouts,
+    groups: m.groups,
     guids: m.guids,
     briefing: {
       situation: m.briefing.situation.split("\n"),

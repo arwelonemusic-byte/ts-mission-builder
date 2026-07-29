@@ -53,7 +53,7 @@ say the word if you want that too.
 | Reset mission | Сбросить миссию |
 | Reset the whole mission? | Сбросить всю миссию? |
 | Important! | Важно! |
-| Make sure you have the TS Mission Toolkit addon installed and updated: | Убедитесь, что аддон TS Mission Toolkit установлен и обновлён: |
+| Make sure you have these addons and their dependencies installed and updated: | Убедитесь, что эти аддоны и их зависимости установлены и обновлены: |
 | TS Mission Toolkit — Reforger Workshop | *(not translated — proper noun link)* |
 
 ## Players tab
@@ -62,6 +62,10 @@ say the word if you want that too.
 |---|---|
 | Player Faction | Фракция игроков |
 | Player Subfaction | Подфракция игроков |
+| Squads | Отряды |
+| Squad name | Название отряда |
+| Add squad | Добавить отряд |
+| Remove squad | Удалить отряд |
 | Loadouts | Снаряжение |
 | · {n} selected | · выбрано: {n} |
 | All | Все |

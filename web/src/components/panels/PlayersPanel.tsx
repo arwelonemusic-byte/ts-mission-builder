@@ -1,9 +1,58 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { FACTIONS } from "mission-gen";
-import { defaultLoadouts, factionMeta, type ArtySupport, type Mission } from "@/lib/mission";
+import {
+  defaultGroups,
+  defaultLoadouts,
+  factionMeta,
+  type ArtySupport,
+  type Mission,
+  type MissionGroup,
+} from "@/lib/mission";
 import { useT } from "@/lib/i18n";
-import { CheckRow, Divider, Field, GhostButton, SelectInput, Toggle } from "../ui";
+import { CheckRow, Divider, Field, GhostButton, PlusIcon, SelectInput, TextInput, Toggle } from "../ui";
+
+const MAX_GROUPS = 8;
+const MAX_GROUP_SIZE = 9;
+
+/** Squad-size spinner (1–9): local text state so the field can be transiently
+ * empty while typing; commits clamped, restores the last value on blur. */
+function SizeInput({ value, onCommit }: { value: number; onCommit: (v: number) => void }) {
+  const [text, setText] = useState(String(value));
+  useEffect(() => setText(String(value)), [value]);
+  return (
+    <input
+      type="number"
+      min={1}
+      max={MAX_GROUP_SIZE}
+      value={text}
+      onChange={(e) => {
+        const raw = e.target.value;
+        if (raw === "") {
+          setText("");
+          return;
+        }
+        const v = Math.min(MAX_GROUP_SIZE, Math.max(1, Math.floor(+raw) || 1));
+        setText(String(v));
+        onCommit(v);
+      }}
+      onBlur={() => {
+        if (text === "") setText(String(value));
+      }}
+      className="w-[52px] h-[28px] shrink-0 bg-[#202427] border border-[#2e3439] rounded-[4px] px-2 text-[12px] text-white text-center focus:border-[#f4db50] focus:outline-none"
+    />
+  );
+}
+
+/** Lowest unused 1'N callsign for a newly added squad. */
+function nextCallsign(groups: MissionGroup[]): string {
+  for (let n = 1; n <= 9; n++) {
+    const cs = `1'${n}`;
+    if (!groups.some((g) => g.name === cs)) return cs;
+  }
+  return "1'9";
+}
 
 /** Shell-count spinner for artillery rows (0–999, clamped). */
 function ShellInput({ value, onCommit }: { value: number; onCommit: (v: number) => void }) {
@@ -36,6 +85,7 @@ export default function PlayersPanel({
   const loadoutSet = playable?.loadoutSets[mission.playableSubfaction] ?? [];
   const arty = mission.arty;
   const setArty = (patch: Partial<ArtySupport>) => update({ arty: { ...arty, ...patch } });
+  const setGroups = (groups: MissionGroup[]) => update({ groups });
   const shellRow = (key: "he" | "smoke" | "illum", label: string) => (
     <div className="flex items-center gap-2">
       <div className="flex-1 min-w-0">
@@ -77,6 +127,63 @@ export default function PlayersPanel({
           ))}
         </SelectInput>
       </Field>
+
+      {/* Player squads → playable faction m_aSquadNames + m_aPredefinedGroups */}
+      <div className="flex items-center gap-2">
+        <span className="text-[12px] text-white flex-1">
+          {t("Squads")}{" "}
+          <span className="text-white/40">
+            · {mission.groups.length}/{MAX_GROUPS}
+          </span>
+        </span>
+        <GhostButton small onClick={() => setGroups(defaultGroups())}>
+          {t("Reset")}
+        </GhostButton>
+      </div>
+      <div className="flex flex-col gap-2">
+        {mission.groups.map((g, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <TextInput
+              className="flex-1 min-w-0"
+              placeholder={t("Squad name")}
+              maxLength={24}
+              value={g.name}
+              onChange={(e) =>
+                setGroups(mission.groups.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))
+              }
+            />
+            <SizeInput
+              value={g.size}
+              onCommit={(size) =>
+                setGroups(mission.groups.map((x, j) => (j === i ? { ...x, size } : x)))
+              }
+            />
+            {mission.groups.length > 1 && (
+              <button
+                type="button"
+                aria-label={t("Remove squad")}
+                onClick={() => setGroups(mission.groups.filter((_, j) => j !== i))}
+                className="size-[24px] shrink-0 flex items-center justify-center rounded-[4px] hover:bg-[#2e3439] transition-colors"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/icons/zones/trash.svg" alt="" style={{ width: 16, height: 16 }} />
+              </button>
+            )}
+          </div>
+        ))}
+        {mission.groups.length < MAX_GROUPS && (
+          <GhostButton
+            onClick={() =>
+              setGroups([...mission.groups, { name: nextCallsign(mission.groups), size: 9 }])
+            }
+          >
+            <PlusIcon />
+            {t("Add squad")}
+          </GhostButton>
+        )}
+      </div>
+
+      <Divider />
 
       <div className="flex items-center gap-2">
         <span className="text-[12px] text-white flex-1">

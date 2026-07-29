@@ -1,10 +1,14 @@
 import { FACTIONS, mintGuid } from "mission-gen";
 
-export type ZoneModule = { type: string; budget: number; vehicles?: string[] };
+/** sizes = Foot Patrols weight-slider selection (size classes for the group
+ *  pool); absent = the module default (all sizes). */
+export type ZoneModule = { type: string; budget: number; vehicles?: string[]; sizes?: string[] };
 export type ArtyShell = { on: boolean; count: number };
 export type ArtySupport = { enabled: boolean; he: ArtyShell; smoke: ArtyShell; illum: ArtyShell };
 export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[] };
 export type SpawnVehicle = { type: string };
+/** Player squad: callsign (m_sCallsign) + max players (m_iGroupSize 1-9) */
+export type MissionGroup = { name: string; size: number };
 
 export type MissionMarker = {
   id: string;
@@ -58,6 +62,8 @@ export type Mission = {
   };
   /** Selected loadout prefab refs (from the playable subfaction's loadout set) */
   loadouts: string[];
+  /** Player squads (1-8) → playable faction's m_aSquadNames + m_aPredefinedGroups */
+  groups: MissionGroup[];
   /** Artillery support → TS_FireSupportManagerComponent on GameModeSF */
   arty: ArtySupport;
   spawn: { placed: boolean; x: number; z: number; yaw: number; farp: boolean; vehicles: SpawnVehicle[] };
@@ -82,6 +88,17 @@ export function factionMeta(key: string): FactionMeta {
 export function defaultLoadouts(faction: string, subfaction: string): string[] {
   const set = FACTIONS[faction]?.loadoutSets[subfaction] ?? [];
   return set.slice(0, 1).map((l) => l.prefab);
+}
+
+/** The Mod Defaults standard squad set: 1'1-1'4 + 1'6 @ 9/9/9/9/3. */
+export function defaultGroups(): MissionGroup[] {
+  return [
+    { name: "1'1", size: 9 },
+    { name: "1'2", size: 9 },
+    { name: "1'3", size: 9 },
+    { name: "1'4", size: 9 },
+    { name: "1'6", size: 3 },
+  ];
 }
 
 // Counts mirror the toolkit GameModeSF prefab's TS_FireSupportManagerComponent
@@ -109,6 +126,7 @@ export function newMission(): Mission {
     mods: [],
     briefing: { situation: "", objectives: "", threats: "", extra: [] },
     loadouts: defaultLoadouts("US", "US_Army"),
+    groups: defaultGroups(),
     arty: defaultArty(),
     spawn: { placed: false, x: 0, z: 0, yaw: 0, farp: true, vehicles: [] },
     zones: [],
@@ -149,7 +167,21 @@ export function loadMission(): Mission {
       m.enemyGroupSets = [m.enemyGroupSet ?? FACTIONS[m.enemyFaction]?.defaultGroupSet ?? "USSR_Army"];
       delete m.enemyGroupSet;
     }
+    // Drop set keys the registry no longer has (e.g. MEI's subfaction sets
+    // collapsed into one "Insurgents" pool); never leave the list empty
+    const knownSets = FACTIONS[m.enemyFaction]?.groupSets ?? {};
+    m.enemyGroupSets = m.enemyGroupSets.filter((k) => k in knownSets);
+    if (!m.enemyGroupSets.length && FACTIONS[m.enemyFaction]?.defaultGroupSet) {
+      m.enemyGroupSets = [FACTIONS[m.enemyFaction].defaultGroupSet];
+    }
     if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
+    // Squads: default old saves; clamp hand-edited ones (1-8 groups, size 1-9)
+    if (!Array.isArray(m.groups) || m.groups.length === 0) m.groups = defaultGroups();
+    else
+      m.groups = m.groups.slice(0, 8).map((g) => ({
+        name: String(g?.name ?? ""),
+        size: Math.max(1, Math.min(9, Math.floor(+g?.size) || 9)),
+      }));
     // Mods gate: default old saves to none; if a save somehow uses a mod
     // faction without the mod enabled, enable it rather than break the mission
     if (!Array.isArray(m.mods)) m.mods = [];

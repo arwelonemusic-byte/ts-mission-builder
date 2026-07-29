@@ -111,12 +111,16 @@ export function Slider({
   max,
   step,
   onChange,
+  trackColor,
 }: {
   value: number;
   min: number;
   max: number;
   step?: number;
   onChange: (v: number) => void;
+  /** Empty-track color override for surfaces that match the default #14181a
+   *  (e.g. zone cards) — see --ts-slider-track in globals.css. */
+  trackColor?: string;
 }) {
   return (
     <input
@@ -127,7 +131,10 @@ export function Slider({
       value={value}
       onChange={(e) => onChange(+e.target.value)}
       className="ts-slider w-full"
-      style={sliderProgressStyle(value, min, max)}
+      style={{
+        ...sliderProgressStyle(value, min, max),
+        ...(trackColor ? { ["--ts-slider-track" as string]: trackColor } : {}),
+      }}
     />
   );
 }
