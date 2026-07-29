@@ -38,6 +38,9 @@ declare module "mission-gen" {
       vehicles: Record<string, string>;
       vehicleLabels: Record<string, string>;
       patrolVehicleKeys: string[];
+      /** Character prefabs for mounted-patrol crews — needed when the faction
+       *  borrows vehicles whose default occupants are another faction (MEI) */
+      patrolCrew?: string[];
       fortifications: { road: string[]; roadside: string[] };
       defaultGroupSet: string;
       groupSets: Record<

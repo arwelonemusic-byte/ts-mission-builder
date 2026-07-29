@@ -477,6 +477,11 @@ ${farpBlock}`;
         return ref;
       });
       pools = [[def.pool, refs]];
+      // Without a crew pool the plugin uses each vehicle prefab's DEFAULT
+      // occupants — wrong faction when a faction borrows another's vehicles
+      // (MEI in vanilla USSR armor spawned USSR crews). patrolCrew forces
+      // faction-correct occupants.
+      if (ENEMY.patrolCrew?.length) pools.push(["m_aCrewPrefabPool", ENEMY.patrolCrew]);
     }
     for (const [, refs] of pools) {
       if (!refs?.length) throw new Error(`Empty pool for ${p.type} (${mission.enemyFaction})`);
