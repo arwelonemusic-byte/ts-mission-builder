@@ -1,7 +1,7 @@
 "use client";
 
 import { MODS } from "mission-gen";
-import { TERRAIN_LIST } from "@/lib/terrains";
+import { TERRAIN_LIST, terrainByKey } from "@/lib/terrains";
 import type { Mission } from "@/lib/mission";
 import { useT } from "@/lib/i18n";
 import { CheckRow, Divider, Field, GhostButton, Hint, SelectInput, TextInput } from "../ui";
@@ -18,21 +18,41 @@ export default function MissionPanel({
   onReset: () => void;
 }) {
   const t = useT();
+  // Required addons = toolkit (always) + the selected map's addon (modded
+  // terrains) + every enabled content mod. Mirrors what the player must have
+  // installed, not what the generator ends up listing as dependencies.
+  const terrain = terrainByKey(mission.terrain);
+  const requiredAddons = [
+    {
+      label: "TS Mission Toolkit",
+      url: "https://reforger.armaplatform.com/workshop/6906F4528B72651A-TSMissionToolkit",
+    },
+    ...(terrain.modded && terrain.workshopUrl
+      ? [{ label: terrain.label, url: terrain.workshopUrl }]
+      : []),
+    ...mission.mods
+      .map((id) => MODS[id])
+      .filter(Boolean)
+      .map((mod) => ({ label: mod.label, url: mod.workshopUrl })),
+  ];
   return (
     <>
       <div className="bg-[rgba(244,219,80,0.12)] border border-[rgba(244,219,80,0.4)] rounded-[8px] p-3 flex flex-col gap-1">
         <span className="text-[14px] leading-[20px] font-bold text-[#f4db50]">{t("Important!")}</span>
         <span className="text-[12px] leading-[16px] text-white/80">
-          {t("Make sure you have the TS Mission Toolkit addon installed and updated:")}
+          {t("Make sure you have these addons installed and updated:")}
         </span>
-        <a
-          href="https://reforger.armaplatform.com/workshop/6906F4528B72651A-TSMissionToolkit"
-          target="_blank"
-          rel="noopener"
-          className="w-max max-w-full text-[12px] leading-[16px] font-medium text-[#f4db50] underline underline-offset-2 hover:text-[#f9e278] transition-colors"
-        >
-          TS Mission Toolkit — Reforger Workshop
-        </a>
+        {requiredAddons.map((addon) => (
+          <a
+            key={addon.url}
+            href={addon.url}
+            target="_blank"
+            rel="noopener"
+            className="w-max max-w-full text-[12px] leading-[16px] font-medium text-[#f4db50] underline underline-offset-2 hover:text-[#f9e278] transition-colors"
+          >
+            {addon.label} — Reforger Workshop
+          </a>
+        ))}
       </div>
       <Field label={t("Name")}>
         <TextInput
@@ -56,7 +76,17 @@ export default function MissionPanel({
             })
           }
         >
-          {TERRAIN_LIST.map((tn) => (
+          {TERRAIN_LIST.filter((tn) => !tn.modded).map((tn) => (
+            <option key={tn.key} value={tn.key}>
+              {tn.label}
+            </option>
+          ))}
+          {TERRAIN_LIST.some((tn) => tn.modded) && (
+            <option disabled aria-hidden value="">
+              ──────────
+            </option>
+          )}
+          {TERRAIN_LIST.filter((tn) => tn.modded).map((tn) => (
             <option key={tn.key} value={tn.key}>
               {tn.label}
             </option>
@@ -81,16 +111,6 @@ export default function MissionPanel({
               >
                 {mod.label}
               </CheckRow>
-              {on && (
-                <a
-                  href={mod.workshopUrl}
-                  target="_blank"
-                  rel="noopener"
-                  className="ml-6 w-max max-w-full text-[12px] leading-[16px] font-medium text-[#f4db50] underline underline-offset-2 hover:text-[#f9e278] transition-colors"
-                >
-                  {mod.label} — Reforger Workshop
-                </a>
-              )}
             </div>
           );
         })}

@@ -1,11 +1,22 @@
 // CLI wrapper: builds the TS_WebSpike test mission via lib.mjs and writes it
 // into the Workbench addons directory.
 //
-// Usage: node generate.mjs [--clean] [--rhs]
-//   --clean  only when Workbench is NOT running: it wipes the addon dir
-//            including EnfusionMCP handler scripts
-//   --rhs    build the RHS variant instead (TS_WebSpikeRHS: RHS_USAF vs
-//            RHS_AFRF, exercises mod deps + FactionManager conf-ref entries)
+// Usage: node generate.mjs [--clean] [--rhs] [--armenhof]
+//   --clean     only when Workbench is NOT running: it wipes the addon dir
+//               including EnfusionMCP handler scripts
+//   --rhs       build the RHS variant instead (TS_WebSpikeRHS: RHS_USAF vs
+//               RHS_AFRF, exercises mod deps + FactionManager conf-ref entries)
+//   --armenhof  build the modded-terrain variant (TS_WebSpikeArmenhof: vanilla
+//               US vs USSR on Armenhof, exercises terrain dependencies + nav refs)
+//   --chernarus same, on ChernarusMinus (terrain with transitive map-addon deps)
+//   --faircroft same, on Faircroft Islands (world codename BritMapProject)
+//   --iraq      same, on Iraq 1990
+//   --kunar     same, on Kunar Province
+//   --ruha      same, on Ruha
+//   --serhiivka same, on Serhiivka
+//   --takistan  same, on Takistan
+//   --zargabad  same, on Zargabad
+//   --zarichne  same, on Zarichne
 
 import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -147,7 +158,518 @@ const RHS_MISSION = {
   ],
 };
 
-const BUILT = process.argv.includes("--rhs") ? RHS_MISSION : MISSION;
+// Armenhof spike: vanilla factions on a modded terrain — proves a mission
+// picks up the MAP addon dependency with no faction mods in play. Coords
+// sampled from the ops-planner heightmap (validated against the GM world's
+// AIWorld elevation).
+const ARMENHOF_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeArmenhof",
+  dirName: "TS_WebSpikeArmenhof",
+  addonTitle: "TS Web Spike Armenhof Mission",
+  name: "TS_WebSpikeArmenhof",
+  displayName: "TS Web Spike Armenhof",
+  terrain: "armenhof",
+  guids: {
+    addon: "6A85C1A05B3D9E42",
+    world: "6A85C1A0C7F41D88",
+    missionConf: "6A85C1A09A2E6B57",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces have breached the inner German border and are advancing on Fulda through the Armenhof countryside.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "1200 335.91 2600",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "2400 361.28 1400",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "2200 365.69 1550",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [2400, 361.3, 1400], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [1250, 336.5, 2550], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [2200, 365.7, 1550], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [2300, 364, 1500], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [2400, 361.3, 1400], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Chernarus spike: second modded terrain — the map addon has its own deps
+// (building/rail/outside-terrain packs) that must resolve transitively from
+// just the map GUID. Coords sampled from the heightmap around the GM world's
+// validated AIWorld position (hills north of the coast).
+const CHERNARUS_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeChernarus",
+  dirName: "TS_WebSpikeChernarus",
+  addonTitle: "TS Web Spike Chernarus Mission",
+  name: "TS_WebSpikeChernarus",
+  displayName: "TS Web Spike Chernarus",
+  terrain: "chernarus",
+  guids: {
+    addon: "6A86D2B14C7E8F53",
+    world: "6A86D2B1A93B6E17",
+    missionConf: "6A86D2B1D45C9A28",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces are consolidating in the hills of central Chernarus.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "7000 318.53 10800",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "7900 400.66 9900",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "8000 425.13 9800",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [7900, 400.7, 9900], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [7050, 310.6, 10850], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [8000, 425.1, 9800], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [7950, 412, 9850], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [7900, 400.7, 9900], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Faircroft spike: island terrain — coords sampled from the heightmap on the
+// central landmass (the map is mostly water; GM-world managers sit at Y=0 so
+// there was no AIWorld elevation cross-check on this one).
+const FAIRCROFT_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeFaircroft",
+  dirName: "TS_WebSpikeFaircroft",
+  addonTitle: "TS Web Spike Faircroft Mission",
+  name: "TS_WebSpikeFaircroft",
+  displayName: "TS Web Spike Faircroft",
+  terrain: "faircroft",
+  guids: {
+    addon: "6A87E3C27D5A9B64",
+    world: "6A87E3C2B84C7F29",
+    missionConf: "6A87E3C2E96D8A35",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces have seized the central island of the Faircroft archipelago.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "6200 61.9 4800",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "7200 57.2 4300",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "7000 42 4200",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [7200, 57.2, 4300], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [6300, 60, 4900], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [7000, 42, 4200], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [7100, 50, 4250], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [7200, 57.2, 4300], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Iraq 1990 spike: desert terrain, coords sampled from the heightmap
+// (AIWorld cross-check matched: sampled 42.16 vs placed 42.156).
+const IRAQ_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeIraq",
+  dirName: "TS_WebSpikeIraq",
+  addonTitle: "TS Web Spike Iraq Mission",
+  name: "TS_WebSpikeIraq",
+  displayName: "TS Web Spike Iraq",
+  terrain: "iraq1990",
+  guids: {
+    addon: "6A88F4D38E6B7C75",
+    world: "6A88F4D3C95D8E31",
+    missionConf: "6A88F4D3FA7E9B46",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet-backed forces hold the high desert west of the wadi.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "1000 125.6 2600",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "2200 90.1 1500",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "2000 88.9 1400",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [2200, 90.1, 1500], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [1050, 104.8, 2550], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [2000, 88.9, 1400], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [2100, 95.8, 1450], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [2200, 90.1, 1500], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Kunar spike: mountain terrain — spawn on a terrace above the northern river
+// valley, zones on the valley floor (no AIWorld elevation cross-check: the
+// map's managers sit at placeholder Y=10).
+const KUNAR_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeKunar",
+  dirName: "TS_WebSpikeKunar",
+  addonTitle: "TS Web Spike Kunar Mission",
+  name: "TS_WebSpikeKunar",
+  displayName: "TS Web Spike Kunar",
+  terrain: "kunar",
+  guids: {
+    addon: "6A89A5E49F7C8D86",
+    world: "6A89A5E4DA6E9F42",
+    missionConf: "6A89A5E40B8FAC57",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces control the villages along the Kunar river valley.",
+      "",
+      "Friendly forces are staging on the terrace north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "1700 85.7 3400",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "2200 19.8 3100",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "2400 21.4 3000",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [2200, 19.8, 3100], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [1650, 59.7, 3450], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [2400, 21.4, 3000], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [2300, 23, 3050], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [2200, 19.8, 3100], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Ruha spike: rolling Finnish terrain, coords sampled from the heightmap
+// (AIWorld cross-check matched: sampled 58.38 vs placed 58.374).
+const RUHA_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeRuha",
+  dirName: "TS_WebSpikeRuha",
+  addonTitle: "TS Web Spike Ruha Mission",
+  name: "TS_WebSpikeRuha",
+  displayName: "TS Web Spike Ruha",
+  terrain: "ruha",
+  guids: {
+    addon: "6A8AB6F5A08D9E97",
+    world: "6A8AB6F5EB7FA053",
+    missionConf: "6A8AB6F51C90BD68",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces have dug into the forests east of the Ruha farmlands.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "2400 58.5 5600",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "3400 59.7 4700",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "3200 59.3 4600",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [3400, 59.7, 4700], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [2450, 51.3, 5550], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [3200, 59.3, 4600], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [3300, 59.4, 4650], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [3400, 59.7, 4700], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Serhiivka spike: Ukrainian steppe terrain — heightmap validated against the
+// map's terrain-fitted gas-station buildings (149.16 sampled vs 149.156
+// placed; its AIWorld manager Y is arbitrary, don't cross-check against it).
+const SERHIIVKA_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeSerhiivka",
+  dirName: "TS_WebSpikeSerhiivka",
+  addonTitle: "TS Web Spike Serhiivka Mission",
+  name: "TS_WebSpikeSerhiivka",
+  displayName: "TS Web Spike Serhiivka",
+  terrain: "serhiivka",
+  guids: {
+    addon: "6A8BC7A6B19EAFA8",
+    world: "6A8BC7A6FC80B164",
+    missionConf: "6A8BC7A62DA1CE79",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces hold the fields and treelines south-east of the Serhiivka farmsteads.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "3000 142.4 6000",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "4000 128.3 5000",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "3800 139.7 4900",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [4000, 128.3, 5000], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [3050, 143.2, 5950], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [3800, 139.7, 4900], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [3900, 135.1, 4950], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [4000, 128.3, 5000], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Takistan spike: mountain desert — spike sits in the northern valley
+// (heightmap validated against terrain-fitted houses, e.g. 294.31 sampled vs
+// 294.29 placed; the GM layer's managers all sit at origin).
+const TAKISTAN_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeTakistan",
+  dirName: "TS_WebSpikeTakistan",
+  addonTitle: "TS Web Spike Takistan Mission",
+  name: "TS_WebSpikeTakistan",
+  displayName: "TS Web Spike Takistan",
+  terrain: "takistan",
+  guids: {
+    addon: "6A8CD8B7C2AFC0B9",
+    world: "6A8CD8B70D91C275",
+    missionConf: "6A8CD8B73EB2DF8A",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet-backed forces hold the villages on the valley floor north of the Takistani highlands.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "3900 99.4 11000",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "5200 135.3 10400",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "5000 130.8 10300",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [5200, 135.3, 10400], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [3950, 96.6, 10950], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [5000, 130.8, 10300], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [5100, 131, 10350], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [5200, 135.3, 10400], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Zargabad spike: city plain — heightmap validated against a terrain-fitted
+// content entity (17.28 sampled vs 17.347 placed).
+const ZARGABAD_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeZargabad",
+  dirName: "TS_WebSpikeZargabad",
+  addonTitle: "TS Web Spike Zargabad Mission",
+  name: "TS_WebSpikeZargabad",
+  displayName: "TS Web Spike Zargabad",
+  terrain: "zargabad",
+  guids: {
+    addon: "6A8DE9C8D3B0D1CA",
+    world: "6A8DE9C81EA2D386",
+    missionConf: "6A8DE9C84FC3F09B",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet-backed forces occupy the orchards and compounds south-east of Zargabad.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "3200 19.4 4800",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "4200 16.8 3800",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "4000 21.7 3700",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [4200, 16.8, 3800], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [3250, 18.8, 4750], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [4000, 21.7, 3700], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [4100, 18.2, 3750], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [4200, 16.8, 3800], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+// Zarichne spike: river lowland — heightmap validated against 7 terrain-fitted
+// buildings (5 within ~1 m, one exact; outliers were river-bank bluffs).
+// Parent world ships its own PerceptionManager (parentHasPerceptionManager).
+const ZARICHNE_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeZarichne",
+  dirName: "TS_WebSpikeZarichne",
+  addonTitle: "TS Web Spike Zarichne Mission",
+  name: "TS_WebSpikeZarichne",
+  displayName: "TS Web Spike Zarichne",
+  terrain: "zarichne",
+  guids: {
+    addon: "6A8EFAD9E4C1E2DB",
+    world: "6A8EFAD92FB3F497",
+    missionConf: "6A8EFAD960D401AC",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces hold the fields east of the Zarichne river crossings.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "2800 22.6 3700",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "3600 25.3 3150",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "3400 24.3 3050",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [3600, 25.3, 3150], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [2850, 20.3, 3650], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [3400, 24.3, 3050], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [3500, 24.6, 3100], length: 1000, width: 800, rotation: 0 },
+    { kind: "objective", pos: [3600, 25.3, 3150], length: 300, width: 200, rotation: 30 },
+  ],
+};
+
+const BUILT = process.argv.includes("--zarichne")
+  ? ZARICHNE_MISSION
+  : process.argv.includes("--zargabad")
+  ? ZARGABAD_MISSION
+  : process.argv.includes("--takistan")
+  ? TAKISTAN_MISSION
+  : process.argv.includes("--serhiivka")
+  ? SERHIIVKA_MISSION
+  : process.argv.includes("--ruha")
+  ? RUHA_MISSION
+  : process.argv.includes("--kunar")
+  ? KUNAR_MISSION
+  : process.argv.includes("--iraq")
+  ? IRAQ_MISSION
+  : process.argv.includes("--faircroft")
+  ? FAIRCROFT_MISSION
+  : process.argv.includes("--chernarus")
+    ? CHERNARUS_MISSION
+    : process.argv.includes("--armenhof")
+      ? ARMENHOF_MISSION
+      : process.argv.includes("--rhs")
+        ? RHS_MISSION
+        : MISSION;
 const { files, addonDirName } = buildMissionFiles(BUILT);
 const addonDir = join(ADDONS_ROOT, addonDirName);
 

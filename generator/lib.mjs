@@ -77,7 +77,9 @@ export function buildMissionFiles(mission, options = {}) {
   // checkbox — a vanilla-only mission must never force players to install a
   // mod that merely happened to be enabled in the builder.
   const usedMods = [...new Set([F.mod, ENEMY.mod].filter(Boolean))];
-  const modDeps = [...new Set(usedMods.flatMap((id) => MODS[id].dependencies))];
+  const modDeps = [
+    ...new Set([...usedMods.flatMap((id) => MODS[id].dependencies), ...(TERRAIN.dependencies ?? [])]),
+  ];
   const modFactionKeys = usedMods.flatMap((id) => Object.keys(MODS[id].factions));
 
   // --- addon.gproj ---
@@ -278,10 +280,10 @@ ${navBlocks}
  }
  coords ${mgr(-20, 0, -20)}
 }
-PerceptionManager PerceptionManager : "{028DAEAD63E056BE}Prefabs/World/Game/PerceptionManager.et" {
+${TERRAIN.parentHasPerceptionManager ? "" : `PerceptionManager PerceptionManager : "{028DAEAD63E056BE}Prefabs/World/Game/PerceptionManager.et" {
  coords ${mgr(-20, 0, -18)}
 }
-SCR_FactionManager FactionManager_Editor : "{4A188E44289B9A50}Prefabs/MP/Managers/Factions/FactionManager_Editor.et" {
+`}SCR_FactionManager FactionManager_Editor : "{4A188E44289B9A50}Prefabs/MP/Managers/Factions/FactionManager_Editor.et" {
  coords ${mgr(-19, 0, -17)}
  Factions {
 ${["US", "USSR", "FIA", ...modFactionKeys].map(factionEntry).join("\n")}

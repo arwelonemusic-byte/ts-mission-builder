@@ -1,5 +1,14 @@
 declare module "mission-gen" {
-  export const TERRAINS: Record<string, { label: string; parent: string; nav: string[] }>;
+  export const TERRAINS: Record<
+    string,
+    {
+      label: string;
+      parent: string;
+      nav: string[];
+      dependencies?: string[];
+      parentHasPerceptionManager?: boolean;
+    }
+  >;
   export const FACTIONS: Record<
     string,
     {

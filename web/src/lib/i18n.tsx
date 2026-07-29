@@ -66,8 +66,8 @@ const RU: Record<string, string> = {
   "Reset mission": "Сбросить миссию",
   "Reset the whole mission?": "Сбросить всю миссию?",
   "Important!": "Важно!",
-  "Make sure you have the TS Mission Toolkit addon installed and updated:":
-    "Убедитесь, что аддон TS Mission Toolkit установлен и обновлён:",
+  "Make sure you have these addons installed and updated:":
+    "Убедитесь, что эти аддоны установлены и обновлены:",
   "Supported mods": "Поддерживаемые моды",
 
   // Players tab

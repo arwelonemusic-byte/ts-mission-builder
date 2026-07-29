@@ -41,6 +41,140 @@ export const TERRAINS = {
       "{1B1989747762AF12}worlds/MP/Navmeshes/LowResCain.nmn",
     ],
   },
+  // Modded terrains: `dependencies` = the map addon GUID(s) unioned into the
+  // generated .gproj (base game dep 58D0FB3206B6F859 is implicit — never list
+  // it). Refs harvested from the extracted pak: parent from the GM world's
+  // SubScene line, nav from its default.layer NavmeshFile entries.
+  armenhof: {
+    label: "Armenhof",
+    parent: "{CA21D9E6C5295D02}Worlds/armenhof.ent",
+    nav: [
+      "{F4C590B5CCDB5D78}NavMesh/armenhof_soldiers.nmn",
+      "{4ED2D8A254EA9DA0}NavMesh/armenhof_btr.nmn",
+      "{2F763A101EADBE40}NavMesh/armenhof_lowres.nmn",
+    ],
+    dependencies: ["656514EAA451A2B2"],
+  },
+  // ChernarusMinus (map addon deps MinusBuildingPack/RailEnfusionRedux/
+  // OutsideTerrainCore resolve transitively from the map's own gproj — we
+  // list only the map itself).
+  chernarus: {
+    label: "Chernarus",
+    parent: "{F513898A573B9C3F}Worlds/ChernarusMinusBeta.ent",
+    nav: [
+      "{AE973AF9E88AD3FC}Worlds/ChernoT/terrainName_soldiers.nmn",
+      "{1A6F9D049B8B476F}Worlds/ChernoT/terrainName_BTRlike.nmn",
+      "{C5EB0E76B45B4179}Worlds/ChernoT/terrainName_LowRes.nmn",
+    ],
+    dependencies: ["665D1AA55B5D8076"],
+  },
+  // Faircroft Islands (addon ID/world codename "BritMapProject"; dep BritProps
+  // resolves transitively). GM-world navmesh set (a separate Conflict-world set
+  // also exists in the addon — unused).
+  faircroft: {
+    label: "Faircroft Islands",
+    parent: "{B3AC4C35D795749C}Worlds/BritMapProject/BritMapProject.ent",
+    nav: [
+      "{8EA933D593EBAE00}Worlds/GameMaster/Navmeshes/BritMapProject.nmn",
+      "{EE7A1FAB146720E2}Worlds/GameMaster/Navmeshes/BritMapProjectBTRlike.nmn",
+      "{B42DA99EE5260987}Worlds/GameMaster/Navmeshes/BritMapProjectLowRes.nmn",
+    ],
+    dependencies: ["614B62005CBB8057"],
+  },
+  // Iraq 1990 (addon ID/TITLE just "Iraq"; no external deps).
+  iraq1990: {
+    label: "Iraq 1990",
+    parent: "{8E35A1067D067CF6}Worlds/Iraq.ent",
+    nav: [
+      "{5F31037ECE8E5463}Worlds/GameMaster/Navmesh/IraqNav.nmn",
+      "{54858B3798156AA9}Worlds/GameMaster/Navmesh/IraqBTR.nmn",
+      "{76E281189CE6E34C}Worlds/GameMaster/Navmesh/IraqLow.nmn",
+    ],
+    dependencies: ["61A56756149009FF"],
+  },
+  // Kunar Province (dep ArmaTerrainCore resolves transitively). Nav refs come
+  // from the addon's custom SCR_AIWorld_Kunar.et prefab, not a GM layer — the
+  // .nmn file refs work identically in our vanilla-prefab navBlocks.
+  kunar: {
+    label: "Kunar Province",
+    parent: "{B70B908EF90E5F3A}Worlds/Kunar.ent",
+    nav: [
+      "{D7F7994B2259BC99}NavMesh/Kunar_Soldiers.nmn",
+      "{62C73AECEEA884E5}NavMesh/Kunar_BTR.nmn",
+      "{935C52C1479660D1}NavMesh/Kunar_LowRes.nmn",
+    ],
+    dependencies: ["5C9691EA7FD7A79F"],
+  },
+  // Ruha (no external deps; nav refs in the addon's custom SCR_AIWorld_Ruha.et
+  // prefab, Kunar-style; note lowercase "worlds/" in its resource paths).
+  ruha: {
+    label: "Ruha",
+    parent: "{31A1248EA401F22C}worlds/Ruha.ent",
+    nav: [
+      "{C54FCF0DC85B9642}worlds/Gamemaster/Navmeshes/GM_Ruha_navmesh_soldiers.nmn",
+      "{301510D49B59DE2C}worlds/Gamemaster/Navmeshes/GM_Ruha_navmesh_vehicles.nmn",
+      "{806B3036EA17E548}worlds/Gamemaster/Navmeshes/GM_Ruha_navmesh_lowres.nmn",
+    ],
+    dependencies: ["653CB36244ADBE0F"],
+  },
+  // Serhiivka (WCS; dep WCS_Core resolves transitively). Nav refs in custom
+  // SCR_AIWorld_Serhiivka.et prefab. Parent = the FULL content world
+  // Serhiivka.ent (the addon's Serhiivka_Empty.ent is terrain-only — no
+  // buildings/roads — meant for layout work, not missions).
+  serhiivka: {
+    label: "Serhiivka",
+    parent: "{BC070CAEF616045B}Worlds/Serhiivka.ent",
+    // The bare world ships its own PerceptionManager (vanilla prefab) —
+    // emitting ours too logs "Duplicate entity of type 'PerceptionManager'".
+    parentHasPerceptionManager: true,
+    nav: [
+      "{04D0EEF185D0A158}NavMesh/Serhiivka_Soldiers.nmn",
+      "{2F9B4F7B2B8923DA}NavMesh/Serhiivka_BTR.nmn",
+      "{129CB293F6A84A16}NavMesh/Serhiivka_LowRes.nmn",
+    ],
+    dependencies: ["61557578724DBE60"],
+  },
+  // Takistan (deps ArmaTerrainCore + OutsideTerrainCore resolve transitively).
+  // Nav refs in custom SCR_AIWorld_Takistan.et; lowercase "worlds/" paths;
+  // bare world ships only standard infra managers (no Perception/Radio/AIWorld).
+  takistan: {
+    label: "Takistan",
+    parent: "{07A73E60588E08E0}worlds/Takistan/Takistan.ent",
+    nav: [
+      "{1181B4D46BCE7F2B}worlds/Navmesh/Takistan_Soldier.nmn",
+      "{E8940225D56E81FD}worlds/Navmesh/Takistan_BTR.nmn",
+      "{A7C786C8A4407E92}worlds/Navmesh/Takistan_Lowres.nmn",
+    ],
+    dependencies: ["615EEBD9BDFEEE9B"],
+  },
+  // Zargabad (same author as Takistan; depends on the Takistan addon, which
+  // resolves transitively — list only Zargabad). GM layer's soldier navmesh
+  // slot inherits from Configs/Navmesh/*.conf — the .nmn ref below comes from
+  // that conf; BTR/LowRes were direct refs.
+  zargabad: {
+    label: "Zargabad",
+    parent: "{D522C90D39CB5F15}Worlds/Zargabad/Zargabad.ent",
+    nav: [
+      "{377728C0FB0A8127}Configs/Navmesh/Navmesh_GM_Zargabad_Soldier.nmn",
+      "{93359A9EC090BBE7}Configs/Navmesh/Navmesh_GM_Zargabad_BTR.nmn",
+      "{532EFB5C20F8845B}Configs/Navmesh/Navmesh_GM_Zargabad_LowRes.nmn",
+    ],
+    dependencies: ["662B602B3F823F27"],
+  },
+  // Zarichne (no external deps; WCS-style: custom SCR_AIWorld_Zarichne.et
+  // prefab holds the nav refs, and like Serhiivka the bare world ships its
+  // own PerceptionManager).
+  zarichne: {
+    label: "Zarichne",
+    parent: "{FA50B49D2E7A581D}Worlds/Zarichne/Zarichne.ent",
+    parentHasPerceptionManager: true,
+    nav: [
+      "{26764981146D437B}NavMesh/Zarichne_Soldiers.nmn",
+      "{7CF5039956B33F65}NavMesh/Zarichne_BTR.nmn",
+      "{C4AE9581E30730A8}NavMesh/Zarichne_LowRes.nmn",
+    ],
+    dependencies: ["61732D4F7D980E9A"],
+  },
 };
 
 const P_OPFOR = "Prefabs/Groups/OPFOR";
