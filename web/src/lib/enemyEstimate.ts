@@ -10,10 +10,13 @@ import type { Mission, Zone } from "./mission";
  *  - Foot Patrols / Garrison: budget × one group from the module's size-class
  *    pool — estimated via the class ranges below (mirrors resolveGroupPool's
  *    fall-back to all classes when the requested ones are empty).
- *  - Vehicle Patrols: budget × one vehicle, compartments filled with the
- *    prefab's default occupants (driver/gunner/cargo) — seat counts vary.
+ *  - Vehicle Patrols / Vehicle Reinforcements: budget × one vehicle,
+ *    compartments filled (driver/gunner/cargo) — seat counts vary.
  *  - Fortifications: budget × one composition, each garrisoned by one
  *    sentry-pool team.
+ *  - Foot Reinforcements: falls through to the size-class branch (def.sizes
+ *    = ["large"]). QRF modules count toward the estimate even before any
+ *    origin is placed — the budget is what will arrive once one exists.
  */
 const CLASS_RANGE: Record<string, [number, number]> = {
   small: [2, 4],
@@ -47,7 +50,7 @@ export function zoneEnemyRange(
       const size = Math.max(0, ...sets.map((s) => s.defense?.size ?? 0));
       min += size;
       max += size;
-    } else if (def.kind === "vehicle") {
+    } else if (def.kind === "vehicle" || def.kind === "qrf-vehicle") {
       min += mod.budget * VEHICLE_CREW_RANGE[0];
       max += mod.budget * VEHICLE_CREW_RANGE[1];
     } else if (def.kind === "fortification") {

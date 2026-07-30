@@ -18,6 +18,7 @@ import {
 import { rangeLabel, totalEnemyRange } from "@/lib/enemyEstimate";
 import { exportMission, spawnSlopeDelta } from "@/lib/export";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
+import { ORIGIN_COLORS } from "@/lib/zoneModules";
 import { LangProvider, loadLang, saveLang, tr, zonesCountLabel, type Lang } from "@/lib/i18n";
 import AppBar, { type StepId } from "@/components/AppBar";
 import GenerateOverlay, { GEN_STAGES, type GenState } from "@/components/GenerateOverlay";
@@ -76,7 +77,15 @@ export default function Editor() {
   const [mission, setMission] = useState<Mission | null>(null);
   const [lang, setLangState] = useState<Lang>("en");
   const [step, setStep] = useState<StepId>("mission");
-  const [placeMode, setPlaceMode] = useState<"spawn" | "zone" | "marker" | null>(null);
+  const [placeMode, setPlaceMode] = useState<"spawn" | "zone" | "marker" | "qrf-origin" | null>(null);
+  // Which zone+module an armed "qrf-origin" placement feeds (QRF reinforcements)
+  const [originTarget, setOriginTarget] = useState<{ zoneId: string; moduleType: string } | null>(null);
+  // Selected reinforcement origin (panel row ↔ map badge, two-way)
+  const [selectedOrigin, setSelectedOrigin] = useState<{
+    zoneId: string;
+    moduleType: string;
+    index: number;
+  } | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [markerDraft, setMarkerDraftState] = useState<MarkerDraft>(DEFAULT_MARKER_DRAFT);
@@ -154,6 +163,7 @@ export default function Editor() {
       if (genRef.current?.phase === "done") setGen(null);
       else {
         setPlaceMode(null);
+        setOriginTarget(null);
         setSectorDraw(null);
       }
     };
@@ -204,6 +214,13 @@ export default function Editor() {
   const removeZone = (id: string) => {
     setMission((m) => (m ? { ...m, zones: m.zones.filter((z) => z.id !== id) } : m));
     setSelectedZoneId((cur) => (cur === id ? null : cur));
+    setSelectedOrigin((cur) => (cur?.zoneId === id ? null : cur));
+    // Deleting the zone an origin placement was armed for cancels the mode
+    setOriginTarget((cur) => {
+      if (cur?.zoneId !== id) return cur;
+      setPlaceMode((pm) => (pm === "qrf-origin" ? null : pm));
+      return null;
+    });
   };
   const updateMarker = (id: string, patch: Partial<MissionMarker>) =>
     setMission((m) =>
@@ -226,12 +243,23 @@ export default function Editor() {
   // Arming the draw mode and arming a click-place mode are mutually exclusive.
   const armSectorDraw = (kind: "ao" | "objective") => {
     setPlaceMode(null);
+    setOriginTarget(null);
     setSelectedSectorId(null);
     setSectorDraw((cur) => (cur === kind ? null : kind));
   };
-  const armPlaceMode = (m: "spawn" | "zone" | "marker" | null) => {
+  const armPlaceMode = (m: "spawn" | "zone" | "marker" | "qrf-origin" | null) => {
     setSectorDraw(null);
+    if (m !== "qrf-origin") setOriginTarget(null);
     setPlaceMode(m);
+  };
+  /** Toggle QRF origin placement for a zone+module (same pair re-toggles off). */
+  const armOriginPlace = (zoneId: string, moduleType: string) => {
+    setSectorDraw(null);
+    setOriginTarget((cur) => {
+      const same = cur?.zoneId === zoneId && cur.moduleType === moduleType;
+      setPlaceMode(same ? null : "qrf-origin");
+      return same ? null : { zoneId, moduleType };
+    });
   };
   const onSectorDrawn = (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => {
     const id = freshId();
@@ -320,6 +348,7 @@ export default function Editor() {
 
   const goStep = (s: StepId) => {
     setPlaceMode(null);
+    setOriginTarget(null);
     setSectorDraw(null);
     setStep(s);
   };
@@ -330,6 +359,7 @@ export default function Editor() {
       setSelectedMarkerId(null);
       setSelectedZoneId(null);
       setSelectedSectorId(null);
+      setSelectedOrigin(null);
       return;
     }
     const xi = +x.toFixed(1);
@@ -353,6 +383,29 @@ export default function Editor() {
       mapApi.current?.addPing(xi, zi, "#9333ea");
       markFresh(zone.id);
       setPlaceMode(null);
+    } else if (placeMode === "qrf-origin" && originTarget) {
+      // Stays armed for multi-drop (like markers) until the module's origin
+      // cap is reached; the panel button re-toggle / Esc cancels earlier.
+      const zn = mission.zones.find((z) => z.id === originTarget.zoneId);
+      const mm = zn?.modules.find((m2) => m2.type === originTarget.moduleType);
+      const cap =
+        ZONE_MODULES.find((d) => d.type === originTarget.moduleType)?.maxOrigins ?? 3;
+      const cur = mm?.origins ?? [];
+      if (!zn || !mm || cur.length >= cap) {
+        setPlaceMode(null);
+        setOriginTarget(null);
+        return;
+      }
+      updateZone(zn.id, {
+        modules: zn.modules.map((m2) =>
+          m2.type === mm.type ? { ...m2, origins: [...cur, { x: xi, z: zi }] } : m2
+        ),
+      });
+      mapApi.current?.addPing(xi, zi, ORIGIN_COLORS[originTarget.moduleType] ?? "#f97316");
+      if (cur.length + 1 >= cap) {
+        setPlaceMode(null);
+        setOriginTarget(null);
+      }
     }
   };
 
@@ -370,6 +423,28 @@ export default function Editor() {
     const zn = mission?.zones.find((z) => z.id === id);
     if (zn) focusOn(zn.x, zn.z, zn.radius * 1.5);
   };
+
+  /* ----- QRF origin selection (panel row ↔ map badge, two-way) ----- */
+  const selectOriginFromPanel = (zoneId: string, moduleType: string, index: number) => {
+    setSelectedOrigin({ zoneId, moduleType, index });
+    const o = mission?.zones
+      .find((z) => z.id === zoneId)
+      ?.modules.find((m2) => m2.type === moduleType)?.origins?.[index];
+    if (o) focusOn(o.x, o.z, 200);
+  };
+  const onOriginMapClick = (zoneId: string, moduleType: string, index: number) => {
+    setSelectedOrigin({ zoneId, moduleType, index });
+    setSelectedZoneId(zoneId);
+    setZoneRevealSeq((s) => s + 1);
+    setStep("zones");
+  };
+  /** Fix up the selection when an origin row is deleted (indices shift). */
+  const onOriginRemoved = (zoneId: string, moduleType: string, index: number) =>
+    setSelectedOrigin((cur) => {
+      if (!cur || cur.zoneId !== zoneId || cur.moduleType !== moduleType) return cur;
+      if (cur.index === index) return null;
+      return cur.index > index ? { ...cur, index: cur.index - 1 } : cur;
+    });
 
   const onMarkerClick = (id: string) => {
     setSelectedMarkerId((cur) => (cur === id ? null : id));
@@ -493,7 +568,12 @@ export default function Editor() {
     return <main className="grid place-items-center h-dvh bg-[#0d0f11] text-white/60">Loading…</main>;
   }
 
-  const placeNoun = placeMode === "spawn" ? t("the spawn point") : t("an AI zone");
+  const placeNoun =
+    placeMode === "spawn"
+      ? t("the spawn point")
+      : placeMode === "qrf-origin"
+        ? t("a reinforcement origin")
+        : t("an AI zone");
   const sectorNoun = sectorDraw === "ao" ? t("the AO sector") : t("an objective sector");
 
   return (
@@ -508,6 +588,8 @@ export default function Editor() {
           spawn={mission.spawn}
           zones={mission.zones}
           selectedZoneId={selectedZoneId}
+          selectedOrigin={selectedOrigin}
+          onOriginClick={onOriginMapClick}
           markers={mission.markers}
           selectedMarkerId={selectedMarkerId}
           sectors={mission.sectors}
@@ -519,6 +601,32 @@ export default function Editor() {
           onMapClick={onMapClick}
           onZoneClick={onZoneClick}
           onZoneMoved={(id, x, z) => updateZone(id, { x, z })}
+          onOriginMoved={(zoneId, moduleType, index, x, z) =>
+            setMission((m) =>
+              m
+                ? {
+                    ...m,
+                    zones: m.zones.map((zn) =>
+                      zn.id === zoneId
+                        ? {
+                            ...zn,
+                            modules: zn.modules.map((mm) =>
+                              mm.type === moduleType
+                                ? {
+                                    ...mm,
+                                    origins: (mm.origins ?? []).map((o, i) =>
+                                      i === index ? { x, z } : o
+                                    ),
+                                  }
+                                : mm
+                            ),
+                          }
+                        : zn
+                    ),
+                  }
+                : m
+            )
+          }
           onSpawnMoved={(x, z) => updateSpawn({ x, z })}
           onMarkerClick={onMarkerClick}
           onMarkerMoved={(id, x, z) => updateMarker(id, { x, z })}
@@ -630,6 +738,11 @@ export default function Editor() {
                 mission={mission}
                 placeMode={placeMode}
                 setPlaceMode={armPlaceMode}
+                originTarget={originTarget}
+                onArmOrigin={armOriginPlace}
+                selectedOrigin={selectedOrigin}
+                onSelectOrigin={selectOriginFromPanel}
+                onOriginRemoved={onOriginRemoved}
                 selectedZoneId={selectedZoneId}
                 revealSeq={zoneRevealSeq}
                 onSelectZone={selectAndFocusZone}

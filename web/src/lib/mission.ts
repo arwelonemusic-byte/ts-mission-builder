@@ -1,8 +1,17 @@
 import { FACTIONS, mintGuid } from "mission-gen";
 
 /** sizes = Foot Patrols weight-slider selection (size classes for the group
- *  pool); absent = the module default (all sizes). */
-export type ZoneModule = { type: string; budget: number; vehicles?: string[]; sizes?: string[] };
+ *  pool); absent = the module default (all sizes).
+ *  origins = QRF reinforcement origin points (world coords, max maxOrigins);
+ *  each becomes a TS_QRFSpawnAnchor in the generated QRF.layer. */
+export type ZoneOrigin = { x: number; z: number };
+export type ZoneModule = {
+  type: string;
+  budget: number;
+  vehicles?: string[];
+  sizes?: string[];
+  origins?: ZoneOrigin[];
+};
 export type ArtyShell = { on: boolean; count: number };
 export type ArtySupport = { enabled: boolean; he: ArtyShell; smoke: ArtyShell; illum: ArtyShell };
 export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[] };
@@ -216,11 +225,24 @@ export function loadMission(): Mission {
       m.arty = defaultArty();
     }
     if (typeof m.spawn.yaw !== "number") m.spawn.yaw = 0;
-    // Mounted-patrol modules gained per-zone vehicle selection; default old saves
+    // Mounted-patrol/QRF-mounted modules gained per-zone vehicle selection;
+    // default old saves. QRF modules: sanitize origins (array, max 3).
     for (const zn of m.zones) {
       for (const mod of zn.modules) {
-        if (mod.type === "TS_ScenarioFrameworkPluginMountedPatrol" && !mod.vehicles?.length) {
+        if (
+          (mod.type === "TS_ScenarioFrameworkPluginMountedPatrol" ||
+            mod.type === "TS_ScenarioFrameworkPluginQRFMounted") &&
+          !mod.vehicles?.length
+        ) {
           mod.vehicles = FACTIONS[m.enemyFaction]?.patrolVehicleKeys.slice(0, 1) ?? [];
+        }
+        if (
+          mod.type === "TS_ScenarioFrameworkPluginQRFFoot" ||
+          mod.type === "TS_ScenarioFrameworkPluginQRFMounted"
+        ) {
+          mod.origins = (Array.isArray(mod.origins) ? mod.origins : [])
+            .filter((o) => typeof o?.x === "number" && typeof o?.z === "number")
+            .slice(0, 3);
         }
       }
     }

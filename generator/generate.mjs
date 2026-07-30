@@ -97,6 +97,24 @@ const MISSION = {
         { type: "TS_ScenarioFrameworkPluginAIPatrol", attrs: { m_iBudget: 2 } },
         { type: "TS_ScenarioFrameworkPluginSmartGarrison", attrs: { m_iBudget: 2 } },
         { type: "TS_ScenarioFrameworkPluginFortification", attrs: { m_iBudget: 2 } },
+        // QRF reinforcements — origin coords reuse the toolkit template-world's
+        // QRFAnchors positions (road-adjacent, validated for both plugins).
+        // No `vehicles` on the mounted module: each spike variant's enemy
+        // faction falls back to its own patrol-vehicle candidates.
+        {
+          type: "TS_ScenarioFrameworkPluginQRFFoot",
+          attrs: { m_iBudget: 2 },
+          origins: [
+            [3136.656, 32.986, 1373.865],
+            [2751.657, 25.438, 1281.013],
+            [2582.144, 121.881, 2350.583],
+          ],
+        },
+        {
+          type: "TS_ScenarioFrameworkPluginQRFMounted",
+          attrs: { m_iBudget: 1 },
+          origins: [[3255.005, 29.811, 2023.903]],
+        },
       ],
     },
     {

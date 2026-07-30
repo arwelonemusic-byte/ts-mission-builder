@@ -447,14 +447,41 @@ ${farpBlock}`;
   // Pools are resolved from the module definition + enemy group set:
   // infantry modules get size-filtered group pools, vehicle modules get the
   // enemy faction's patrol vehicles.
-  function pluginBlock(p) {
+  // QRF plugin attrs (serialization ground truth: Operation Choripan AO.layer):
+  // trigger radius = the zone radius (players entering the zone fire the QRF),
+  // anchor group pairs the plugin with ITS zone+module anchors, and the
+  // spawn-distance window is deliberately liberal (200-5000 m, plugin defaults
+  // are 150-800) — the builder shows the origin→zone line, so placement
+  // distance is the mission maker's call. m_fAnchorSearchRadius must cover the
+  // window (default 1500 would silently drop far origins at Init).
+  const qrfAnchorGroup = (zoneName, kind) =>
+    `${zoneName}_${kind === "qrf-foot" ? "Foot" : "Mounted"}`;
+  const moduleKind = (p) => ZONE_MODULES.find((d) => d.type === p.type)?.kind;
+  const isQrfModule = (p) => {
+    const k = moduleKind(p);
+    return k === "qrf-foot" || k === "qrf-vehicle";
+  };
+
+  function pluginBlock(p, zone, zoneName) {
     const def = ZONE_MODULES.find((d) => d.type === p.type);
     if (!def) throw new Error(`Unknown zone module type: ${p.type}`);
     const enemySets = mission.enemyGroupSets ?? mission.enemyGroupSet;
+    const qrfAttrs = {};
+    if (isQrfModule(p)) {
+      qrfAttrs.m_fTriggerRadius = zone.radius;
+      qrfAttrs.m_sAnchorGroup = `"${qrfAnchorGroup(zoneName, def.kind)}"`;
+      qrfAttrs.m_fMinSpawnDistance = 200;
+      qrfAttrs.m_fMaxSpawnDistance = 5000;
+      qrfAttrs.m_fAnchorSearchRadius = 5000;
+      // One wave spreads across all placed origins (groups round-robin);
+      // default 1 would stack every group/vehicle on the single farthest one.
+      if ((p.origins?.length ?? 0) > 1) qrfAttrs.m_iAnchorsPerWave = p.origins.length;
+    }
     let pools; // [attrName, refs][]
-    if (def.kind === "infantry") {
+    if (def.kind === "infantry" || def.kind === "qrf-foot") {
       // Per-zone size-class selection (Foot Patrols weight slider); the module
-      // definition's sizes are the default when the mission doesn't specify.
+      // definition's sizes are the default when the mission doesn't specify
+      // (QRF Foot always uses its definition sizes — large groups).
       pools = [[def.pool, resolveGroupPool(mission.enemyFaction, enemySets, p.sizes ?? def.sizes)]];
     } else if (def.kind === "fortification") {
       // Composition pools are baked per enemy faction; the AI pool is the
@@ -487,7 +514,7 @@ ${farpBlock}`;
       if (!refs?.length) throw new Error(`Empty pool for ${p.type} (${mission.enemyFaction})`);
     }
     let s = `      ${p.type} "{${mintGuid()}}" {\n`;
-    for (const [k, v] of Object.entries(p.attrs ?? {})) s += `       ${k} ${v}\n`;
+    for (const [k, v] of Object.entries({ ...(p.attrs ?? {}), ...qrfAttrs })) s += `       ${k} ${v}\n`;
     for (const [name, refs] of pools) {
       s += `       ${name} {\n`;
       for (const ref of refs) s += `        "${ref}"\n`;
@@ -500,8 +527,13 @@ ${farpBlock}`;
 
   const aoLayer = mission.zones
     .map((z, i) => {
-      const pluginMods = z.plugins.filter((p) => !isSlotAIModule(p));
-      const plugins = pluginMods.map(pluginBlock).join("\n");
+      const zoneName = z.name ?? `Area${i + 1}`;
+      // QRF modules without a single placed origin can never fire (the plugin
+      // disarms at Init when its anchor group is empty) — skip them entirely.
+      const pluginMods = z.plugins.filter(
+        (p) => !isSlotAIModule(p) && !(isQrfModule(p) && !(p.origins?.length))
+      );
+      const plugins = pluginMods.map((p) => pluginBlock(p, z, zoneName)).join("\n");
       const pluginsBlock = pluginMods.length ? `\n     m_aPlugins {\n${plugins}\n     }` : "";
       // Defense Group: a vanilla SlotAI child of the Layer spawning the
       // largest selected enemy squad in place — the slot's default defend
@@ -519,7 +551,7 @@ ${farpBlock}`;
     }
    }`
         : "";
-      return `GenericEntity ${z.name ?? `Area${i + 1}`} : "${K.AREA_PREFAB}" {
+      return `GenericEntity ${zoneName} : "${K.AREA_PREFAB}" {
  components {
   SCR_ScenarioFrameworkArea "${K.CMP_SF_AREA}" {
    m_fAreaRadius ${z.radius}
@@ -655,6 +687,32 @@ ${slotBlocks}
     markersLayer += `$grp PolylineShapeEntity : "${K.MAPOVERLAY_PREFAB}" {\n${sectorInstances}\n}\n`;
   }
 
+  // --- QRF.layer ---
+  // Reinforcement origins → TS_QRFSpawnAnchor marker entities, ONE $grp of
+  // anonymous instances (Operation Choripan pattern: coords then
+  // m_sAnchorGroup). The group key pairs each anchor with its zone+module
+  // plugin — the 5000 m anchor sphere query would otherwise cross-match
+  // neighboring zones' origins.
+  let qrfLayer = "";
+  {
+    const anchors = [];
+    mission.zones.forEach((z, i) => {
+      const zoneName = z.name ?? `Area${i + 1}`;
+      for (const p of z.plugins) {
+        if (!isQrfModule(p)) continue;
+        for (const o of p.origins ?? []) {
+          anchors.push({ pos: o, group: qrfAnchorGroup(zoneName, moduleKind(p)) });
+        }
+      }
+    });
+    if (anchors.length) {
+      qrfLayer =
+        `$grp TS_QRFSpawnAnchor : "${K.QRF_ANCHOR_PREFAB}" {\n` +
+        anchors.map((a) => ` {\n  coords ${posStr(a.pos)}\n  m_sAnchorGroup "${a.group}"\n }`).join("\n") +
+        `\n}\n`;
+    }
+  }
+
   const layersDir = `Worlds/${mission.name}_Layers`;
   const files = {
     "addon.gproj": gproj,
@@ -674,7 +732,7 @@ ${slotBlocks}
     [`${layersDir}/Spawn.layer`]: spawnLayer,
     [`${layersDir}/AO.layer`]: aoLayer,
     [`${layersDir}/Markers.layer`]: markersLayer,
-    [`${layersDir}/QRF.layer`]: "",
+    [`${layersDir}/QRF.layer`]: qrfLayer,
     [`${layersDir}/Props.layer`]: "",
   };
 

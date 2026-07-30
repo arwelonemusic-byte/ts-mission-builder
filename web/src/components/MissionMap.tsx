@@ -7,7 +7,7 @@ import { layoutSpawnBundle, itemWorldCorners, rotateLocal, FACTIONS, ZONE_MODULE
 import { terrainByKey } from "@/lib/terrains";
 import type { MissionMarker, MissionSector, Zone } from "@/lib/mission";
 import { findColor, findIcon, militaryIconUrl, MARKER_LABEL_OUTLINE, VANILLA_ATLAS } from "@/lib/markers";
-import { DISABLED_ICON_FILTER, MODULE_ICONS } from "@/lib/zoneModules";
+import { DISABLED_ICON_FILTER, MODULE_ICONS, ORIGIN_COLORS } from "@/lib/zoneModules";
 import { coordsText, scaleLabel, tr, zoneName, type Lang } from "@/lib/i18n";
 
 // Coordinate mapping (same convention as ts-ops-planner): lat = world Z
@@ -52,11 +52,17 @@ export type MapProps = {
   sectorDraw: "ao" | "objective" | null;
   /** Freshly placed ids ("spawn" / zone id / marker id) → entrance animation */
   fresh: Record<string, boolean>;
-  placeMode: "spawn" | "zone" | "marker" | null;
+  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | null;
   focus: MapFocus | null;
   onMapClick: (x: number, z: number) => void;
   onZoneClick: (id: string) => void;
   onZoneMoved: (id: string, x: number, z: number) => void;
+  /** QRF reinforcement origin dragged to a new position */
+  onOriginMoved: (zoneId: string, moduleType: string, index: number, x: number, z: number) => void;
+  /** Selected origin (two-way with the panel rows) */
+  selectedOrigin: { zoneId: string; moduleType: string; index: number } | null;
+  /** Origin badge clicked on the map → page selects its panel row */
+  onOriginClick: (zoneId: string, moduleType: string, index: number) => void;
   onSpawnMoved: (x: number, z: number) => void;
   onMarkerClick: (id: string) => void;
   onMarkerMoved: (id: string, x: number, z: number) => void;
@@ -425,6 +431,78 @@ export default function MissionMap(props: MapProps) {
         const ll = dot.getLatLng();
         propsRef.current.onZoneMoved(zone.id, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
       });
+
+      // QRF reinforcement origins: colored badge + dashed line to the zone
+      // center. Badges are draggable; the line follows live during drags
+      // (of the origin here, of the zone via full redraw on commit). While
+      // dragging, a distance pill sits at the line midpoint.
+      for (const mod of zone.modules) {
+        const color = ORIGIN_COLORS[mod.type];
+        if (!color || !mod.origins?.length) continue;
+        for (const [oi, origin] of mod.origins.entries()) {
+          const so = props.selectedOrigin;
+          const selOrigin =
+            so?.zoneId === zone.id && so.moduleType === mod.type && so.index === oi;
+          const line = L.polyline(
+            [
+              [origin.z, origin.x],
+              [zone.z, zone.x],
+            ],
+            { color, weight: 2, dashArray: "6 6", opacity: 0.85, interactive: false }
+          ).addTo(overlay);
+          const badge = L.marker([origin.z, origin.x], {
+            icon: originBadgeIcon(mod.type, color, selOrigin),
+            draggable: true,
+          })
+            .bindTooltip(
+              `${zoneName(props.lang, zi + 1)} · ${tr(props.lang, "Origin")} ${oi + 1}`,
+              { direction: "top", offset: [0, -12], opacity: 1 }
+            )
+            .addTo(overlay);
+          badge.on("click", (e) => {
+            L.DomEvent.stopPropagation(e);
+            propsRef.current.onOriginClick(zone.id, mod.type, oi);
+          });
+          let distPill: L.Marker | null = null;
+          // The hover tooltip fights the distance pill during a drag (it
+          // re-opens on mouseover) — unbind it; the post-drop redraw rebinds.
+          badge.on("dragstart", () => badge.unbindTooltip());
+          badge.on("drag", () => {
+            const ll = badge.getLatLng();
+            line.setLatLngs([
+              [ll.lat, ll.lng],
+              [zone.z, zone.x],
+            ]);
+            // Distance pill at the line midpoint, live during the drag
+            const dist = Math.hypot(ll.lng - zone.x, ll.lat - zone.z);
+            const mid: [number, number] = [(ll.lat + zone.z) / 2, (ll.lng + zone.x) / 2];
+            if (!distPill) {
+              distPill = L.marker(mid, {
+                icon: distancePillIcon(dist, propsRef.current.lang),
+                interactive: false,
+              }).addTo(overlay);
+            } else {
+              distPill.setLatLng(mid);
+              // Update the label in place — setIcon would rebuild the DOM node
+              // on every drag tick and flicker.
+              const el = distPill.getElement()?.querySelector(".mb-dist-pill");
+              if (el) el.textContent = distanceLabel(dist, propsRef.current.lang);
+            }
+          });
+          badge.on("dragend", () => {
+            distPill?.remove();
+            distPill = null;
+            const ll = badge.getLatLng();
+            propsRef.current.onOriginMoved(
+              zone.id,
+              mod.type,
+              oi,
+              +ll.lng.toFixed(1),
+              +ll.lat.toFixed(1)
+            );
+          });
+        }
+      }
     }
 
     for (const mk of props.markers) {
@@ -445,6 +523,7 @@ export default function MissionMap(props: MapProps) {
     props.spawn,
     props.zones,
     props.selectedZoneId,
+    props.selectedOrigin,
     props.markers,
     props.selectedMarkerId,
     props.sectors,
@@ -600,6 +679,47 @@ function zoneDotIcon(selected: boolean) {
     iconSize: [32, 32],
     iconAnchor: [16, 16],
     html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">${dot}</div>`,
+  });
+}
+
+/** "347 m" / "1.4 km" label for the origin-drag distance pill. */
+function distanceLabel(dist: number, lang: Lang) {
+  if (dist < 1000) return `${Math.round(dist)} ${lang === "ru" ? "м" : "m"}`;
+  return `${(dist / 1000).toFixed(1)} ${lang === "ru" ? "км" : "km"}`;
+}
+
+/** Distance pill shown at the origin→zone line midpoint during a badge drag.
+ * Styled like the HUD scale/coords readouts; non-interactive. */
+function distancePillIcon(dist: number, lang: Lang) {
+  return L.divIcon({
+    className: "",
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+    html: `<div style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);pointer-events:none;"><span class="mb-dist-pill" style="display:block;white-space:nowrap;background:rgba(32,36,39,0.92);border-radius:6px;padding:3px 8px;font:500 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;color:rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.5);">${distanceLabel(dist, lang)}</span></div>`,
+  });
+}
+
+/** Round badge for a QRF reinforcement origin: colored disc + white module
+ * glyph (footsteps / truck). Draggable; 32px transparent hit box on touch.
+ * Selection adds a yellow halo ring (same treatment as mission markers). */
+function originBadgeIcon(moduleType: string, color: string, selected: boolean) {
+  const foot = moduleType === "TS_ScenarioFrameworkPluginQRFFoot";
+  const glyphPath = foot
+    ? "M10.6667 11.3333H13.3333M2.66667 8.66667H5.33333M2.66669 10.6667V9.08C2.66669 7.66667 1.98002 7 2.00002 5.33333C2.02002 3.52 2.99336 1.33333 5.00002 1.33333C6.24669 1.33333 6.66669 2.53333 6.66669 3.66667C6.66669 5.74 5.33336 7.44 5.33336 9.45333V10.6667C5.33336 11.0203 5.19288 11.3594 4.94283 11.6095C4.69278 11.8595 4.35364 12 4.00002 12C3.6464 12 3.30726 11.8595 3.05721 11.6095C2.80716 11.3594 2.66669 11.0203 2.66669 10.6667ZM13.3333 13.3333V11.7467C13.3333 10.3333 14.02 9.66667 14 8C13.98 6.18667 13.0067 4 11 4C9.75333 4 9.33333 5.2 9.33333 6.33333C9.33333 8.40667 10.6667 10.1067 10.6667 12.12V13.3333C10.6667 13.687 10.8071 14.0261 11.0572 14.2761C11.3072 14.5262 11.6464 14.6667 12 14.6667C12.3536 14.6667 12.6928 14.5262 12.9428 14.2761C13.1929 14.0261 13.3333 13.687 13.3333 13.3333Z"
+    : "M12.6667 12H14C14.4 12 14.6667 11.7333 14.6667 11.3333V9.33333C14.6667 8.73333 14.2 8.2 13.6667 8.06667C12.4667 7.73333 10.6667 7.33333 10.6667 7.33333C10.6667 7.33333 9.8 6.4 9.2 5.8C8.86667 5.53333 8.46667 5.33333 8 5.33333H7.33333M12.6667 12C12.6667 12.7364 12.0697 13.3333 11.3333 13.3333C10.597 13.3333 10 12.7364 10 12M12.6667 12C12.6667 11.2636 12.0697 10.6667 11.3333 10.6667C10.597 10.6667 10 11.2636 10 12M3.33333 5.33333C2.93333 5.33333 2.6 5.6 2.4 5.93333L1.46667 7.86667C1.37839 8.12415 1.33333 8.39447 1.33333 8.66667V11.3333C1.33333 11.7333 1.6 12 2 12H3.33333M3.33333 5.33333H3L2.99996 2.99996H7.33329L7.33333 3.50004M3.33333 5.33333H7.33333M3.33333 12C3.33333 12.7364 3.93029 13.3333 4.66667 13.3333C5.40305 13.3333 6 12.7364 6 12M3.33333 12C3.33333 11.2636 3.93029 10.6667 4.66667 10.6667C5.40305 10.6667 6 11.2636 6 12M7.33333 5.33333L7.33333 3.50004M7.33333 3.50004H12.3333M6 12L10 12";
+  const halo = selected
+    ? `<div style="position:absolute;inset:-6px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
+    : "";
+  const badge = `<div style="position:relative;width:24px;height:24px;">${halo}<div style="width:24px;height:24px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="${glyphPath}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`;
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [24, 24], iconAnchor: [12, 12], html: badge });
+  }
+  return L.divIcon({
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">${badge}</div>`,
   });
 }
 

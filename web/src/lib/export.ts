@@ -38,16 +38,35 @@ export async function toGeneratorMission(m: Mission) {
   for (let i = 0; i < m.zones.length; i++) {
     const zn = m.zones[i];
     const zy = await elevationAt(m.terrain, zn.x, zn.z);
-    zones.push({
-      name: `Area${i + 1}`,
-      pos: [y(zn.x), y(zy), y(zn.z)],
-      radius: zn.radius,
-      plugins: zn.modules.map((mod) => ({
+    const plugins = [];
+    for (const mod of zn.modules) {
+      const p: {
+        type: string;
+        attrs: Record<string, number>;
+        vehicles?: string[];
+        sizes?: string[];
+        origins?: number[][];
+      } = {
         type: mod.type,
         attrs: { m_iBudget: mod.budget },
         vehicles: mod.vehicles,
         sizes: mod.sizes,
-      })),
+      };
+      // QRF reinforcement origins → TS_QRFSpawnAnchor coords (heightmap Y)
+      if (mod.origins?.length) {
+        p.origins = [];
+        for (const o of mod.origins) {
+          const oy = await elevationAt(m.terrain, o.x, o.z);
+          p.origins.push([y(o.x), y(oy), y(o.z)]);
+        }
+      }
+      plugins.push(p);
+    }
+    zones.push({
+      name: `Area${i + 1}`,
+      pos: [y(zn.x), y(zy), y(zn.z)],
+      radius: zn.radius,
+      plugins,
     });
   }
 

@@ -819,6 +819,9 @@ export const K = {
   SLOT_PREFAB: "{AA01691FDC4E9167}Prefabs/Systems/ScenarioFramework/Components/Slot.et",
   SLOTMARKER_PREFAB: "{E537867C6E760514}Prefabs/Systems/ScenarioFramework/Components/SlotMarker.et",
   SLOTAI_PREFAB: "{8D43830F02C3F114}Prefabs/Systems/ScenarioFramework/Components/SlotAI.et",
+  // Toolkit QRF spawn-anchor marker entity (QRF.layer $grp — see Operation
+  // Choripan QRF.layer for the reference serialization)
+  QRF_ANCHOR_PREFAB: "{9B0CFB90B1C17618}Prefabs/TSSystems/TS_QRFSpawnAnchor.et",
   CMP_SF_AREA: "{59E8CDC50969206E}",
   CMP_SF_LAYER: "{5A2283EA2A0B4B14}",
   CMP_SF_SLOT: "{5A22E1D67E712EC8}",
@@ -882,7 +885,11 @@ export const K = {
 // SlotAI child entity inside the zone's Layer spawning the largest enemy
 // group (groupSets[*].defense, resolved by resolveDefenseGroup); the slot's
 // default defend waypoint (30 m) does the rest. On/off only (noBudget).
-// QRF (sizes: ["large"], needs TS_QRFSpawnAnchor placement) is deferred.
+// kinds "qrf-foot"/"qrf-vehicle" (Reinforcements) are the toolkit QRF plugins:
+// user-placed "origin" points (map clicks, max maxOrigins per module) become
+// TS_QRFSpawnAnchor entities; the plugin picks the origin farthest from the
+// player centroid at trigger time. Foot pools large groups; vehicle reuses the
+// per-zone patrol-vehicle multiselect (cargo passengers dismount at the zone).
 export const ZONE_MODULES = [
   { type: "DefenseGroup", label: "Defense Group", kind: "slotai", noBudget: true },
   // Foot Patrols sizes are per-zone via the patrol-weight slider (5 stops:
@@ -892,6 +899,8 @@ export const ZONE_MODULES = [
   { type: "TS_ScenarioFrameworkPluginSmartGarrison", label: "Garrison", kind: "infantry", pool: "m_aPrefabPool", sizes: ["small"] },
   { type: "TS_ScenarioFrameworkPluginMountedPatrol", label: "Vehicle Patrols", kind: "vehicle", pool: "m_aVehiclePrefabPool" },
   { type: "TS_ScenarioFrameworkPluginFortification", label: "Fortifications", kind: "fortification", maxBudget: 4 },
+  { type: "TS_ScenarioFrameworkPluginQRFFoot", label: "Foot Reinforcements", kind: "qrf-foot", pool: "m_aPrefabPool", sizes: ["large"], maxBudget: 4, maxOrigins: 3 },
+  { type: "TS_ScenarioFrameworkPluginQRFMounted", label: "Vehicle Reinforcements", kind: "qrf-vehicle", pool: "m_aVehiclePrefabPool", maxBudget: 4, maxOrigins: 3 },
 ];
 
 /**

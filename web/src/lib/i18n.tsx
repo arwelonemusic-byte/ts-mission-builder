@@ -129,6 +129,16 @@ const RU: Record<string, string> = {
   "Vehicles patrolling roads in the area": "Техника, патрулирующая дороги в зоне",
   "Bunkers, sandbag positions, MG nests etc.": "Бункеры, укрепы, пулемётные гнёзда и т.п.",
   "Delete zone": "Удалить зону",
+  "Foot Reinforcements": "Пешие подкрепления",
+  "Vehicle Reinforcements": "Подкрепления на технике",
+  "Squads move in on foot from origin points when players enter the zone":
+    "Пешие группы выдвигаются из точек выдвижения, когда игроки входят в зону",
+  "Reinforcements drive in from origin points and dismount at the zone":
+    "Подкрепления прибывают на технике из точек выдвижения и спешиваются у зоны",
+  "Add Reinforcement Origin": "Добавить точку выдвижения",
+  Origin: "Точка",
+  "Delete origin": "Удалить точку выдвижения",
+  "a reinforcement origin": "точку выдвижения подкреплений",
   "Small groups only": "Только малые группы",
   "Small to medium groups": "Малые и средние группы",
   "Mix of all group sizes": "Группы всех размеров",

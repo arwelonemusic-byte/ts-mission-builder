@@ -70,11 +70,13 @@ declare module "mission-gen" {
   export const ZONE_MODULES: {
     type: string;
     label: string;
-    kind: "infantry" | "vehicle" | "fortification" | "slotai";
+    kind: "infantry" | "vehicle" | "fortification" | "slotai" | "qrf-foot" | "qrf-vehicle";
     pool?: string;
     sizes?: string[];
     maxBudget?: number;
     noBudget?: boolean;
+    /** QRF modules: max user-placed reinforcement origins (spawn anchors) */
+    maxOrigins?: number;
   }[];
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];

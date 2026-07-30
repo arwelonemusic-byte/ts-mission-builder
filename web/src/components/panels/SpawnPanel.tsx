@@ -14,8 +14,8 @@ export default function SpawnPanel({
   slope,
 }: {
   mission: Mission;
-  placeMode: "spawn" | "zone" | "marker" | null;
-  setPlaceMode: (m: "spawn" | "zone" | "marker" | null) => void;
+  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | null;
+  setPlaceMode: (m: "spawn" | "zone" | "marker" | "qrf-origin" | null) => void;
   updateSpawn: (patch: Partial<Mission["spawn"]>) => void;
   slope: number | null;
 }) {

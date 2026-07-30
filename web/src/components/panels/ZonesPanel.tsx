@@ -69,6 +69,11 @@ export default function ZonesPanel({
   mission,
   placeMode,
   setPlaceMode,
+  originTarget,
+  onArmOrigin,
+  selectedOrigin,
+  onSelectOrigin,
+  onOriginRemoved,
   selectedZoneId,
   revealSeq,
   onSelectZone,
@@ -76,8 +81,18 @@ export default function ZonesPanel({
   removeZone,
 }: {
   mission: Mission;
-  placeMode: "spawn" | "zone" | "marker" | null;
-  setPlaceMode: (m: "spawn" | "zone" | "marker" | null) => void;
+  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | null;
+  setPlaceMode: (m: "spawn" | "zone" | "marker" | "qrf-origin" | null) => void;
+  /** Armed QRF origin placement: which zone+module the next map click feeds */
+  originTarget: { zoneId: string; moduleType: string } | null;
+  /** Toggle origin placement for a zone+module (re-toggle to cancel) */
+  onArmOrigin: (zoneId: string, moduleType: string) => void;
+  /** Selected origin (two-way with the map badges) */
+  selectedOrigin: { zoneId: string; moduleType: string; index: number } | null;
+  /** Select an origin row → page pans/zooms the map to it */
+  onSelectOrigin: (zoneId: string, moduleType: string, index: number) => void;
+  /** Notify the page an origin was deleted so the selection index stays valid */
+  onOriginRemoved: (zoneId: string, moduleType: string, index: number) => void;
   selectedZoneId: string | null;
   /** Bumped on every map zone-click — re-reveals the card even for a re-click */
   revealSeq: number;
@@ -205,8 +220,15 @@ export default function ZonesPanel({
               trackColor="#2e3439"
             />
 
-            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string; sizes?: string[]; maxBudget?: number; noBudget?: boolean }) => {
+            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string; sizes?: string[]; maxBudget?: number; noBudget?: boolean; maxOrigins?: number }) => {
               const mod = zn.modules.find((mm) => mm.type === def.type);
+              const isQrf = def.kind === "qrf-foot" || def.kind === "qrf-vehicle";
+              const wantsVehicles = def.kind === "vehicle" || def.kind === "qrf-vehicle";
+              const origins = mod?.origins ?? [];
+              const armed =
+                placeMode === "qrf-origin" &&
+                originTarget?.zoneId === zn.id &&
+                originTarget.moduleType === def.type;
               return (
                 <div key={def.type} className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
@@ -214,13 +236,24 @@ export default function ZonesPanel({
                       <CheckRow
                         checked={!!mod}
                         onChange={(on) => {
-                          const fresh: ZoneModule =
-                            def.kind === "vehicle"
-                              ? { type: def.type, budget: 2, vehicles: enemy?.patrolVehicleKeys.slice(0, 1) ?? [] }
-                              : { type: def.type, budget: def.noBudget ? 1 : 2 };
+                          const fresh: ZoneModule = wantsVehicles
+                            ? {
+                                type: def.type,
+                                budget: isQrf ? 1 : 2,
+                                vehicles: enemy?.patrolVehicleKeys.slice(0, 1) ?? [],
+                                ...(isQrf ? { origins: [] } : {}),
+                              }
+                            : {
+                                type: def.type,
+                                budget: def.noBudget || isQrf ? 1 : 2,
+                                ...(isQrf ? { origins: [] } : {}),
+                              };
                           const modules = on
                             ? [...zn.modules, fresh]
                             : zn.modules.filter((mm) => mm.type !== def.type);
+                          // Unchecking the module that origin placement is
+                          // armed for cancels the placement mode.
+                          if (!on && armed) onArmOrigin(zn.id, def.type);
                           updateZone(zn.id, { modules });
                         }}
                       >
@@ -264,7 +297,7 @@ export default function ZonesPanel({
                       </span>
                     </div>
                   )}
-                  {mod && def.kind === "vehicle" && (
+                  {mod && wantsVehicles && (
                     <div className="ml-1 pl-4 border-l border-[#2e3439] flex flex-col gap-1">
                       {(enemy?.patrolVehicleKeys ?? []).map((vk: string) => {
                         const checked = mod.vehicles?.includes(vk) ?? false;
@@ -288,6 +321,65 @@ export default function ZonesPanel({
                         );
                       })}
                     </div>
+                  )}
+                  {mod && isQrf && origins.length > 0 && (
+                    <div className="ml-1 pl-4 border-l border-[#2e3439] flex flex-col gap-1">
+                      {origins.map((_o, oi) => {
+                        const selOrigin =
+                          selectedOrigin?.zoneId === zn.id &&
+                          selectedOrigin.moduleType === def.type &&
+                          selectedOrigin.index === oi;
+                        return (
+                          <div
+                            key={oi}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectOrigin(zn.id, def.type, oi);
+                            }}
+                            className={`flex items-center gap-2 h-[24px] px-1 -mx-1 rounded-[4px] cursor-pointer transition-colors ${
+                              selOrigin ? "bg-[rgba(244,219,80,0.12)]" : "hover:bg-[#2e3439]"
+                            }`}
+                          >
+                            <span
+                              className={`flex-1 min-w-0 text-[12px] ${
+                                selOrigin ? "text-[#f4db50]" : "text-white/80"
+                              }`}
+                            >
+                              {t("Origin")} {oi + 1}
+                            </span>
+                            <button
+                              type="button"
+                              aria-label={t("Delete origin")}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOriginRemoved(zn.id, def.type, oi);
+                                updateZone(zn.id, {
+                                  modules: zn.modules.map((mm) =>
+                                    mm.type === def.type
+                                      ? { ...mm, origins: origins.filter((_, k) => k !== oi) }
+                                      : mm
+                                  ),
+                                });
+                              }}
+                              className="size-[24px] shrink-0 flex items-center justify-center rounded-[4px] hover:bg-[#2e3439] transition-colors"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src="/icons/zones/trash.svg" alt="" style={{ width: 14, height: 14 }} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {mod && isQrf && origins.length < (def.maxOrigins ?? 3) && (
+                    <GhostButton
+                      active={armed}
+                      onClick={() => onArmOrigin(zn.id, def.type)}
+                      className="mt-1"
+                    >
+                      {!armed && <PlusIcon />}
+                      {armed ? t("Click the map… (cancel)") : t("Add Reinforcement Origin")}
+                    </GhostButton>
                   )}
                 </div>
               );
