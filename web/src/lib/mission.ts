@@ -172,84 +172,149 @@ export function loadMission(): Mission {
     if (!raw) return newMission();
     const m = JSON.parse(raw) as Mission & { enemyGroupSet?: string };
     if (m.version !== 1) return newMission();
-    if (!m.enemyGroupSets?.length) {
-      m.enemyGroupSets = [m.enemyGroupSet ?? FACTIONS[m.enemyFaction]?.defaultGroupSet ?? "USSR_Army"];
-      delete m.enemyGroupSet;
-    }
-    // Drop set keys the registry no longer has (e.g. MEI's subfaction sets
-    // collapsed into one "Insurgents" pool); never leave the list empty
-    const knownSets = FACTIONS[m.enemyFaction]?.groupSets ?? {};
-    m.enemyGroupSets = m.enemyGroupSets.filter((k) => k in knownSets);
-    if (!m.enemyGroupSets.length && FACTIONS[m.enemyFaction]?.defaultGroupSet) {
-      m.enemyGroupSets = [FACTIONS[m.enemyFaction].defaultGroupSet];
-    }
-    if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
-    // Squads: default old saves; clamp hand-edited ones (1-8 groups, size 1-9)
-    if (!Array.isArray(m.groups) || m.groups.length === 0) m.groups = defaultGroups();
-    else
-      m.groups = m.groups.slice(0, 8).map((g) => ({
-        name: String(g?.name ?? ""),
-        size: Math.max(1, Math.min(9, Math.floor(+g?.size) || 9)),
-      }));
-    // Mods gate: default old saves to none; if a save somehow uses a mod
-    // faction without the mod enabled, enable it rather than break the mission
-    if (!Array.isArray(m.mods)) m.mods = [];
-    for (const fk of [m.playableFaction, m.enemyFaction]) {
-      const mod = factionMeta(fk).mod;
-      if (mod && !m.mods.includes(mod)) m.mods.push(mod);
-    }
-    // Old saves lack guidsName: "" never matches a sanitized name, so the
-    // next export re-mints — also cures duplicates minted before this field
-    // existed (rename-without-reset reused the stored guids verbatim)
-    if (typeof m.guidsName !== "string") m.guidsName = "";
-    if (!m.briefing.extra) m.briefing.extra = [];
-    if (!m.markers) m.markers = [];
-    if (!m.sectors) m.sectors = [];
-    // Only one AO sector is allowed — drop extras if a save ever holds more
-    let seenAo = false;
-    m.sectors = m.sectors.filter((s) => {
-      if (s.kind !== "ao") return true;
-      if (seenAo) return false;
-      seenAo = true;
-      return true;
-    });
-    if (!m.arty) m.arty = defaultArty();
-    // Early builds shipped invented defaults (60/40/40); if the user never
-    // touched artillery, silently swap in the prefab-matching counts.
-    if (
-      !m.arty.enabled &&
-      m.arty.he.on && m.arty.he.count === 60 &&
-      m.arty.smoke.on && m.arty.smoke.count === 40 &&
-      m.arty.illum.on && m.arty.illum.count === 40
-    ) {
-      m.arty = defaultArty();
-    }
-    if (typeof m.spawn.yaw !== "number") m.spawn.yaw = 0;
-    // Mounted-patrol/QRF-mounted modules gained per-zone vehicle selection;
-    // default old saves. QRF modules: sanitize origins (array, max 3).
-    for (const zn of m.zones) {
-      for (const mod of zn.modules) {
-        if (
-          (mod.type === "TS_ScenarioFrameworkPluginMountedPatrol" ||
-            mod.type === "TS_ScenarioFrameworkPluginQRFMounted") &&
-          !mod.vehicles?.length
-        ) {
-          mod.vehicles = FACTIONS[m.enemyFaction]?.patrolVehicleKeys.slice(0, 1) ?? [];
-        }
-        if (
-          mod.type === "TS_ScenarioFrameworkPluginQRFFoot" ||
-          mod.type === "TS_ScenarioFrameworkPluginQRFMounted"
-        ) {
-          mod.origins = (Array.isArray(mod.origins) ? mod.origins : [])
-            .filter((o) => typeof o?.x === "number" && typeof o?.z === "number")
-            .slice(0, 3);
-        }
-      }
-    }
-    return m;
+    return migrate(m);
   } catch {
     return newMission();
   }
+}
+
+/** Bring a parsed save up to the current shape. Shared by loadMission (browser
+ * storage) and parseMissionJson (imported file) so a mission built in an older
+ * build behaves identically whichever door it comes through. Additive only —
+ * it defaults missing fields and never throws on unknown ones (see the
+ * write-back in page.tsx: anything that bails to newMission() here would
+ * overwrite the user's save). */
+function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
+  if (!m.enemyGroupSets?.length) {
+    m.enemyGroupSets = [m.enemyGroupSet ?? FACTIONS[m.enemyFaction]?.defaultGroupSet ?? "USSR_Army"];
+    delete m.enemyGroupSet;
+  }
+  // Drop set keys the registry no longer has (e.g. MEI's subfaction sets
+  // collapsed into one "Insurgents" pool); never leave the list empty
+  const knownSets = FACTIONS[m.enemyFaction]?.groupSets ?? {};
+  m.enemyGroupSets = m.enemyGroupSets.filter((k) => k in knownSets);
+  if (!m.enemyGroupSets.length && FACTIONS[m.enemyFaction]?.defaultGroupSet) {
+    m.enemyGroupSets = [FACTIONS[m.enemyFaction].defaultGroupSet];
+  }
+  if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
+  // Squads: default old saves; clamp hand-edited ones (1-8 groups, size 1-9)
+  if (!Array.isArray(m.groups) || m.groups.length === 0) m.groups = defaultGroups();
+  else
+    m.groups = m.groups.slice(0, 8).map((g) => ({
+      name: String(g?.name ?? ""),
+      size: Math.max(1, Math.min(9, Math.floor(+g?.size) || 9)),
+    }));
+  // Mods gate: default old saves to none; if a save somehow uses a mod
+  // faction without the mod enabled, enable it rather than break the mission
+  if (!Array.isArray(m.mods)) m.mods = [];
+  for (const fk of [m.playableFaction, m.enemyFaction]) {
+    const mod = factionMeta(fk).mod;
+    if (mod && !m.mods.includes(mod)) m.mods.push(mod);
+  }
+  // Old saves lack guidsName: "" never matches a sanitized name, so the
+  // next export re-mints — also cures duplicates minted before this field
+  // existed (rename-without-reset reused the stored guids verbatim)
+  if (typeof m.guidsName !== "string") m.guidsName = "";
+  if (!m.briefing.extra) m.briefing.extra = [];
+  if (!m.markers) m.markers = [];
+  if (!m.sectors) m.sectors = [];
+  // Only one AO sector is allowed — drop extras if a save ever holds more
+  let seenAo = false;
+  m.sectors = m.sectors.filter((s) => {
+    if (s.kind !== "ao") return true;
+    if (seenAo) return false;
+    seenAo = true;
+    return true;
+  });
+  if (!m.arty) m.arty = defaultArty();
+  // Early builds shipped invented defaults (60/40/40); if the user never
+  // touched artillery, silently swap in the prefab-matching counts.
+  if (
+    !m.arty.enabled &&
+    m.arty.he.on && m.arty.he.count === 60 &&
+    m.arty.smoke.on && m.arty.smoke.count === 40 &&
+    m.arty.illum.on && m.arty.illum.count === 40
+  ) {
+    m.arty = defaultArty();
+  }
+  if (typeof m.spawn.yaw !== "number") m.spawn.yaw = 0;
+  // Mounted-patrol/QRF-mounted modules gained per-zone vehicle selection;
+  // default old saves. QRF modules: sanitize origins (array, max 3).
+  for (const zn of m.zones) {
+    for (const mod of zn.modules) {
+      if (
+        (mod.type === "TS_ScenarioFrameworkPluginMountedPatrol" ||
+          mod.type === "TS_ScenarioFrameworkPluginQRFMounted") &&
+        !mod.vehicles?.length
+      ) {
+        mod.vehicles = FACTIONS[m.enemyFaction]?.patrolVehicleKeys.slice(0, 1) ?? [];
+      }
+      if (
+        mod.type === "TS_ScenarioFrameworkPluginQRFFoot" ||
+        mod.type === "TS_ScenarioFrameworkPluginQRFMounted"
+      ) {
+        mod.origins = (Array.isArray(mod.origins) ? mod.origins : [])
+          .filter((o) => typeof o?.x === "number" && typeof o?.z === "number")
+          .slice(0, 3);
+      }
+    }
+  }
+  return m;
+}
+
+/* ----- mission file (.json) — the browser-agnostic save/handoff path -----
+ * The addon export needs showDirectoryPicker (Chrome/Edge only), so a Firefox
+ * user can build a mission but never get it out. These two move the mission
+ * itself: save to a file anywhere, load it anywhere. */
+
+export function missionFileName(m: Mission): string {
+  return `${missionIds(m).dirName}.tsmission.json`;
+}
+
+/** Download the mission as a .json file. Deliberately a plain Blob + <a
+ * download> — no File System Access API — so this works in every browser. */
+export function downloadMissionJson(m: Mission) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify(m, null, 2)], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = missionFileName(m);
+  // Firefox only fires the download for an anchor that's in the document, and
+  // revoking too early cancels it there — hence the append + deferred revoke.
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  window.setTimeout(() => {
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, 0);
+}
+
+/** Parse a .json save from downloadMissionJson. Throws a translatable message
+ * on anything that isn't one of our missions — the shape gate matters because
+ * migrate() dereferences these fields, and a half-applied import would land in
+ * the live mission (and from there into localStorage). */
+export function parseMissionJson(text: string): Mission {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    throw new Error("Not a mission file.");
+  }
+  const m = raw as Mission & { enemyGroupSet?: string };
+  if (
+    !m ||
+    typeof m !== "object" ||
+    m.version !== 1 ||
+    typeof m.displayName !== "string" ||
+    typeof m.briefing !== "object" ||
+    m.briefing === null ||
+    typeof m.spawn !== "object" ||
+    m.spawn === null ||
+    !Array.isArray(m.zones)
+  ) {
+    throw new Error("Not a mission file.");
+  }
+  return migrate(m);
 }
 
 export function saveMission(m: Mission) {

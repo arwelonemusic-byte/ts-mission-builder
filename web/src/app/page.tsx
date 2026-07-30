@@ -5,10 +5,13 @@ import dynamic from "next/dynamic";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import {
   defaultLoadouts,
+  downloadMissionJson,
   factionMeta,
   freshenGuids,
   loadMission,
+  missionFileName,
   newMission,
+  parseMissionJson,
   saveMission,
   type Mission,
   type MissionMarker,
@@ -551,16 +554,47 @@ export default function Editor() {
     }
   };
 
+  // Everything that points INTO the old mission (ids, armed placement modes)
+  // has to go when the whole mission object is swapped out.
+  const clearSelections = () => {
+    setSelectedZoneId(null);
+    setSelectedMarkerId(null);
+    setSelectedSectorId(null);
+    setSelectedOrigin(null);
+    setOriginTarget(null);
+    setSectorDraw(null);
+    setPlaceMode(null);
+    setStatus(null);
+    setStep("mission");
+  };
+
   const onReset = () => {
     if (confirm(t("Reset the whole mission?"))) {
       setMission(newMission());
-      setSelectedZoneId(null);
-      setSelectedMarkerId(null);
-      setSelectedSectorId(null);
-      setSectorDraw(null);
-      setPlaceMode(null);
-      setStatus(null);
-      setStep("mission");
+      clearSelections();
+    }
+  };
+
+  /* ----- mission file (.json) -----
+   * Browser-agnostic on purpose: the addon export needs showDirectoryPicker
+   * (Chrome/Edge), this doesn't — it's how a Firefox user gets work out. */
+  const onSaveFile = () => {
+    if (!mission) return;
+    downloadMissionJson(mission);
+    say(t("Mission saved as {file}").replace("{file}", missionFileName(mission)));
+  };
+
+  const onLoadFile = async (file: File) => {
+    try {
+      // Parse BEFORE asking — no point confirming a file we can't read
+      const loaded = parseMissionJson(await file.text());
+      if (!confirm(t("Replace the current mission with this file?"))) return;
+      setMission(loaded);
+      clearSelections();
+      say(t("Loaded: {name}").replace("{name}", loaded.displayName));
+    } catch (err) {
+      const msg = t(err instanceof Error ? err.message : String(err));
+      say(t("Import failed: {error}").replace("{error}", msg), "warn");
     }
   };
 
@@ -706,7 +740,14 @@ export default function Editor() {
 
           <div key={step} className="flex flex-col gap-4 [&>*]:shrink-0 animate-[mbFadeSlide_0.28s_cubic-bezier(0.22,1,0.36,1)]">
             {step === "mission" && (
-              <MissionPanel mission={mission} update={update} onMods={setMods} onReset={onReset} />
+              <MissionPanel
+                mission={mission}
+                update={update}
+                onMods={setMods}
+                onReset={onReset}
+                onSaveFile={onSaveFile}
+                onLoadFile={onLoadFile}
+              />
             )}
             {step === "players" && (
               <PlayersPanel

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { MODS } from "mission-gen";
 import { TERRAIN_LIST, terrainByKey } from "@/lib/terrains";
 import type { Mission } from "@/lib/mission";
@@ -11,13 +12,18 @@ export default function MissionPanel({
   update,
   onMods,
   onReset,
+  onSaveFile,
+  onLoadFile,
 }: {
   mission: Mission;
   update: (patch: Partial<Mission>) => void;
   onMods: (mods: string[]) => void;
   onReset: () => void;
+  onSaveFile: () => void;
+  onLoadFile: (file: File) => void;
 }) {
   const t = useT();
+  const fileRef = useRef<HTMLInputElement>(null);
   // Required addons = toolkit (always) + the selected map's addon (modded
   // terrains) + every enabled content mod. Mirrors what the player must have
   // installed, not what the generator ends up listing as dependencies.
@@ -115,6 +121,32 @@ export default function MissionPanel({
           );
         })}
       </div>
+      <Divider />
+      {/* Mission file: the only export path that works outside Chrome/Edge —
+          a Firefox user saves the .json and hands it to someone who can
+          generate the addon. Doubles as a backup and a sharing format. */}
+      <div className="text-[12px] text-white">{t("Mission file")}</div>
+      <div className="flex gap-2">
+        <GhostButton small className="flex-1" onClick={onSaveFile}>
+          {t("Save to file")}
+        </GhostButton>
+        <GhostButton small className="flex-1" onClick={() => fileRef.current?.click()}>
+          {t("Load from file")}
+        </GhostButton>
+      </div>
+      <input
+        ref={fileRef}
+        type="file"
+        accept="application/json,.json"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          // Clear the value so re-picking the SAME file fires change again
+          e.target.value = "";
+          if (file) onLoadFile(file);
+        }}
+      />
+      <Hint>{t("Works in any browser — back up a mission or hand it to someone else.")}</Hint>
       <Divider />
       <GhostButton destructive onClick={onReset}>
         {t("Reset mission")}

@@ -65,6 +65,12 @@ const RU: Record<string, string> = {
   "Changing terrain clears placements.": "Смена карты удаляет всё размещённое.",
   "Reset mission": "Сбросить миссию",
   "Reset the whole mission?": "Сбросить всю миссию?",
+  "Mission file": "Файл миссии",
+  "Save to file": "Сохранить в файл",
+  "Load from file": "Загрузить из файла",
+  "Works in any browser — back up a mission or hand it to someone else.":
+    "Работает в любом браузере — сделайте резервную копию или передайте миссию другому.",
+  "Replace the current mission with this file?": "Заменить текущую миссию этим файлом?",
   "Important!": "Важно!",
   "Make sure you have these addons and their dependencies installed and updated:":
     "Убедитесь, что эти аддоны и их зависимости установлены и обновлены:",
@@ -212,8 +218,12 @@ const RU: Record<string, string> = {
   "Select at least one loadout (Players tab).":
     "Выберите хотя бы один вариант снаряжения (вкладка «Игроки»).",
   "Export failed: {error}": "Ошибка экспорта: {error}",
-  "This browser doesn't support folder export — use Chrome or Edge.":
-    "Этот браузер не поддерживает экспорт в папку — используйте Chrome или Edge.",
+  "This browser can't write the addon folder — use Chrome or Edge, or save the mission to a file (Mission tab) and generate it there.":
+    "Этот браузер не может записать папку аддона — используйте Chrome или Edge либо сохраните миссию в файл (вкладка «Миссия») и создайте аддон там.",
+  "Import failed: {error}": "Ошибка импорта: {error}",
+  "Not a mission file.": "Это не файл миссии.",
+  "Mission saved as {file}": "Миссия сохранена в {file}",
+  "Loaded: {name}": "Загружено: {name}",
   Dismiss: "Закрыть",
 
   // Generate overlay

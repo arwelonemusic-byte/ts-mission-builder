@@ -184,7 +184,11 @@ export async function exportMission(m: Mission): Promise<{ fileCount: number; di
 
   const w = window as unknown as { showDirectoryPicker?: (o?: object) => Promise<FileSystemDirectoryHandle> };
   if (!w.showDirectoryPicker) {
-    throw new Error("This browser doesn't support folder export — use Chrome or Edge.");
+    // Dead end for Firefox/Safari — point at the .json handoff (Mission tab)
+    // rather than just naming the browsers that work.
+    throw new Error(
+      "This browser can't write the addon folder — use Chrome or Edge, or save the mission to a file (Mission tab) and generate it there."
+    );
   }
   const root = await w.showDirectoryPicker({ mode: "readwrite" });
   const addonDir = await root.getDirectoryHandle(addonDirName, { create: true });
