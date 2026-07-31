@@ -43,6 +43,17 @@ const THUMB_FALLBACKS: Record<string, string> = {
   UH1H_UK: "UH1H.png",
   UH1H_armed_UK: "UH1H_armed.png",
   UH1H_armed_gunship_HE_UK: "UH1H_armed_gunship_HE.png",
+  // Vanilla/mod variants BI never baked a preview for — nearest family member
+  Mi8MT_unarmed_transport: "Mi8MT_armed.png",
+  Mi8MT_armed_black: "Mi8MT_armed.png",
+  SP02_GUNSHIP: "UH1H_armed_gunship_HE_sharkNose.png",
+  M998_uncovered: "M998_covered.png",
+  M998_uncovered_MERDC: "M998_covered_MERDC.png",
+  UAZ469_PKM_FIA: "UAZ469_PKM.png",
+  UAZ469_UK59_FIA: "UAZ469_PKM.png",
+  UAZ469_Camo: "UAZ469.png",
+  UAZ469_Camo_uncovered: "UAZ469_uncovered.png",
+  UAZ452_Armed_Bandit: "UAZ452_transport_Bandit.png",
 };
 
 const thumbFromRef = (ref: string) => {
