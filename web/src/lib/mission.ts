@@ -75,11 +75,16 @@ export type Mission = {
   groups: MissionGroup[];
   /** Artillery support → TS_FireSupportManagerComponent on GameModeSF */
   arty: ArtySupport;
+  /** User-supplied thumbnail photo as a JPEG data URL, already cover-fitted to
+   * 1920x1200 (see prepareThumbnailSource). The shipped image is this photo
+   * composited under the TS template with the mission name drawn on top; null
+   * falls back to the toolkit's stock icon. */
+  thumbnail: string | null;
   spawn: { placed: boolean; x: number; z: number; yaw: number; farp: boolean; vehicles: SpawnVehicle[] };
   zones: Zone[];
   markers: MissionMarker[];
   sectors: MissionSector[];
-  guids: { addon: string; world: string; missionConf: string };
+  guids: { addon: string; world: string; missionConf: string; thumbnail: string };
   /** Sanitized mission name the guids were minted for — a renamed mission is
    * a new addon and must not reuse them (see freshenGuids) */
   guidsName: string;
@@ -137,11 +142,12 @@ export function newMission(): Mission {
     loadouts: defaultLoadouts("US", "US_Army"),
     groups: defaultGroups(),
     arty: defaultArty(),
+    thumbnail: null,
     spawn: { placed: false, x: 0, z: 0, yaw: 0, farp: true, vehicles: [] },
     zones: [],
     markers: [],
     sectors: [],
-    guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid() },
+    guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid(), thumbnail: mintGuid() },
     guidsName: "",
   };
   m.guidsName = missionIds(m).name;
@@ -159,7 +165,7 @@ export function freshenGuids(m: Mission): Mission {
   return {
     ...m,
     guidsName: name,
-    guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid() },
+    guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid(), thumbnail: mintGuid() },
   };
 }
 
@@ -215,6 +221,11 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
   // next export re-mints — also cures duplicates minted before this field
   // existed (rename-without-reset reused the stored guids verbatim)
   if (typeof m.guidsName !== "string") m.guidsName = "";
+  // Thumbnail arrived after the first saves: no photo, and a GUID minted on
+  // demand (the .edds/.edds.meta pair needs its own stable resource GUID).
+  if (typeof m.thumbnail !== "string") m.thumbnail = null;
+  if (!m.guids) m.guids = { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid(), thumbnail: mintGuid() };
+  if (!m.guids.thumbnail) m.guids.thumbnail = mintGuid();
   if (!m.briefing.extra) m.briefing.extra = [];
   if (!m.markers) m.markers = [];
   if (!m.sectors) m.sectors = [];

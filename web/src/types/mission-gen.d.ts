@@ -87,7 +87,7 @@ declare module "mission-gen" {
     options?: { sampleY?: (x: number, z: number) => number }
   ): {
     files: Record<string, string>;
-    guids: { addon: string; world: string; missionConf: string };
+    guids: { addon: string; world: string; missionConf: string; thumbnail: string };
     addonDirName: string;
   };
 

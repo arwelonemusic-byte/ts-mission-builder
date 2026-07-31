@@ -50,6 +50,12 @@ say the word if you want that too.
 | Player count | Количество игроков |
 | Terrain | Карта |
 | Changing terrain clears placements. | Смена карты удаляет всё размещённое. |
+| Thumbnail | Обложка |
+| Loading preview… | Загрузка превью… |
+| Upload image | Загрузить изображение |
+| Replace image | Заменить |
+| Remove image | Удалить |
+| Your image sits under the frame; the mission name is drawn on top. 1920×1200 fits exactly. | Изображение размещается под рамкой, название миссии наносится сверху. Точный размер — 1920×1200. |
 | Reset mission | Сбросить миссию |
 | Reset the whole mission? | Сбросить всю миссию? |
 | Important! | Важно! |

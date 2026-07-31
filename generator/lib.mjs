@@ -27,6 +27,27 @@ function meta(resourceClass, guid, relPath) {
   return s + ` }\n}\n`;
 }
 
+// Texture .meta — unlike our text resources, an imported texture's meta names
+// the per-platform TextureUnspecified.conf that drove the conversion (engine
+// resource-type confs, fixed GUIDs). Copied from Workbench-produced
+// Images/*.edds.meta so a reimport in Workbench behaves identically.
+const TEXTURE_TYPE_CONFS = {
+  PC: "DC555BD399D92412",
+  XBOX_ONE: "8F13AE697AE60784",
+  XBOX_SERIES: "D28E01700D90F52C",
+  PS4: "C6CD3D8752652D2A",
+  PS5: "6248F71B9D7C1E93",
+  HEADLESS: "699C82A6807668A7",
+};
+
+function textureMeta(guid, relPath) {
+  let s = `MetaFileClass {\n Name "{${guid}}${relPath}"\n Configurations {\n`;
+  for (const [platform, confGuid] of Object.entries(TEXTURE_TYPE_CONFS)) {
+    s += `  PNGResourceClass ${platform} : "{${confGuid}}Configs/System/ResourceTypes/${platform}/TextureUnspecified.conf" {\n  }\n`;
+  }
+  return s + ` }\n}\n`;
+}
+
 // Multi-line m_sEntryText serialization (quoted lines joined by `\` continuations)
 function entryText(lines, indent) {
   const safe = lines.length ? lines : [""];
@@ -70,7 +91,14 @@ export function buildMissionFiles(mission, options = {}) {
     addon: mission.guids?.addon ?? mintGuid(),
     world: mission.guids?.world ?? mintGuid(),
     missionConf: mission.guids?.missionConf ?? mintGuid(),
+    thumbnail: mission.guids?.thumbnail ?? mintGuid(),
   };
+
+  // Custom thumbnail: the web app composites the image and adds the binary
+  // Images/<name>.png + .edds; we own the resource ref and the sidecar .meta.
+  // Without one the mission keeps the toolkit's stock icon.
+  const thumbPath = `Images/${mission.name}.edds`;
+  const thumbRef = mission.thumbnail ? `{${guids.thumbnail}}${thumbPath}` : K.TOOLKIT_ICON;
 
   // Mod content: dependencies + extra FactionManager entries derive from the
   // factions the mission actually uses (their `mod` tag), NOT from a UI
@@ -126,9 +154,9 @@ export function buildMissionFiles(mission, options = {}) {
  m_sAuthor "${mission.author}"
  m_sDescription "${shortDesc}"
  m_sDetails "${shortDesc}"
- m_sIcon "${K.TOOLKIT_ICON}"
- m_sLoadingScreen "${K.TOOLKIT_ICON}"
- m_sPreviewImage "${K.TOOLKIT_ICON}"
+ m_sIcon "${thumbRef}"
+ m_sLoadingScreen "${thumbRef}"
+ m_sPreviewImage "${thumbRef}"
  m_sGameMode "COOP"
  m_iPlayerCount ${mission.playerCount ?? 128}
  m_bOverrideScenarioTimeAndWeather 1
@@ -735,6 +763,10 @@ ${slotBlocks}
     [`${layersDir}/QRF.layer`]: qrfLayer,
     [`${layersDir}/Props.layer`]: "",
   };
+
+  // The .png/.edds binaries come from the browser (canvas); here we only add
+  // the sidecar that gives the pair its stable resource GUID.
+  if (mission.thumbnail) files[`${thumbPath}.meta`] = textureMeta(guids.thumbnail, thumbPath);
 
   return { files, guids, addonDirName: mission.dirName ?? mission.addonId };
 }

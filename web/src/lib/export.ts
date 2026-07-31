@@ -4,6 +4,8 @@ import { missionIds } from "./mission";
 import { loadHeightmap, type HeightmapSampler } from "./heightmap";
 import { terrainByKey } from "./terrains";
 import { iconEnum, MARKER_FACTIONS, MILITARY_TYPES } from "./markers";
+import { thumbnailPixels, thumbnailPngBytes } from "./thumbnail";
+import { encodeEdds } from "./edds";
 
 const samplerCache = new Map<string, Promise<HeightmapSampler>>();
 
@@ -121,6 +123,9 @@ export async function toGeneratorMission(m: Mission) {
     loadouts,
     groups: m.groups,
     guids: m.guids,
+    // Flag only — the generator emits the ref + .edds.meta, the binaries are
+    // added in exportMission (canvas isn't available to the Node CLI).
+    thumbnail: !!m.thumbnail,
     briefing: {
       situation: m.briefing.situation.split("\n"),
       objectives: m.briefing.objectives.split("\n"),
@@ -182,6 +187,18 @@ export async function exportMission(m: Mission): Promise<{ fileCount: number; di
     sampleY: (x: number, z: number) => sampler.sample(x, z),
   });
 
+  // Binary members of the file map (thumbnail); written the same way as text.
+  const binaries: Record<string, Uint8Array<ArrayBuffer>> = {};
+  if (m.thumbnail) {
+    const name = missionIds(m).name;
+    const { width, height, rgba } = await thumbnailPixels(m.thumbnail, m.displayName);
+    // The .png is the import source Workbench wants next to a texture — a
+    // .edds without one loads fine but reports "source file not found" in the
+    // editor. Sources are stripped when the addon is packed, so it's free.
+    binaries[`Images/${name}.png`] = await thumbnailPngBytes(m.thumbnail, m.displayName);
+    binaries[`Images/${name}.edds`] = encodeEdds(width, height, rgba);
+  }
+
   const w = window as unknown as { showDirectoryPicker?: (o?: object) => Promise<FileSystemDirectoryHandle> };
   if (!w.showDirectoryPicker) {
     // Dead end for Firefox/Safari — point at the .json handoff (Mission tab)
@@ -193,7 +210,13 @@ export async function exportMission(m: Mission): Promise<{ fileCount: number; di
   const root = await w.showDirectoryPicker({ mode: "readwrite" });
   const addonDir = await root.getDirectoryHandle(addonDirName, { create: true });
 
-  for (const [rel, content] of Object.entries(files)) {
+  // Order matters for the thumbnail: the .png goes down before the .edds so
+  // the .edds is the newer file and Workbench doesn't treat it as stale.
+  const all: [string, string | Uint8Array<ArrayBuffer>][] = [
+    ...Object.entries(files),
+    ...Object.entries(binaries),
+  ];
+  for (const [rel, content] of all) {
     const parts = rel.split("/");
     let dir = addonDir;
     for (const part of parts.slice(0, -1)) {
@@ -204,5 +227,5 @@ export async function exportMission(m: Mission): Promise<{ fileCount: number; di
     await ws.write(content);
     await ws.close();
   }
-  return { fileCount: Object.keys(files).length, dirName: addonDirName };
+  return { fileCount: all.length, dirName: addonDirName };
 }

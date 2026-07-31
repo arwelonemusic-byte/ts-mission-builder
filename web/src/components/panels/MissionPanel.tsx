@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MODS } from "mission-gen";
 import { TERRAIN_LIST, terrainByKey } from "@/lib/terrains";
 import type { Mission } from "@/lib/mission";
+import { prepareThumbnailSource, thumbnailPreviewUrl } from "@/lib/thumbnail";
 import { useT } from "@/lib/i18n";
 import { CheckRow, Divider, Field, GhostButton, Hint, SelectInput, TextInput } from "../ui";
 
@@ -24,6 +25,57 @@ export default function MissionPanel({
 }) {
   const t = useT();
   const fileRef = useRef<HTMLInputElement>(null);
+  const imageRef = useRef<HTMLInputElement>(null);
+
+  // Live thumbnail preview. Compositing a 1920x1200 canvas per keystroke is
+  // wasteful, so the name edits are debounced; the object URL is swapped (and
+  // the old one revoked) only once a render actually completes.
+  const [preview, setPreview] = useState<string | null>(null);
+  const previewRef = useRef<string | null>(null);
+  const [thumbBusy, setThumbBusy] = useState(false);
+  const [thumbError, setThumbError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const timer = window.setTimeout(async () => {
+      try {
+        const url = await thumbnailPreviewUrl(mission.thumbnail, mission.displayName);
+        if (!alive) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+        if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+        previewRef.current = url;
+        setPreview(url);
+      } catch {
+        // preview is cosmetic — a failure here must not break the panel
+      }
+    }, 300);
+    return () => {
+      alive = false;
+      window.clearTimeout(timer);
+    };
+  }, [mission.thumbnail, mission.displayName]);
+
+  useEffect(
+    () => () => {
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    },
+    []
+  );
+
+  async function onPickImage(file: File) {
+    setThumbError(null);
+    setThumbBusy(true);
+    try {
+      update({ thumbnail: await prepareThumbnailSource(file) });
+    } catch (e) {
+      setThumbError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setThumbBusy(false);
+    }
+  }
+
   // Required addons = toolkit (always) + the selected map's addon (modded
   // terrains) + every enabled content mod. Mirrors what the player must have
   // installed, not what the generator ends up listing as dependencies.
@@ -69,6 +121,49 @@ export default function MissionPanel({
       <Field label={t("Author")}>
         <TextInput value={mission.author} onChange={(e) => update({ author: e.target.value })} />
       </Field>
+      {/* Thumbnail: one image drives m_sIcon / m_sLoadingScreen /
+          m_sPreviewImage. The photo is composited under the TS template and
+          the mission name is drawn in, so every mission looks consistent. */}
+      <Divider />
+      <div className="text-[12px] text-white">{t("Thumbnail")}</div>
+      <div className="w-full aspect-[8/5] rounded-[8px] overflow-hidden bg-black/40 border border-white/10">
+        {preview ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={preview} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full grid place-items-center text-[11px] text-white/40">
+            {t("Loading preview…")}
+          </div>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <GhostButton small className="flex-1" onClick={() => imageRef.current?.click()}>
+          {thumbBusy
+            ? t("Loading preview…")
+            : mission.thumbnail
+              ? t("Replace image")
+              : t("Upload image")}
+        </GhostButton>
+        {mission.thumbnail && (
+          <GhostButton small className="flex-1" onClick={() => update({ thumbnail: null })}>
+            {t("Remove image")}
+          </GhostButton>
+        )}
+      </div>
+      <input
+        ref={imageRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) onPickImage(file);
+        }}
+      />
+      {thumbError && <Hint>{thumbError}</Hint>}
+      <Hint>{t("Your image sits under the frame; the mission name is drawn on top. 1920×1200 fits exactly.")}</Hint>
+      <Divider />
       <Field label={t("Terrain")}>
         <SelectInput
           value={mission.terrain}

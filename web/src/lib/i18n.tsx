@@ -63,6 +63,14 @@ const RU: Record<string, string> = {
   Author: "Автор",
   Terrain: "Карта",
   "Changing terrain clears placements.": "Смена карты удаляет всё размещённое.",
+  Thumbnail: "Обложка",
+  "Loading preview…": "Загрузка превью…",
+  "Upload image": "Загрузить изображение",
+  // Short forms — the two buttons sit side by side and wrap at full length
+  "Replace image": "Заменить",
+  "Remove image": "Удалить",
+  "Your image sits under the frame; the mission name is drawn on top. 1920×1200 fits exactly.":
+    "Изображение размещается под рамкой, название миссии наносится сверху. Точный размер — 1920×1200.",
   "Reset mission": "Сбросить миссию",
   "Reset the whole mission?": "Сбросить всю миссию?",
   "Mission file": "Файл миссии",
