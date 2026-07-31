@@ -327,11 +327,13 @@ function ObjectPickerModal({
 
   return (
     <div
-      className="fixed inset-0 z-[3000] bg-black/60 flex items-center justify-center p-4"
+      /* items-start: the grid height changes with the active filter — a
+         centered box would jump vertically on every chip click */
+      className="fixed inset-0 z-[3000] bg-black/60 flex items-start justify-center p-4 pt-[10vh]"
       onClick={onClose}
     >
       <div
-        className="bg-[#202427] rounded-[12px] p-4 flex flex-col gap-3 w-full max-w-[720px] max-h-[82dvh] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease]"
+        className="bg-[#202427] rounded-[12px] p-4 flex flex-col gap-3 w-full max-w-[720px] max-h-[80dvh] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2">
