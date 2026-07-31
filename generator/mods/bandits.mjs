@@ -97,24 +97,27 @@ export const BANDITS = {
         ],
       },
       // ONE pool, no subfaction choice (EnemyPanel hides single-set factions).
-      // CONCRETE-SLOT groups ONLY: Squad(10)/Patrol(3)/FireTeam(6)/MGTeam
-      // fill their slots with the Character_PLASTICBANDIT_Randomized
-      // variant-table wrapper — outside the GM editor those slots spawn the
-      // unarmed base, so the groups are EXCLUDED until the mod author ships
-      // concrete-slot groups. Remaining: RPGTeam(3), Sharpshooter(2+Shadow),
-      // FireTeam_Heavy(6, doubles as medium+large+defense — SF-set pattern).
+      // Randomized-wrapper slots INSIDE group prefabs resolve fine (playtest
+      // 2026-07-31) — only INDIVIDUAL direct spawns (crew seats, hvt) get the
+      // unarmed base, so all 7 groups are usable. Slot counts: Squad 10,
+      // FireTeams 6, MGTeam 4, Patrol/RPGTeam/Sharpshooter 3.
       defaultGroupSet: "Bandits",
       groupSets: {
         Bandits: {
           label: "Bandits",
-          sentry: `{3B840E8559DD4F31}${P_BANDIT_G}/Group_PLASTICBANDIT_Sharpshooter.et`,
-          defense: { ref: `{7B3B2E1089F7AA26}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam_Heavy.et`, size: 6 },
+          sentry: `{7E7B234B9503F8D8}${P_BANDIT_G}/Group_PLASTICBANDIT_Patrol.et`,
+          defense: { ref: `{EE1CA3E20AA9E4F0}${P_BANDIT_G}/Group_PLASTICBANDIT_Squad.et`, size: 10 },
           small: [
+            `{7E7B234B9503F8D8}${P_BANDIT_G}/Group_PLASTICBANDIT_Patrol.et`,
+            `{C4FEF5D8AC0DB8D6}${P_BANDIT_G}/Group_PLASTICBANDIT_MGTeam.et`,
             `{10D3AFE50879B195}${P_BANDIT_G}/Group_PLASTICBANDIT_RPGTeam.et`,
             `{3B840E8559DD4F31}${P_BANDIT_G}/Group_PLASTICBANDIT_Sharpshooter.et`,
           ],
-          medium: [`{7B3B2E1089F7AA26}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam_Heavy.et`],
-          large: [`{7B3B2E1089F7AA26}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam_Heavy.et`],
+          medium: [
+            `{1F1451C4E968C477}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam.et`,
+            `{7B3B2E1089F7AA26}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam_Heavy.et`,
+          ],
+          large: [`{EE1CA3E20AA9E4F0}${P_BANDIT_G}/Group_PLASTICBANDIT_Squad.et`],
         },
       },
     },
