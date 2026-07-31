@@ -206,7 +206,9 @@ export default function ZonesPanel({
             )}
 
             {selected && (
-              <>
+              /* Interacting with the expanded controls must not bubble to the
+                 card's onClick — that re-focuses the map on the zone. */
+              <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <span className="text-[12px] text-white">{t("Radius")}</span>
               <span className="text-[12px] text-white/60">{zn.radius} m</span>
@@ -384,7 +386,7 @@ export default function ZonesPanel({
                 </div>
               );
             })}
-              </>
+              </div>
             )}
           </div>
         );
