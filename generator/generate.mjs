@@ -12,6 +12,8 @@
 //               vanilla US vs UK — UK groups/fortifications/Land Rover patrols)
 //   --mei       build the Middle East Insurgents variant (TS_WebSpikeMEI: US vs
 //               MEI — the USSR alias faction, exercises alias emission + deps)
+//   --bandits   build the Bandit Faction variant (TS_WebSpikeBandits: US vs
+//               PLASTICBANDIT — enemy-only, FactionManager_Base append pattern)
 //   --afrf-mei  build the RHS-vs-MEI variant (TS_WebSpikeAFRFMEI: RHS_AFRF vs
 //               MEI — validates the friendly-faction clearing override)
 //   --armenhof  build the modded-terrain variant (TS_WebSpikeArmenhof: vanilla
@@ -349,6 +351,35 @@ const AFRF_MEI_MISSION = {
       ...MISSION.zones[1],
       plugins: [
         { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["BRDM2"] },
+      ],
+    },
+  ],
+};
+
+// Bandits spike: vanilla US vs the enemy-only PLASTICBANDIT faction —
+// exercises the FactionManager_BASE-append pattern (member inherited into
+// the Editor prefab), bandit group pools, the armed UAZ-452 patrol with
+// forced bandit crew, and the transitive 3-addon dep chain.
+const BANDITS_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeBandits",
+  dirName: "TS_WebSpikeBandits",
+  addonTitle: "TS Web Spike Bandits Mission",
+  name: "TS_WebSpikeBandits",
+  displayName: "TS Web Spike Bandits",
+  enemyFaction: "PLASTICBANDIT",
+  enemyGroupSets: ["Bandits"],
+  guids: {
+    addon: "99A9AB6EEFD0528D",
+    world: "84C01751F17AEA08",
+    missionConf: "56BD263DA36A47DD",
+  },
+  zones: [
+    MISSION.zones[0],
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["UAZ452_Armed_Bandit"] },
       ],
     },
   ],
@@ -869,8 +900,10 @@ const BUILT = process.argv.includes("--zarichne")
           ? UK_ENEMY_MISSION
           : process.argv.includes("--uk")
             ? UK_MISSION
-            : process.argv.includes("--afrf-mei")
-              ? AFRF_MEI_MISSION
+            : process.argv.includes("--bandits")
+              ? BANDITS_MISSION
+              : process.argv.includes("--afrf-mei")
+                ? AFRF_MEI_MISSION
               : process.argv.includes("--mei")
                 ? MEI_MISSION
                 : MISSION;
