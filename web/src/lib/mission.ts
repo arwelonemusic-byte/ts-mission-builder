@@ -51,14 +51,17 @@ export type MissionSector = {
 
 /** Mission objective (Objectives tab) → a real SF task in Objectives.layer
  * (LIST_ONLY visibility — task list entry, no map marker) + a completion hint.
- * radius only applies to area types (clear/reach); hvt has none. */
-export type ObjectiveType = "hvt" | "clear" | "reach";
+ * radius only applies to area types (clear/reach); hvt/destroy have none.
+ * objectRef (destroy only) = prefab to spawn as the demolition target —
+ * a DESTROY_OBJECTS entry or a faction vehicle ref (modal picker). */
+export type ObjectiveType = "hvt" | "clear" | "reach" | "destroy";
 export type MissionObjective = {
   id: string;
   type: ObjectiveType;
   x: number;
   z: number;
   radius?: number;
+  objectRef?: string;
   /** In-game task list entry */
   taskTitle: string;
   taskDesc: string;
@@ -108,6 +111,11 @@ export type Mission = {
    * a new addon and must not reuse them (see freshenGuids) */
   guidsName: string;
 };
+
+/** Fallback destroy target (Soviet weapon cache) — a destroy objective
+ * without an objectRef would fail generation. */
+export const DEFAULT_DESTROY_OBJECT =
+  "{34AD2F398FDFE5B3}Prefabs/Props/Military/AmmoBoxes/EquipmentBoxStack/USSR/EquipmentBoxStack_USSR_01_V5.et";
 
 /** Clamp a radius to its objective type's bounds (undefined for hvt — no
  * trigger area). Used by migrate() and the panel slider alike. */
@@ -273,7 +281,7 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     .filter(
       (o) =>
         o &&
-        (o.type === "hvt" || o.type === "clear" || o.type === "reach") &&
+        (o.type === "hvt" || o.type === "clear" || o.type === "reach" || o.type === "destroy") &&
         typeof o.x === "number" &&
         typeof o.z === "number"
     )
@@ -283,6 +291,11 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
       x: o.x,
       z: o.z,
       radius: objectiveRadius(o.type, o.radius),
+      // destroy without a target can't generate — default to the Soviet cache
+      objectRef:
+        o.type === "destroy"
+          ? String(o.objectRef || DEFAULT_DESTROY_OBJECT)
+          : undefined,
       taskTitle: String(o.taskTitle ?? ""),
       taskDesc: String(o.taskDesc ?? ""),
       hintTitle: String(o.hintTitle ?? ""),

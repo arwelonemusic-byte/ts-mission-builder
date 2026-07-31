@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleSizeClass } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -876,6 +876,24 @@ ${showHint(o)}`;
         }
        }
        m_sObjectToSpawn "${K.TRIGGER_CHARACTER_SLOW}"
+      }
+     }
+     coords 0 0 0
+    }`;
+        } else if (o.type === "destroy") {
+          // objectRef = any prefab whose ROOT carries a damage manager
+          // (DESTROY_OBJECTS pool or a faction vehicle — BaseVehicle has its
+          // own GetDamageManager fast path). SCR_TaskDestroyObject hooks the
+          // damage state; no plugins needed. GC protection like the HVT.
+          if (!o.objectRef) throw new Error(`Destroy objective without objectRef`);
+          layerPrefab = K.LAYERTASK_DESTROY_PREFAB;
+          cmpClass = "SCR_ScenarioFrameworkLayerTaskDestroy";
+          cmpGuid = K.CMP_LT_DESTROY;
+          slotBlock = `    GenericEntity SlotObjective${n} : "${K.SLOT_DESTROY_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotDestroy "${K.CMP_SLOT_DESTROY}" {
+       m_sObjectToSpawn "${o.objectRef}"
+       m_bCanBeGarbageCollected 0
       }
      }
      coords 0 0 0

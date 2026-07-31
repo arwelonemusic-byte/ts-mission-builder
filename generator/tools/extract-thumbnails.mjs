@@ -216,12 +216,24 @@ function resolveInput(input, roots) {
 
 const args = process.argv.slice(2);
 const outIdx = args.indexOf("--out");
+// --size WxH: downscale via texconv (e.g. 200x150 for web grid tiles)
+const sizeIdx = args.indexOf("--size");
+let sizeArgs = [];
+if (sizeIdx !== -1) {
+  const m = /^(\d+)x(\d+)$/.exec(args[sizeIdx + 1] ?? "");
+  if (!m) {
+    console.error("--size expects WxH, e.g. --size 200x150");
+    process.exit(1);
+  }
+  sizeArgs = ["-w", m[1], "-h", m[2]];
+}
 if (outIdx === -1 || !args[outIdx + 1] || args.length < 4) {
-  console.error("Usage: node extract-thumbnails.mjs --out <dir> <prefab-ref-or-edds>...");
+  console.error("Usage: node extract-thumbnails.mjs --out <dir> [--size WxH] <prefab-ref-or-edds>...");
   process.exit(1);
 }
+const consumed = new Set([outIdx, outIdx + 1, ...(sizeIdx !== -1 ? [sizeIdx, sizeIdx + 1] : [])]);
 const outDir = args[outIdx + 1];
-const inputs = args.filter((_, i) => i !== outIdx && i !== outIdx + 1);
+const inputs = args.filter((_, i) => !consumed.has(i));
 mkdirSync(outDir, { recursive: true });
 
 const roots = previewRoots();
@@ -243,7 +255,7 @@ try {
       const dds = eddsToDds(readFileSync(edds), basename(edds));
       const ddsPath = join(tmp, basename(edds).replace(/\.edds$/i, ".dds"));
       writeFileSync(ddsPath, dds);
-      execFileSync(TEXCONV, ["-ft", "png", "-y", "-nologo", "-o", outDir, ddsPath], { stdio: "pipe" });
+      execFileSync(TEXCONV, ["-ft", "png", "-y", "-nologo", ...sizeArgs, "-o", outDir, ddsPath], { stdio: "pipe" });
       console.log(`OK    ${basename(edds).replace(/\.edds$/i, ".png")}  <-  ${edds}`);
       ok++;
     } catch (err) {

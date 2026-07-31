@@ -103,6 +103,10 @@ export const OBJECTIVE_GLYPHS: Record<ObjectiveType, string> = {
   // flag
   reach:
     `<path d="M3.5 14.5 V2.2 M3.5 2.4 C5 1.4 6.5 1.4 8 2.4 C9.5 3.4 11 3.4 12.5 2.4 V8.6 C11 9.6 9.5 9.6 8 8.6 C6.5 7.6 5 7.6 3.5 8.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+  // bomb with sparking fuse
+  destroy:
+    `<circle cx="7" cy="10" r="4.5" stroke="currentColor" stroke-width="1.4" fill="none"/>` +
+    `<path d="M10.2 6.8 L12.4 4.6 M12.4 4.6 L11.4 2.4 M12.4 4.6 L14.6 5.6 M12.4 4.6 L14.2 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>`,
 };
 
 /** Round badge at an objective's position: accent disc + white type glyph.

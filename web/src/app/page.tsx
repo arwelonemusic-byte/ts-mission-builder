@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import {
+  DEFAULT_DESTROY_OBJECT,
   defaultLoadouts,
   downloadMissionJson,
   factionMeta,
@@ -432,12 +433,19 @@ export default function Editor() {
             hintTitle: t("Objective complete"),
             hintBody: t("The area has been cleared."),
           }
-        : {
-            taskTitle: t("Reach the location"),
-            taskDesc: t("Get to the designated location."),
-            hintTitle: t("Objective complete"),
-            hintBody: t("The location has been reached."),
-          };
+        : type === "destroy"
+          ? {
+              taskTitle: t("Destroy the target"),
+              taskDesc: t("Find and destroy the designated target."),
+              hintTitle: t("Objective complete"),
+              hintBody: t("The target has been destroyed."),
+            }
+          : {
+              taskTitle: t("Reach the location"),
+              taskDesc: t("Get to the designated location."),
+              hintTitle: t("Objective complete"),
+              hintBody: t("The location has been reached."),
+            };
 
   const onMapClick = (x: number, z: number) => {
     if (!mission) return;
@@ -479,6 +487,7 @@ export default function Editor() {
         x: xi,
         z: zi,
         radius: objectiveRadius(type),
+        objectRef: type === "destroy" ? DEFAULT_DESTROY_OBJECT : undefined,
         ...d,
       };
       setMission((m) => (m ? { ...m, objectives: [...m.objectives, objective] } : m));

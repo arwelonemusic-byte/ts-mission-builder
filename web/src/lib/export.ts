@@ -99,6 +99,7 @@ export async function toGeneratorMission(m: Mission) {
       type: o.type,
       pos: [y(o.x), y(oy), y(o.z)],
       radius: o.radius,
+      objectRef: o.objectRef,
       taskTitle: o.taskTitle,
       taskDesc: o.taskDesc,
       hintTitle: o.hintTitle,

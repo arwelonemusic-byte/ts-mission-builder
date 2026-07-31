@@ -173,6 +173,15 @@ const MISSION = {
       hintTitle: "Задача выполнена",
       hintBody: "Точка достигнута.",
     },
+    {
+      type: "destroy",
+      pos: [2770.4, 74.0, 1610.9],
+      objectRef: "{34AD2F398FDFE5B3}Prefabs/Props/Military/AmmoBoxes/EquipmentBoxStack/USSR/EquipmentBoxStack_USSR_01_V5.et",
+      taskTitle: "Уничтожить склад боеприпасов",
+      taskDesc: "В лагере противника складированы боеприпасы. Найдите и уничтожьте их.",
+      hintTitle: "Задача выполнена",
+      hintBody: "Склад боеприпасов уничтожен.",
+    },
   ],
 };
 

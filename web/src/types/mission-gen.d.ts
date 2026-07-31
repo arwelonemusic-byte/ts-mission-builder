@@ -81,10 +81,18 @@ declare module "mission-gen" {
     maxOrigins?: number;
   }[];
   export const OBJECTIVE_TYPES: {
-    type: "hvt" | "clear" | "reach";
+    type: "hvt" | "clear" | "reach" | "destroy";
     label: string;
-    /** Trigger radius bounds for area types; absent for hvt */
+    /** Trigger radius bounds for area types; absent for hvt/destroy */
     radius?: { min: number; max: number; default: number };
+  }[];
+  /** Destroy-object pool: root-destructible prefabs with shipped thumbnails
+   * (web/public/icons/prefabs/<thumb>); vehicles are added by the web modal */
+  export const DESTROY_OBJECTS: {
+    ref: string;
+    label: string;
+    cat: "comms" | "fuel" | "cache" | "weapons" | "industrial";
+    thumb: string;
   }[];
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];

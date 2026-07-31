@@ -903,7 +903,40 @@ export const K = {
   // SF trigger (honors ALL PluginTrigger fields, unlike TriggerDominance) —
   // Clear Area overrides SlotClearArea's m_sObjectToSpawn to this
   TRIGGER_CHARACTER_SLOW: "{47D49EA6A216CFD5}Prefabs/Systems/ScenarioFramework/Triggers/TriggerCharacterSlow.et",
+  LAYERTASK_DESTROY_PREFAB: "{5EDF39860639027D}Prefabs/Systems/ScenarioFramework/Components/LayerTaskDestroy.et",
+  CMP_LT_DESTROY: "{5A6513F41BA457C8}",
+  SLOT_DESTROY_PREFAB: "{7586595959BA2D99}Prefabs/Systems/ScenarioFramework/Components/SlotDestroy.et",
+  CMP_SLOT_DESTROY: "{5A22E1D6276BD209}",
 };
+
+// Destroy-object objective pool (source + provenance: input/destroy-objects.md —
+// every entry is natively destructible at the prefab ROOT, which vanilla
+// SCR_TaskDestroyObject requires, AND has a baked GM thumbnail we extracted to
+// web/public/icons/prefabs/<thumb>). Vehicles are NOT listed here — the web
+// modal adds a Vehicles category from the mission factions' `vehicles` dicts
+// (BaseVehicle has a dedicated damage-manager fast path; thumb = prefab
+// basename + .png, missing files fall back to a placeholder tile).
+export const DESTROY_OBJECTS = [
+  { ref: "{5C9F32A26A42876F}Prefabs/Structures/Infrastructure/Towers/AntennaVOR_01/AntennaVOR_01.et", label: "VOR Beacon", cat: "comms", thumb: "E_AntennaVOR_01.png" },
+  { ref: "{DBCDEC45DB834E8A}Prefabs/Structures/Infrastructure/Towers/TransmitterTower_01/TransmitterTower_01.et", label: "Transmitter Tower (large)", cat: "comms", thumb: "E_TransmitterTower_01.png" },
+  { ref: "{7E2380494811A5FB}Prefabs/Structures/Infrastructure/Towers/TransmitterTower_01/TransmitterTower_01_medium.et", label: "Transmitter Tower (medium)", cat: "comms", thumb: "E_TransmitterTower_01_medium.png" },
+  { ref: "{6A004A8F0571D456}Prefabs/Structures/Infrastructure/Towers/TransmitterTower_01/TransmitterTower_01_small.et", label: "Transmitter Tower (small)", cat: "comms", thumb: "E_TransmitterTower_01_small.png" },
+  { ref: "{5B8922E61D8DF345}Prefabs/Props/Military/Antennas/Antenna_R161_01.et", label: "R-161 Field Antenna", cat: "comms", thumb: "E_Antenna_R161_01.png" },
+  { ref: "{B4F2701CBBE49C48}Prefabs/Props/Military/Antennas/Antenna_RC292_01.et", label: "RC-292 Field Antenna", cat: "comms", thumb: "E_Antenna_RC292_01.png" },
+  { ref: "{03B44EA7652D0D17}Prefabs/Props/Military/Radios/RadioStation_R123M_01.et", label: "R-123M Radio Set", cat: "comms", thumb: "E_RadioStation_R123M_01.png" },
+  { ref: "{34736979381CA219}Prefabs/Props/Military/Radios/RadioStation_ANGRC160_01.et", label: "AN/GRC-160 Radio Set", cat: "comms", thumb: "E_RadioStation_ANGRC160_01.png" },
+  { ref: "{92BE346D5E0BD792}Prefabs/Props/Military/Fuel/MobileWaterTank_USSR_01_fuel.et", label: "Fuel Bowser (Soviet)", cat: "fuel", thumb: "E_MobileFuelTank_USSR_01.png" },
+  { ref: "{9F35A268E0DD98A4}Prefabs/Props/Military/Fuel/MobileWaterTank_US_01_fuel.et", label: "Fuel Bowser (US)", cat: "fuel", thumb: "E_MobileFuelTank_US_01.png" },
+  { ref: "{10C5A45290A9EEED}Prefabs/Props/Industrial/GasTank_01_blue.et", label: "Gas Tank (small)", cat: "fuel", thumb: "E_GasTank_01_blue.png" },
+  { ref: "{0712799E7E8A0D56}Prefabs/Props/Industrial/GasTank_02_rusty.et", label: "Gas Tank (rusty)", cat: "fuel", thumb: "E_GasTank_02_rusty.png" },
+  { ref: "{34AD2F398FDFE5B3}Prefabs/Props/Military/AmmoBoxes/EquipmentBoxStack/USSR/EquipmentBoxStack_USSR_01_V5.et", label: "Weapon Cache (Soviet)", cat: "cache", thumb: "E_EquipmentBoxStack_USSR_01_V5.png" },
+  { ref: "{B33E74A024F0C8EA}Prefabs/Props/Military/AmmoBoxes/EquipmentBoxStack/US/EquipmentBoxStack_US_01_V5.et", label: "Weapon Cache (US)", cat: "cache", thumb: "E_EquipmentBoxStack_US_01_V5.png" },
+  { ref: "{D1FFE458E8AC4BDB}Prefabs/Weapons/Mortars/2B14/Mortar_2B14.et", label: "2B14 82mm Mortar", cat: "weapons", thumb: "E_Mortar_2B14.png" },
+  { ref: "{8094D99689ABE241}Prefabs/Weapons/Mortars/M252/Mortar_M252.et", label: "M252 81mm Mortar", cat: "weapons", thumb: "E_Mortar_N252.png" },
+  { ref: "{616F4E93658E5A3A}Prefabs/Props/Military/Generators/GeneratorFloodlight_USSR_01.et", label: "Floodlight Generator (Soviet)", cat: "industrial", thumb: "E_GeneratorFloodlight_USSR_01.png" },
+  { ref: "{0E94F28FD722B1D8}Prefabs/Props/Military/Generators/GeneratorFloodlight_US_01.et", label: "Floodlight Generator (US)", cat: "industrial", thumb: "E_GeneratorFloodlight_US_01.png" },
+  { ref: "{4D100F180B3EFEC1}Prefabs/Structures/Industrial/Containers/Silos/Silo_01/Silo_01.et", label: "Industrial Silo", cat: "industrial", thumb: "E_Silo_01.png" },
+];
 
 // Zone modules exposed in the builder UI (MVP set per Mod Defaults spec).
 // kind "infantry" pools are resolved from the enemy groupSet by size rule;
@@ -942,6 +975,8 @@ export const OBJECTIVE_TYPES = [
   { type: "hvt", label: "Eliminate HVT" },
   { type: "clear", label: "Clear Area", radius: { min: 50, max: 500, default: 150 } },
   { type: "reach", label: "Reach Location", radius: { min: 10, max: 100, default: 25 } },
+  // objectRef = DESTROY_OBJECTS entry or a faction vehicle ref (modal picker)
+  { type: "destroy", label: "Destroy Object" },
 ];
 
 /**
