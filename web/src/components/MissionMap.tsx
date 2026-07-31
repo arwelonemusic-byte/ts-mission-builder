@@ -3,12 +3,21 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { layoutSpawnBundle, itemWorldCorners, rotateLocal, FACTIONS, ZONE_MODULES } from "mission-gen";
+import { layoutSpawnBundle, itemWorldCorners, rotateLocal, FACTIONS } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
 import type { MissionMarker, MissionSector, Zone } from "@/lib/mission";
-import { findColor, findIcon, militaryIconUrl, MARKER_LABEL_OUTLINE, VANILLA_ATLAS } from "@/lib/markers";
-import { DISABLED_ICON_FILTER, MODULE_ICONS, ORIGIN_COLORS } from "@/lib/zoneModules";
+import {
+  distanceLabel,
+  distancePillHtml,
+  markerHtml,
+  originBadgeHtml,
+  pingHtml,
+  zoneDotHtml,
+  zoneTooltipHtml,
+} from "@/lib/overlayHtml";
+import { ORIGIN_COLORS } from "@/lib/zoneModules";
 import { coordsText, scaleLabel, tr, zoneName, type Lang } from "@/lib/i18n";
+import MapViewControls from "@/components/MapViewControls";
 
 // Coordinate mapping (same convention as ts-ops-planner): lat = world Z
 // (northing), lng = world X, 1 map unit = 1 meter. For tile pyramids we use a
@@ -35,6 +44,8 @@ export type MapApi = {
   addPing: (x: number, z: number, color: string) => void;
   screenToWorld: (clientX: number, clientY: number) => { x: number; z: number } | null;
   fitWholeMap: () => void;
+  /** Current viewport as a fit-square (used to hand the view over to 3D). */
+  getView?: () => { x: number; z: number; radius: number } | null;
 };
 
 export type MapProps = {
@@ -73,6 +84,9 @@ export type MapProps = {
     patch: Partial<Pick<MissionSector, "x" | "z" | "length" | "width" | "rotation">>
   ) => void;
   onApi?: (api: MapApi) => void;
+  /** 2D/3D view toggle state + handler (rendered in the HUD cluster) */
+  view3D: boolean;
+  onToggleView: () => void;
 };
 
 export default function MissionMap(props: MapProps) {
@@ -204,15 +218,13 @@ export default function MissionMap(props: MapProps) {
     // --- imperative API for the page (pings, drag-drop conversion, fit) ---
     propsRef.current.onApi?.({
       addPing: (x, z, color) => {
-        const ring = (delay: string) =>
-          `<div style="position:absolute;inset:0;border:2px solid ${color};border-radius:50%;animation:mbPing 0.7s ease-out ${delay} both;"></div>`;
         const ping = L.marker([z, x], {
           interactive: false,
           icon: L.divIcon({
             className: "",
             iconSize: [44, 44],
             iconAnchor: [22, 22],
-            html: `<div style="position:relative;width:44px;height:44px;">${ring("0s")}${ring("0.15s")}</div>`,
+            html: pingHtml(color),
           }),
         }).addTo(map);
         window.setTimeout(() => ping.remove(), 750);
@@ -239,6 +251,16 @@ export default function MissionMap(props: MapProps) {
           ]
         );
       },
+      getView: () => {
+        const m = mapRef.current;
+        if (!m) return null;
+        const size = m.getSize();
+        if (size.x === 0 || size.y === 0) return null; // hidden — no usable view
+        const c = m.getCenter();
+        const b = m.getBounds();
+        const radius = Math.min(b.getEast() - b.getWest(), b.getNorth() - b.getSouth()) / 2;
+        return { x: c.lng, z: c.lat, radius };
+      },
     });
 
     return () => {
@@ -256,11 +278,16 @@ export default function MissionMap(props: MapProps) {
     updateScaleRef.current?.();
   }, [props.lang]);
 
-  // Pan/zoom to a requested focus point (Show on map, zone-card click)
+  // Pan/zoom to a requested focus point (Show on map, zone-card click).
+  // Skip while hidden behind the 3D view (display:none → size 0): fitBounds
+  // on a 0-size map lands on a garbage max-zoom view, and the request is
+  // being serviced by the 3D camera anyway.
   useEffect(() => {
     const map = mapRef.current;
     const f = props.focus;
     if (!map || !f) return;
+    const size = map.getSize();
+    if (size.x === 0 || size.y === 0) return;
     map.fitBounds(
       [
         [f.z - f.radius, f.x - f.radius],
@@ -549,46 +576,23 @@ export default function MissionMap(props: MapProps) {
         />
       )}
 
-      {/* zoom / fit controls (desktop only — mobile pinch-zooms) */}
-      <div className="max-md:hidden absolute top-4 right-4 z-[1000] flex flex-col gap-px rounded-[8px] overflow-hidden shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]">
-        <button
-          type="button"
-          aria-label={tr(props.lang, "Zoom in")}
-          title={tr(props.lang, "Zoom in")}
-          onClick={() => mapRef.current?.zoomIn()}
-          className="w-9 h-9 bg-[#202427] hover:bg-[#2e3439] active:bg-[#3a4249] text-white text-[18px] font-medium flex items-center justify-center"
-        >
-          +
-        </button>
-        <button
-          type="button"
-          aria-label={tr(props.lang, "Zoom out")}
-          title={tr(props.lang, "Zoom out")}
-          onClick={() => mapRef.current?.zoomOut()}
-          className="w-9 h-9 bg-[#202427] hover:bg-[#2e3439] active:bg-[#3a4249] text-white text-[18px] font-medium flex items-center justify-center"
-        >
-          −
-        </button>
-        <button
-          type="button"
-          aria-label={tr(props.lang, "Fit whole map")}
-          title={tr(props.lang, "Fit whole map")}
-          onClick={() => {
-            const [ww, hh] = worldRef.current;
-            mapRef.current?.fitBounds(
-              [
-                [0, 0],
-                [hh, ww],
-              ]
-            );
-          }}
-          className="w-9 h-9 bg-[#202427] hover:bg-[#2e3439] active:bg-[#3a4249] text-white/70 flex items-center justify-center"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>
-            <path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-          </svg>
-        </button>
-      </div>
+      {/* zoom / fit / 3D controls (desktop only — mobile pinch-zooms) */}
+      <MapViewControls
+        lang={props.lang}
+        onZoomIn={() => mapRef.current?.zoomIn()}
+        onZoomOut={() => mapRef.current?.zoomOut()}
+        onFit={() => {
+          const [ww, hh] = worldRef.current;
+          mapRef.current?.fitBounds(
+            [
+              [0, 0],
+              [hh, ww],
+            ]
+          );
+        }}
+        view3D={props.view3D}
+        onToggleView={props.onToggleView}
+      />
 
       {/* scale bar + coordinate readout (desktop only) */}
       <div className="max-md:hidden absolute right-4 bottom-4 z-[1000] pointer-events-none flex flex-col items-end gap-[6px]">
@@ -615,62 +619,22 @@ export default function MissionMap(props: MapProps) {
   );
 }
 
-/** DivIcon for a mission marker: military = pre-colored PNG, custom = atlas
- * sprite recolored via CSS mask. Text label sits to the right of the icon;
- * selection adds a yellow halo ring. */
+/** DivIcon wrapper for a mission marker (HTML shared with the 3D view). */
 function markerDivIcon(mk: MissionMarker, selected: boolean, freshDrop = false) {
   const size = 40;
-  const label = mk.text.trim().replace(/[<>&"]/g, "");
-  const halo = selected
-    ? `<div style="position:absolute;inset:-5px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
-    : "";
-  let iconHtml: string;
-  if (mk.kind === "military") {
-    // width/height must be inline STYLE — Tailwind preflight's `img { height: auto }`
-    // overrides the presentation attributes and the PNG blows up to 128px.
-    iconHtml = `<img src="${militaryIconUrl(mk.faction, mk.type)}" style="display:block;width:${size}px;height:${size}px;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.7));" />`;
-  } else {
-    const icon = findIcon(mk.quad);
-    const hex = findColor(mk.color).hex;
-    const scale = size / icon.w;
-    const mask = `url(${VANILLA_ATLAS.url})`;
-    const pos = `-${icon.x * scale}px -${icon.y * scale}px`;
-    const msize = `${VANILLA_ATLAS.width * scale}px ${VANILLA_ATLAS.height * scale}px`;
-    iconHtml = `<div style="width:${size}px;height:${size}px;background-color:${hex};-webkit-mask-image:${mask};mask-image:${mask};-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:${pos};mask-position:${pos};-webkit-mask-size:${msize};mask-size:${msize};transform:rotate(${mk.rotation}deg);filter:drop-shadow(0 1px 2px rgba(0,0,0,0.7));"></div>`;
-  }
-  const labelHtml = label
-    ? `<div style="position:absolute;left:${size + 4}px;top:50%;transform:translateY(-50%);white-space:nowrap;font:600 12px/1.2 var(--font-roboto),sans-serif;color:#000;text-shadow:${MARKER_LABEL_OUTLINE};">${label}</div>`
-    : "";
-  const drop = freshDrop ? "animation:mbDrop 0.4s cubic-bezier(0.22,1,0.36,1);" : "";
   return L.divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    html: `<div style="position:relative;width:${size}px;height:${size}px;${drop}">${halo}${iconHtml}${labelHtml}</div>`,
+    html: markerHtml(mk, selected, freshDrop),
   });
-}
-
-/** Zone dot hover tooltip: module chip row, disabled modules greyed with 0
- * (Figma 106:216). Styled via the .zone-tip rules in globals.css. */
-function zoneTooltipHtml(zone: Zone, name: string, lang: Lang) {
-  const chips = ZONE_MODULES.map((def) => {
-    const mod = zone.modules.find((mm) => mm.type === def.type);
-    const iconStyle = `width:16px;height:16px;flex:none;${mod ? "" : `filter:${DISABLED_ICON_FILTER};opacity:0.45;`}`;
-    const countStyle = `font:400 12px/1 var(--font-roboto),sans-serif;color:${mod ? "#fff" : "#6a767c"};`;
-    return `<span style="display:flex;align-items:center;gap:3px;flex:none;"><img src="${MODULE_ICONS[def.type]}" alt="" style="${iconStyle}" /><span style="${countStyle}">${mod?.budget ?? 0}</span></span>`;
-  }).join("");
-  return `<div style="width:max-content;">
-    <div style="display:flex;align-items:baseline;gap:8px;"><span style="font:700 12px/1.2 var(--font-roboto),sans-serif;color:#fff;">${name}</span><span style="font:400 11px/1.2 var(--font-roboto),sans-serif;color:rgba(255,255,255,0.5);">${zone.radius} ${lang === "ru" ? "м" : "m"}</span></div>
-    <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">${chips}</div>
-  </div>`;
 }
 
 /** Small round handle at a zone's center — the only clickable/draggable part.
  * On touch devices the 14px dot gets a transparent 32px hit box. */
 function zoneDotIcon(selected: boolean) {
-  const color = selected ? "#ffcc00" : "#9333ea";
   const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
-  const dot = `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);cursor:move;"></div>`;
+  const dot = zoneDotHtml(selected);
   if (!coarse) {
     return L.divIcon({ className: "", iconSize: [14, 14], iconAnchor: [7, 7], html: dot });
   }
@@ -682,35 +646,19 @@ function zoneDotIcon(selected: boolean) {
   });
 }
 
-/** "347 m" / "1.4 km" label for the origin-drag distance pill. */
-function distanceLabel(dist: number, lang: Lang) {
-  if (dist < 1000) return `${Math.round(dist)} ${lang === "ru" ? "м" : "m"}`;
-  return `${(dist / 1000).toFixed(1)} ${lang === "ru" ? "км" : "km"}`;
-}
-
-/** Distance pill shown at the origin→zone line midpoint during a badge drag.
- * Styled like the HUD scale/coords readouts; non-interactive. */
+/** Distance pill shown at the origin→zone line midpoint during a badge drag. */
 function distancePillIcon(dist: number, lang: Lang) {
   return L.divIcon({
     className: "",
     iconSize: [0, 0],
     iconAnchor: [0, 0],
-    html: `<div style="position:absolute;left:0;top:0;transform:translate(-50%,-50%);pointer-events:none;"><span class="mb-dist-pill" style="display:block;white-space:nowrap;background:rgba(32,36,39,0.92);border-radius:6px;padding:3px 8px;font:500 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;color:rgba(255,255,255,0.9);box-shadow:0 2px 8px rgba(0,0,0,0.5);">${distanceLabel(dist, lang)}</span></div>`,
+    html: distancePillHtml(dist, lang),
   });
 }
 
-/** Round badge for a QRF reinforcement origin: colored disc + white module
- * glyph (footsteps / truck). Draggable; 32px transparent hit box on touch.
- * Selection adds a yellow halo ring (same treatment as mission markers). */
+/** DivIcon wrapper for a QRF origin badge; 32px transparent hit box on touch. */
 function originBadgeIcon(moduleType: string, color: string, selected: boolean) {
-  const foot = moduleType === "TS_ScenarioFrameworkPluginQRFFoot";
-  const glyphPath = foot
-    ? "M10.6667 11.3333H13.3333M2.66667 8.66667H5.33333M2.66669 10.6667V9.08C2.66669 7.66667 1.98002 7 2.00002 5.33333C2.02002 3.52 2.99336 1.33333 5.00002 1.33333C6.24669 1.33333 6.66669 2.53333 6.66669 3.66667C6.66669 5.74 5.33336 7.44 5.33336 9.45333V10.6667C5.33336 11.0203 5.19288 11.3594 4.94283 11.6095C4.69278 11.8595 4.35364 12 4.00002 12C3.6464 12 3.30726 11.8595 3.05721 11.6095C2.80716 11.3594 2.66669 11.0203 2.66669 10.6667ZM13.3333 13.3333V11.7467C13.3333 10.3333 14.02 9.66667 14 8C13.98 6.18667 13.0067 4 11 4C9.75333 4 9.33333 5.2 9.33333 6.33333C9.33333 8.40667 10.6667 10.1067 10.6667 12.12V13.3333C10.6667 13.687 10.8071 14.0261 11.0572 14.2761C11.3072 14.5262 11.6464 14.6667 12 14.6667C12.3536 14.6667 12.6928 14.5262 12.9428 14.2761C13.1929 14.0261 13.3333 13.687 13.3333 13.3333Z"
-    : "M12.6667 12H14C14.4 12 14.6667 11.7333 14.6667 11.3333V9.33333C14.6667 8.73333 14.2 8.2 13.6667 8.06667C12.4667 7.73333 10.6667 7.33333 10.6667 7.33333C10.6667 7.33333 9.8 6.4 9.2 5.8C8.86667 5.53333 8.46667 5.33333 8 5.33333H7.33333M12.6667 12C12.6667 12.7364 12.0697 13.3333 11.3333 13.3333C10.597 13.3333 10 12.7364 10 12M12.6667 12C12.6667 11.2636 12.0697 10.6667 11.3333 10.6667C10.597 10.6667 10 11.2636 10 12M3.33333 5.33333C2.93333 5.33333 2.6 5.6 2.4 5.93333L1.46667 7.86667C1.37839 8.12415 1.33333 8.39447 1.33333 8.66667V11.3333C1.33333 11.7333 1.6 12 2 12H3.33333M3.33333 5.33333H3L2.99996 2.99996H7.33329L7.33333 3.50004M3.33333 5.33333H7.33333M3.33333 12C3.33333 12.7364 3.93029 13.3333 4.66667 13.3333C5.40305 13.3333 6 12.7364 6 12M3.33333 12C3.33333 11.2636 3.93029 10.6667 4.66667 10.6667C5.40305 10.6667 6 11.2636 6 12M7.33333 5.33333L7.33333 3.50004M7.33333 3.50004H12.3333M6 12L10 12";
-  const halo = selected
-    ? `<div style="position:absolute;inset:-6px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
-    : "";
-  const badge = `<div style="position:relative;width:24px;height:24px;">${halo}<div style="width:24px;height:24px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="${glyphPath}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`;
+  const badge = originBadgeHtml(moduleType, color, selected);
   const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   if (!coarse) {
     return L.divIcon({ className: "", iconSize: [24, 24], iconAnchor: [12, 12], html: badge });

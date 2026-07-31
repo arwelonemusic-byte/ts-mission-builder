@@ -253,6 +253,8 @@ const RU: Record<string, string> = {
   "Zoom in": "Приблизить",
   "Zoom out": "Отдалить",
   "Fit whole map": "Показать всю карту",
+  "3D view": "3D-вид",
+  "2D view": "2D-вид",
 };
 
 /** Pure lookup — usable outside React (Leaflet HTML, event closures). */

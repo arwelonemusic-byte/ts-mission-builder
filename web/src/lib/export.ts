@@ -1,23 +1,10 @@
 import { buildMissionFiles, FACTIONS, itemWorldCorners, layoutSpawnBundle } from "mission-gen";
 import type { Mission } from "./mission";
 import { missionIds } from "./mission";
-import { loadHeightmap, type HeightmapSampler } from "./heightmap";
-import { terrainByKey } from "./terrains";
+import { getSampler } from "./terrainSampler";
 import { iconEnum, MARKER_FACTIONS, MILITARY_TYPES } from "./markers";
 import { thumbnailPixels, thumbnailPngBytes } from "./thumbnail";
 import { encodeEdds } from "./edds";
-
-const samplerCache = new Map<string, Promise<HeightmapSampler>>();
-
-function getSampler(terrainKey: string): Promise<HeightmapSampler> {
-  let p = samplerCache.get(terrainKey);
-  if (!p) {
-    const t = terrainByKey(terrainKey);
-    p = loadHeightmap(t.heightmapBin, t.heightmapMeta);
-    samplerCache.set(terrainKey, p);
-  }
-  return p;
-}
 
 /** Elevation lookup with graceful fallback for out-of-bounds points. */
 export async function elevationAt(terrainKey: string, x: number, z: number): Promise<number> {

@@ -36,6 +36,7 @@ import MarkersPanel, { type MarkerDraft, type MarkersTab } from "@/components/pa
 import BriefingPanel from "@/components/panels/BriefingPanel";
 
 const MissionMap = dynamic(() => import("@/components/MissionMap"), { ssr: false });
+const MissionMap3D = dynamic(() => import("@/components/MissionMap3D"), { ssr: false });
 
 let idCounter = 0;
 const freshId = () => `z${Date.now().toString(36)}${(idCounter++).toString(36)}`;
@@ -105,7 +106,22 @@ export default function Editor() {
   // Freshly placed map elements ("spawn" / zone id / marker id) — drives the
   // drop/stamp entrance animations; flags expire after 650ms (design v2).
   const [fresh, setFresh] = useState<Record<string, boolean>>({});
-  const mapApi = useRef<MapApi | null>(null);
+  // 2D/3D view toggle. Leaflet stays mounted (CSS-hidden) while 3D is up so
+  // its pan/zoom survives the round-trip; the 3D view mounts on demand.
+  const [view3D, setView3DState] = useState(false);
+  const view3DRef = useRef(false);
+  // 2D viewport captured at toggle time — the 3D camera opens on it.
+  const enterViewRef = useRef<{ x: number; z: number; radius: number } | null>(null);
+  // Per-view imperative APIs (a single ref would go stale across toggles).
+  const mapApi2d = useRef<MapApi | null>(null);
+  const mapApi3d = useRef<MapApi | null>(null);
+  const mapApi = () => (view3DRef.current ? mapApi3d.current : mapApi2d.current);
+  const setView3D = (v: boolean) => {
+    if (v) enterViewRef.current = mapApi2d.current?.getView?.() ?? null;
+    else mapApi3d.current = null;
+    view3DRef.current = v;
+    setView3DState(v);
+  };
   const genRef = useRef<GenState>(null);
   genRef.current = gen;
 
@@ -158,6 +174,21 @@ export default function Editor() {
   useEffect(() => {
     if (mission) saveMission(mission);
   }, [mission]);
+
+  // The 3D toggle lives in a desktop-only HUD cluster; if the window shrinks
+  // to the mobile layout while 3D is up, fall back to 2D (no touch controls).
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const onChange = () => {
+      if (mq.matches) {
+        view3DRef.current = false;
+        setView3DState(false);
+      }
+    };
+    onChange();
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   // Esc: cancel placement / dismiss the finished generate overlay
   useEffect(() => {
@@ -245,6 +276,7 @@ export default function Editor() {
   /* ----- sector (TS_MapOverlay rectangle) placement + selection ----- */
   // Arming the draw mode and arming a click-place mode are mutually exclusive.
   const armSectorDraw = (kind: "ao" | "objective") => {
+    setView3D(false); // rubber-band drawing is 2D-only (v1)
     setPlaceMode(null);
     setOriginTarget(null);
     setSelectedSectorId(null);
@@ -369,7 +401,7 @@ export default function Editor() {
     const zi = +z.toFixed(1);
     if (placeMode === "spawn") {
       updateSpawn({ placed: true, x: xi, z: zi });
-      mapApi.current?.addPing(xi, zi, "#3fa9f5");
+      mapApi()?.addPing(xi, zi, "#3fa9f5");
       markFresh("spawn");
       setPlaceMode(null);
     } else if (placeMode === "zone") {
@@ -383,7 +415,7 @@ export default function Editor() {
       };
       setMission((m) => (m ? { ...m, zones: [...m.zones, zone] } : m));
       setSelectedZoneId(zone.id);
-      mapApi.current?.addPing(xi, zi, "#9333ea");
+      mapApi()?.addPing(xi, zi, "#9333ea");
       markFresh(zone.id);
       setPlaceMode(null);
     } else if (placeMode === "qrf-origin" && originTarget) {
@@ -404,7 +436,7 @@ export default function Editor() {
           m2.type === mm.type ? { ...m2, origins: [...cur, { x: xi, z: zi }] } : m2
         ),
       });
-      mapApi.current?.addPing(xi, zi, ORIGIN_COLORS[originTarget.moduleType] ?? "#f97316");
+      mapApi()?.addPing(xi, zi, ORIGIN_COLORS[originTarget.moduleType] ?? "#f97316");
       if (cur.length + 1 >= cap) {
         setPlaceMode(null);
         setOriginTarget(null);
@@ -467,7 +499,7 @@ export default function Editor() {
     (e: React.PointerEvent) => {
       e.preventDefault();
       const move = (ev: PointerEvent) => {
-        const over = !!mapApi.current?.screenToWorld(ev.clientX, ev.clientY) && overPanelGate(ev.clientX);
+        const over = !!mapApi()?.screenToWorld(ev.clientX, ev.clientY) && overPanelGate(ev.clientX);
         setGhost({ x: ev.clientX, y: ev.clientY, over });
       };
       const cleanup = () => {
@@ -480,13 +512,13 @@ export default function Editor() {
       const cancel = () => cleanup();
       const up = (ev: PointerEvent) => {
         cleanup();
-        const world = mapApi.current?.screenToWorld(ev.clientX, ev.clientY);
+        const world = mapApi()?.screenToWorld(ev.clientX, ev.clientY);
         if (world && overPanelGate(ev.clientX)) {
           const id = freshId();
           setMission((m) =>
             m ? { ...m, markers: [...m.markers, { ...markerDraft, id, x: world.x, z: world.z }] } : m
           );
-          mapApi.current?.addPing(world.x, world.z, "#f4db50");
+          mapApi()?.addPing(world.x, world.z, "#f4db50");
           markFresh(id);
         }
       };
@@ -613,62 +645,84 @@ export default function Editor() {
   return (
     <LangProvider value={lang}>
     <main className="relative h-dvh w-full overflow-hidden bg-[#0d0f11] select-none">
-      {/* map (below the 56px app bar; on mobile it stops above the bottom panel) */}
+      {/* map (below the 56px app bar; on mobile it stops above the bottom panel).
+          2D stays mounted (display:none) while 3D is up; 3D mounts on demand. */}
       <div className="absolute left-0 right-0 bottom-0 top-[56px] max-md:bottom-[var(--mb-map-bottom)]">
-        <MissionMap
-          terrainKey={mission.terrain}
-          lang={lang}
-          playableFaction={mission.playableFaction}
-          spawn={mission.spawn}
-          zones={mission.zones}
-          selectedZoneId={selectedZoneId}
-          selectedOrigin={selectedOrigin}
-          onOriginClick={onOriginMapClick}
-          markers={mission.markers}
-          selectedMarkerId={selectedMarkerId}
-          sectors={mission.sectors}
-          selectedSectorId={selectedSectorId}
-          sectorDraw={sectorDraw}
-          fresh={fresh}
-          placeMode={placeMode}
-          focus={focus}
-          onMapClick={onMapClick}
-          onZoneClick={onZoneClick}
-          onZoneMoved={(id, x, z) => updateZone(id, { x, z })}
-          onOriginMoved={(zoneId, moduleType, index, x, z) =>
-            setMission((m) =>
-              m
-                ? {
-                    ...m,
-                    zones: m.zones.map((zn) =>
-                      zn.id === zoneId
-                        ? {
-                            ...zn,
-                            modules: zn.modules.map((mm) =>
-                              mm.type === moduleType
-                                ? {
-                                    ...mm,
-                                    origins: (mm.origins ?? []).map((o, i) =>
-                                      i === index ? { x, z } : o
-                                    ),
-                                  }
-                                : mm
-                            ),
-                          }
-                        : zn
-                    ),
-                  }
-                : m
-            )
-          }
-          onSpawnMoved={(x, z) => updateSpawn({ x, z })}
-          onMarkerClick={onMarkerClick}
-          onMarkerMoved={(id, x, z) => updateMarker(id, { x, z })}
-          onSectorDrawn={onSectorDrawn}
-          onSectorClick={onSectorClick}
-          onSectorChanged={updateSector}
-          onApi={(api) => (mapApi.current = api)}
-        />
+        {(() => {
+          const shared = {
+            terrainKey: mission.terrain,
+            lang,
+            playableFaction: mission.playableFaction,
+            spawn: mission.spawn,
+            zones: mission.zones,
+            selectedZoneId,
+            selectedOrigin,
+            onOriginClick: onOriginMapClick,
+            markers: mission.markers,
+            selectedMarkerId,
+            sectors: mission.sectors,
+            selectedSectorId,
+            sectorDraw,
+            fresh,
+            placeMode,
+            focus,
+            onMapClick,
+            onZoneClick,
+            onZoneMoved: (id: string, x: number, z: number) => updateZone(id, { x, z }),
+            onOriginMoved: (zoneId: string, moduleType: string, index: number, x: number, z: number) =>
+              setMission((m) =>
+                m
+                  ? {
+                      ...m,
+                      zones: m.zones.map((zn) =>
+                        zn.id === zoneId
+                          ? {
+                              ...zn,
+                              modules: zn.modules.map((mm) =>
+                                mm.type === moduleType
+                                  ? {
+                                      ...mm,
+                                      origins: (mm.origins ?? []).map((o, i) =>
+                                        i === index ? { x, z } : o
+                                      ),
+                                    }
+                                  : mm
+                              ),
+                            }
+                          : zn
+                      ),
+                    }
+                  : m
+              ),
+            onSpawnMoved: (x: number, z: number) => updateSpawn({ x, z }),
+            onMarkerClick,
+            onMarkerMoved: (id: string, x: number, z: number) => updateMarker(id, { x, z }),
+            onSectorDrawn,
+            onSectorClick,
+            onSectorChanged: updateSector,
+          };
+          return (
+            <>
+              <div className={`absolute inset-0 ${view3D ? "hidden" : ""}`}>
+                <MissionMap
+                  {...shared}
+                  view3D={view3D}
+                  onToggleView={() => setView3D(true)}
+                  onApi={(api) => (mapApi2d.current = api)}
+                />
+              </div>
+              {view3D && (
+                <MissionMap3D
+                  {...shared}
+                  view3D
+                  onToggleView={() => setView3D(false)}
+                  initialView={enterViewRef.current}
+                  onApi={(api) => (mapApi3d.current = api)}
+                />
+              )}
+            </>
+          );
+        })()}
       </div>
 
       <AppBar
