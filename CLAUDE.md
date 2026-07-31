@@ -29,6 +29,10 @@ npm workspaces: `generator` (package `mission-gen`) + `web`. Root `npm install`;
 - **Gotchas fixed the hard way (don't regress)**: (1) the hidden 2D map must SKIP the focus effect and return null from `getView` when its size is 0 — fitBounds on a display:none map lands on a garbage max-zoom view that then poisons the 3D handoff; (2) after the async sampler resolves, lift the camera rig (target+eye) by the terrain height at the target — the initial framing assumes y=0 and a close-in view over high ground otherwise starts INSIDE the terrain (black screen); (3) `initialView` is consumed once via a ref and bounds-checked — a terrain switch while in 3D re-runs setup with coords from the previous world.
 - v2 candidates: sector draw/resize/rotate in 3D, AO outside-darkening (2D donut doesn't port to a draped mesh — outline only), zone hover tooltips, 3D camera pose persistence across toggles, touch controls.
 
+## Generation telemetry (2026-07-31)
+
+`web/src/app/api/generated/route.ts`: after a successful addon export, `doDownload` fire-and-forgets the full mission `.json` (incl. the thumbnail data URL — archives are self-contained, re-importable via Load-from-file) to `POST /api/generated`. The route writes `<repo>/.mission-data/missions/<utc>_<slug>.json` + appends a stats line to `.mission-data/events.jsonl` (gitignored). Export success never depends on the request; 8 MB body cap. **Prod gotcha**: the systemd unit is `ProtectSystem=strict` — `/opt/ts-web/ts-mission-builder/.mission-data` is explicitly in `ReadWritePaths` (added 2026-07-31; the dir must exist for the mount, don't delete it). Stats: `ssh slotbot-msk 'wc -l < /opt/ts-web/ts-mission-builder/.mission-data/events.jsonl'`.
+
 ## Validated architecture facts (don't re-derive)
 
 - **Offline generation works.** Addon = `addon.gproj`, `Missions/*.conf(+.meta)`, `Worlds/*.ent` (3-line `SubScene { Parent "{GUID}worlds/..." }`) `(+.meta)`, `Worlds/*_Layers/*.layer` (text, LF, UTF-8 no BOM). `resourceDatabase.rdb` is binary — never write it; Workbench recreates it on open/close.
