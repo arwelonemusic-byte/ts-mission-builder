@@ -142,6 +142,36 @@ const MISSION = {
     // objective: red component override + rotation (angles 0 30 0)
     { kind: "objective", pos: [2795.3, 74.1, 1628.7], length: 300, width: 200, rotation: 30 },
   ],
+  // Objectives: one of each MVP type. HVT inside Area1 (garrisoned zone), clear
+  // area on Area1's center, reach point on the road south of the AO.
+  objectives: [
+    {
+      type: "hvt",
+      pos: [2820.5, 73.8, 1651.2],
+      taskTitle: "Ликвидировать командира",
+      taskDesc: "В районе цели замечен старший офицер противника. Найдите и ликвидируйте его.",
+      hintTitle: "Задача выполнена",
+      hintBody: "Командир противника ликвидирован.",
+    },
+    {
+      type: "clear",
+      pos: [2795.3, 74.1, 1628.7],
+      radius: 200,
+      taskTitle: "Зачистить лагерь",
+      taskDesc: "Зачистите лагерь противника в указанном районе.",
+      hintTitle: "Задача выполнена",
+      hintBody: "Лагерь зачищен.",
+    },
+    {
+      type: "reach",
+      pos: [2000, 50, 2000],
+      radius: 25,
+      taskTitle: "Выйти к перекрестку",
+      taskDesc: "Выйдите к перекрестку и осмотритесь.",
+      hintTitle: "Задача выполнена",
+      hintBody: "Точка достигнута.",
+    },
+  ],
 };
 
 // RHS spike variant: same layout/zones, RHS factions + RHS content overrides.

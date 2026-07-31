@@ -11,17 +11,21 @@ import {
   loadMission,
   missionFileName,
   newMission,
+  objectiveRadius,
   parseMissionJson,
   saveMission,
   type Mission,
   type MissionMarker,
+  type MissionObjective,
   type MissionSector,
+  type ObjectiveType,
   type Zone,
 } from "@/lib/mission";
 import { rangeLabel, totalEnemyRange } from "@/lib/enemyEstimate";
 import { exportMission, spawnSlopeDelta } from "@/lib/export";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
+import { OBJECTIVE_COLOR } from "@/lib/overlayHtml";
 import { LangProvider, loadLang, saveLang, tr, zonesCountLabel, type Lang } from "@/lib/i18n";
 import AppBar, { type StepId } from "@/components/AppBar";
 import GenerateOverlay, { GEN_STAGES, type GenState } from "@/components/GenerateOverlay";
@@ -32,6 +36,7 @@ import PlayersPanel from "@/components/panels/PlayersPanel";
 import EnemyPanel from "@/components/panels/EnemyPanel";
 import SpawnPanel from "@/components/panels/SpawnPanel";
 import ZonesPanel from "@/components/panels/ZonesPanel";
+import ObjectivesPanel from "@/components/panels/ObjectivesPanel";
 import MarkersPanel, { type MarkerDraft, type MarkersTab } from "@/components/panels/MarkersPanel";
 import BriefingPanel from "@/components/panels/BriefingPanel";
 
@@ -47,6 +52,7 @@ const STEP_TITLES: Record<StepId, string> = {
   enemy: "Enemy forces",
   spawn: "Spawn",
   zones: "AI Zones",
+  objectives: "Objectives",
   markers: "Markers",
   briefing: "Briefing",
 };
@@ -56,8 +62,9 @@ const STEP_NUMS: Record<StepId, string> = {
   spawn: "03",
   enemy: "04",
   zones: "05",
-  markers: "06",
-  briefing: "07",
+  objectives: "06",
+  markers: "07",
+  briefing: "08",
 };
 
 // Mobile bottom-sheet sizing per tab: these fill the whole height (their
@@ -81,7 +88,10 @@ export default function Editor() {
   const [mission, setMission] = useState<Mission | null>(null);
   const [lang, setLangState] = useState<Lang>("en");
   const [step, setStep] = useState<StepId>("mission");
-  const [placeMode, setPlaceMode] = useState<"spawn" | "zone" | "marker" | "qrf-origin" | null>(null);
+  const [placeMode, setPlaceMode] = useState<"spawn" | "zone" | "marker" | "qrf-origin" | "objective" | null>(null);
+  // Which objective type an armed "objective" placement creates (type picker)
+  const [pendingObjectiveType, setPendingObjectiveType] = useState<ObjectiveType | null>(null);
+  const [selectedObjectiveId, setSelectedObjectiveId] = useState<string | null>(null);
   // Which zone+module an armed "qrf-origin" placement feeds (QRF reinforcements)
   const [originTarget, setOriginTarget] = useState<{ zoneId: string; moduleType: string } | null>(null);
   // Selected reinforcement origin (panel row ↔ map badge, two-way)
@@ -199,6 +209,7 @@ export default function Editor() {
         setPlaceMode(null);
         setOriginTarget(null);
         setSectorDraw(null);
+        setPendingObjectiveType(null);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -256,6 +267,14 @@ export default function Editor() {
       return null;
     });
   };
+  const updateObjective = (id: string, patch: Partial<MissionObjective>) =>
+    setMission((m) =>
+      m ? { ...m, objectives: m.objectives.map((o) => (o.id === id ? { ...o, ...patch } : o)) } : m
+    );
+  const removeObjective = (id: string) => {
+    setMission((m) => (m ? { ...m, objectives: m.objectives.filter((o) => o.id !== id) } : m));
+    setSelectedObjectiveId((cur) => (cur === id ? null : cur));
+  };
   const updateMarker = (id: string, patch: Partial<MissionMarker>) =>
     setMission((m) =>
       m ? { ...m, markers: m.markers.map((mk) => (mk.id === id ? { ...mk, ...patch } : mk)) } : m
@@ -282,10 +301,18 @@ export default function Editor() {
     setSelectedSectorId(null);
     setSectorDraw((cur) => (cur === kind ? null : kind));
   };
-  const armPlaceMode = (m: "spawn" | "zone" | "marker" | "qrf-origin" | null) => {
+  const armPlaceMode = (m: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | null) => {
     setSectorDraw(null);
     if (m !== "qrf-origin") setOriginTarget(null);
+    if (m !== "objective") setPendingObjectiveType(null);
     setPlaceMode(m);
+  };
+  /** Arm objective placement for a type from the panel picker (null = cancel). */
+  const armObjectivePlace = (type: ObjectiveType | null) => {
+    setSectorDraw(null);
+    setOriginTarget(null);
+    setPendingObjectiveType(type);
+    setPlaceMode(type ? "objective" : null);
   };
   /** Toggle QRF origin placement for a zone+module (same pair re-toggles off). */
   const armOriginPlace = (zoneId: string, moduleType: string) => {
@@ -385,8 +412,32 @@ export default function Editor() {
     setPlaceMode(null);
     setOriginTarget(null);
     setSectorDraw(null);
+    setPendingObjectiveType(null);
     setStep(s);
   };
+
+  // Prefilled task/hint texts for a freshly placed objective (current UI lang)
+  const objectiveTextDefaults = (type: ObjectiveType) =>
+    type === "hvt"
+      ? {
+          taskTitle: t("Eliminate the HVT"),
+          taskDesc: t("Find and eliminate the enemy officer in the area."),
+          hintTitle: t("Objective complete"),
+          hintBody: t("The HVT has been eliminated."),
+        }
+      : type === "clear"
+        ? {
+            taskTitle: t("Clear the area"),
+            taskDesc: t("Clear all enemy forces from the designated area."),
+            hintTitle: t("Objective complete"),
+            hintBody: t("The area has been cleared."),
+          }
+        : {
+            taskTitle: t("Reach the location"),
+            taskDesc: t("Get to the designated location."),
+            hintTitle: t("Objective complete"),
+            hintBody: t("The location has been reached."),
+          };
 
   const onMapClick = (x: number, z: number) => {
     if (!mission) return;
@@ -395,6 +446,7 @@ export default function Editor() {
       setSelectedZoneId(null);
       setSelectedSectorId(null);
       setSelectedOrigin(null);
+      setSelectedObjectiveId(null);
       return;
     }
     const xi = +x.toFixed(1);
@@ -418,6 +470,23 @@ export default function Editor() {
       mapApi()?.addPing(xi, zi, "#9333ea");
       markFresh(zone.id);
       setPlaceMode(null);
+    } else if (placeMode === "objective" && pendingObjectiveType) {
+      const type = pendingObjectiveType;
+      const d = objectiveTextDefaults(type);
+      const objective: MissionObjective = {
+        id: freshId(),
+        type,
+        x: xi,
+        z: zi,
+        radius: objectiveRadius(type),
+        ...d,
+      };
+      setMission((m) => (m ? { ...m, objectives: [...m.objectives, objective] } : m));
+      setSelectedObjectiveId(objective.id);
+      mapApi()?.addPing(xi, zi, OBJECTIVE_COLOR);
+      markFresh(objective.id);
+      setPlaceMode(null);
+      setPendingObjectiveType(null);
     } else if (placeMode === "qrf-origin" && originTarget) {
       // Stays armed for multi-drop (like markers) until the module's origin
       // cap is reached; the panel button re-toggle / Esc cancels earlier.
@@ -457,6 +526,19 @@ export default function Editor() {
     setSelectedZoneId(id);
     const zn = mission?.zones.find((z) => z.id === id);
     if (zn) focusOn(zn.x, zn.z, zn.radius * 1.5);
+  };
+
+  /* ----- objective selection (panel card ↔ map badge, two-way) ----- */
+  const [objectiveRevealSeq, setObjectiveRevealSeq] = useState(0);
+  const onObjectiveClick = (id: string) => {
+    setSelectedObjectiveId(id);
+    setObjectiveRevealSeq((s) => s + 1);
+    setStep("objectives");
+  };
+  const selectAndFocusObjective = (id: string) => {
+    setSelectedObjectiveId(id);
+    const o = mission?.objectives.find((ob) => ob.id === id);
+    if (o) focusOn(o.x, o.z, Math.max(200, (o.radius ?? 0) * 1.5));
   };
 
   /* ----- QRF origin selection (panel row ↔ map badge, two-way) ----- */
@@ -600,8 +682,10 @@ export default function Editor() {
     setSelectedMarkerId(null);
     setSelectedSectorId(null);
     setSelectedOrigin(null);
+    setSelectedObjectiveId(null);
     setOriginTarget(null);
     setSectorDraw(null);
+    setPendingObjectiveType(null);
     setPlaceMode(null);
     setStatus(null);
     setStep("mission");
@@ -646,7 +730,9 @@ export default function Editor() {
       ? t("the spawn point")
       : placeMode === "qrf-origin"
         ? t("a reinforcement origin")
-        : t("an AI zone");
+        : placeMode === "objective"
+          ? t("the objective")
+          : t("an AI zone");
   const sectorNoun = sectorDraw === "ao" ? t("the AO sector") : t("an objective sector");
 
   return (
@@ -665,6 +751,10 @@ export default function Editor() {
             selectedZoneId,
             selectedOrigin,
             onOriginClick: onOriginMapClick,
+            objectives: mission.objectives,
+            selectedObjectiveId,
+            onObjectiveClick,
+            onObjectiveMoved: (id: string, x: number, z: number) => updateObjective(id, { x, z }),
             markers: mission.markers,
             selectedMarkerId,
             sectors: mission.sectors,
@@ -850,6 +940,19 @@ export default function Editor() {
                 onSelectZone={selectAndFocusZone}
                 updateZone={updateZone}
                 removeZone={removeZone}
+              />
+            )}
+            {step === "objectives" && (
+              <ObjectivesPanel
+                mission={mission}
+                placing={placeMode === "objective"}
+                pendingType={pendingObjectiveType}
+                onArmObjective={armObjectivePlace}
+                selectedObjectiveId={selectedObjectiveId}
+                revealSeq={objectiveRevealSeq}
+                onSelectObjective={selectAndFocusObjective}
+                updateObjective={updateObjective}
+                removeObjective={removeObjective}
               />
             )}
             {step === "markers" && (

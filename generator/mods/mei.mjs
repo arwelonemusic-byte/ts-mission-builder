@@ -47,6 +47,8 @@ export const MEI = {
       // so no clearing ever triggers; recorded for completeness
       friendlyWith: ["CIV", "MEC"],
       spawnPoint: "{72713ED566A531F3}PrefabsEditable/SpawnPoints/E_SpawnPoint_FIA.et",
+      // HVT for Eliminate-HVT objectives
+      hvt: "{58B923E15109E91A}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Leader.et",
       riflemen: {},
       loadoutSets: {},
       arsenalItems: [],

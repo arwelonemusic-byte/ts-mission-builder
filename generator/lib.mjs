@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, resolveGroupPool, resolveSentryPool, resolveDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleSizeClass } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -741,6 +741,175 @@ ${slotBlocks}
     }
   }
 
+  // --- Objectives.layer ---
+  // Real SF tasks (LayerTask* + Slot*), one Area wrapping all objectives.
+  // Dynamic despawn stays OFF (LayerBase default) — mission-critical entities
+  // exist from session start and never despawn. Task ID = the LayerTask
+  // entity's world name (must be world-globally unique; SCR_TaskSystem rejects
+  // duplicates). m_eTaskUIVisibility LIST_ONLY = task-list entry WITHOUT a map
+  // marker, so objective positions stay hidden (m_fMarkerUpdateInterval keeps
+  // its default 0 — nothing tracks a moving HVT). Completion is auto-detected
+  // by each m_sTaskPrefab's Task class (Kill: damage-state hook; Move/Clear:
+  // trigger OnActivate) and fires the custom ShowHint via
+  // m_aTriggerActionsOnFinish. m_sFactionKey MUST be a playable faction or
+  // task creation fails at Init.
+  let objectivesLayer = "";
+  const missionObjectives = mission.objectives ?? [];
+  if (missionObjectives.length) {
+    const playableKey = effKey(mission.playableFaction);
+    // ShowHint m_sText supports <br/> markup; literal newlines would break the
+    // .layer file. Quotes escape to ' like all other user text we serialize.
+    const escObjText = (s) => String(s ?? "").replace(/"/g, "'").replace(/\r?\n/g, "<br/>");
+    const showHint = (o) => `     m_aTriggerActionsOnFinish {
+      SCR_ScenarioFrameworkActionShowHint "{${mintGuid()}}" {
+       m_iMaxNumberOfActivations 1
+       m_sTitle "${escObjText(o.hintTitle)}"
+       m_sText "${escObjText(o.hintBody)}"
+       m_iTimeout 8
+       m_sFactionKey "${playableKey}"
+      }
+     }`;
+    // m_eTaskNotificationSettings 0 suppresses the vanilla task popups
+    // (created/finished/failed — default is ALL flags): they'd duplicate our
+    // hint, and SCR_PopUpNotification has queue/stacking bugs (toolkit rule:
+    // hints over popups).
+    const taskFields = (o) => `     m_sFactionKey "${playableKey}"
+     m_sTaskTitle "${escObjText(o.taskTitle)}"
+     m_sTaskDescription "${escObjText(o.taskDesc)}"
+     m_eTaskUIVisibility LIST_ONLY
+     m_eTaskNotificationSettings 0
+${showHint(o)}`;
+    const radiusOf = (o) => {
+      const def = OBJECTIVE_TYPES.find((t) => t.type === o.type)?.radius;
+      return Math.round(o.radius ?? def?.default ?? 25);
+    };
+    const avg = (idx) => missionObjectives.reduce((s, o) => s + o.pos[idx], 0) / missionObjectives.length;
+    const origin = [+avg(0).toFixed(3), +avg(1).toFixed(3), +avg(2).toFixed(3)];
+
+    const objectiveBlocks = missionObjectives
+      .map((o, i) => {
+        const n = i + 1;
+        const rel = posStr([o.pos[0] - origin[0], o.pos[1] - origin[1], o.pos[2] - origin[2]]);
+        let layerPrefab, cmpClass, cmpGuid, slotBlock;
+        if (o.type === "hvt") {
+          const hvtRef = ENEMY.hvt;
+          if (!hvtRef) throw new Error(`No HVT character for faction ${mission.enemyFaction}`);
+          layerPrefab = K.LAYERTASK_KILL_PREFAB;
+          cmpClass = "SCR_ScenarioFrameworkLayerTaskKill";
+          cmpGuid = K.CMP_LT_KILL;
+          // m_bCanBeGarbageCollected 0: an unprotected spawned character far
+          // from players gets garbage-collected -> objective uncompletable.
+          // HideInBuilding (toolkit): relocates the spawned officer into the
+          // nearest building within 75 m (sentinel post, else navmesh-validated
+          // interior position) after spawn — the SLOT stays the spawner so the
+          // task's kill hook is unaffected; no building -> stays at the slot.
+          slotBlock = `    GenericEntity SlotObjective${n} : "${K.SLOT_KILL_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotKill "${K.CMP_SLOT_KILL}" {
+       m_aPlugins {
+        TS_ScenarioFrameworkPluginHideInBuilding "{${mintGuid()}}" {
+        }
+       }
+       m_sObjectToSpawn "${hvtRef}"
+       m_bCanBeGarbageCollected 0
+      }
+     }
+     coords 0 0 0
+    }`;
+        } else if (o.type === "reach") {
+          layerPrefab = K.LAYERTASK_MOVE_PREFAB;
+          cmpClass = "SCR_ScenarioFrameworkLayerTask";
+          cmpGuid = K.CMP_LT_MOVE;
+          // PLAYER presence is required — the trigger prefab default is
+          // ANY_CHARACTER (wandering AI would complete the objective).
+          slotBlock = `    GenericEntity SlotObjective${n} : "${K.SLOT_MOVETO_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotExtraction "${K.CMP_SLOT_MOVETO}" {
+       m_aPlugins {
+        SCR_ScenarioFrameworkPluginTrigger "${K.CMP_PLUGINTRIG_MOVETO}" {
+         m_fAreaRadius ${radiusOf(o)}
+         m_eActivationPresence PLAYER
+         m_sActivatedByThisFaction "${playableKey}"
+        }
+       }
+      }
+     }
+     coords 0 0 0
+    }`;
+        } else if (o.type === "clear") {
+          layerPrefab = K.LAYERTASK_CLEAR_PREFAB;
+          cmpClass = "SCR_ScenarioFrameworkLayerTaskClearArea";
+          cmpGuid = K.CMP_LT_CLEAR;
+          // m_sObjectToSpawn is overridden from the slot default
+          // (TriggerDominance) to the SF TriggerCharacterSlow: the dominance
+          // trigger silently ignores every PluginTrigger field except radius +
+          // faction (its 0.528 ratio would complete with enemies still alive).
+          // The FactionControl condition counts trigger.GetEntitiesInside() —
+          // so the trigger MUST track ALL characters: ANY_CHARACTER presence
+          // (explicit — the plugin default is PLAYER and is pushed onto the
+          // trigger) and NO m_sActivatedByThisFaction (an owner faction drops
+          // everyone else from the inside-list; either mistake makes the ratio
+          // 1.0 the moment a player steps in — playtest-caught 2026-07-31).
+          // Net semantics: >=1 alive character inside AND every non-CIV
+          // character inside is playable-faction. The 5 s countdown is dwell
+          // time so a drive-by flicker can't complete the objective.
+          slotBlock = `    GenericEntity SlotObjective${n} : "${K.SLOT_CLEAR_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotClearArea "${K.CMP_SLOT_CLEAR}" {
+       m_aPlugins {
+        SCR_ScenarioFrameworkPluginTrigger "${K.CMP_PLUGINTRIG_CLEAR}" {
+         m_fAreaRadius ${radiusOf(o)}
+         m_eActivationPresence ANY_CHARACTER
+         m_aCustomTriggerConditions {
+          SCR_CustomTriggerConditionsFactionControl "{${mintGuid()}}" {
+           m_aControlFactionKeys {
+            "${playableKey}"
+           }
+           m_aIgnoredFactionKeys {
+            "CIV"
+           }
+           m_eComparisonOperator GREATER_OR_EQUAL
+           m_fControlRatio 1
+          }
+         }
+         m_fActivationCountdownTimer 5
+        }
+       }
+       m_sObjectToSpawn "${K.TRIGGER_CHARACTER_SLOW}"
+      }
+     }
+     coords 0 0 0
+    }`;
+        } else {
+          throw new Error(`Unknown objective type: ${o.type}`);
+        }
+        return `  GenericEntity Task_Objective${n} : "${layerPrefab}" {
+   components {
+    ${cmpClass} "${cmpGuid}" {
+${taskFields(o)}
+    }
+   }
+   coords ${rel}
+   {
+${slotBlock}
+   }
+  }`;
+      })
+      .join("\n");
+
+    objectivesLayer = `GenericEntity AreaObjectives : "${K.AREA_PREFAB}" {
+ components {
+  SCR_ScenarioFrameworkArea "${K.CMP_SF_AREA}" {
+  }
+ }
+ coords ${posStr(origin)}
+ {
+${objectiveBlocks}
+ }
+}
+`;
+  }
+
   const layersDir = `Worlds/${mission.name}_Layers`;
   const files = {
     "addon.gproj": gproj,
@@ -761,6 +930,7 @@ ${slotBlocks}
     [`${layersDir}/AO.layer`]: aoLayer,
     [`${layersDir}/Markers.layer`]: markersLayer,
     [`${layersDir}/QRF.layer`]: qrfLayer,
+    [`${layersDir}/Objectives.layer`]: objectivesLayer,
     [`${layersDir}/Props.layer`]: "",
   };
 

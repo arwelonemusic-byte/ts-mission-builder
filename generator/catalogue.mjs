@@ -200,6 +200,8 @@ export const FACTIONS = {
     squadBase: ["{55CCB792D10AD8F4}", "{55CCB792D13759D8}", "{55CCB792D1218E95}", "{55CCB792D0C8B3CE}"],
     squadFifth: null,
     spawnPoint: "{CEA2B24051A44525}PrefabsEditable/SpawnPoints/E_SpawnPoint_US.et",
+    // HVT for Eliminate-HVT objectives when this faction is the enemy
+    hvt: "{DE15FB5FAFC3E63F}Prefabs/Characters/Factions/BLUFOR/US_Army/Character_US_Officer.et",
     riflemen: {
       US_Army: "{26A9756790131354}Prefabs/Characters/Factions/BLUFOR/US_Army/Character_US_Rifleman.et",
       GreenBerets: "{36E28C628A2F83CB}Prefabs/Characters/Factions/BLUFOR/US_Army/GreenBerets/Character_US_SF.et",
@@ -422,6 +424,7 @@ export const FACTIONS = {
     squadBase: ["{55CCB79287E901BC}", "{55CCB79287936EBD}", "{55CCB79287BAFBD6}", "{55CCB79287A4D7B6}"],
     squadFifth: null,
     spawnPoint: "{45225582B358C31A}PrefabsEditable/SpawnPoints/E_SpawnPoint_USSR.et",
+    hvt: "{5117311FB822FD1F}Prefabs/Characters/Factions/OPFOR/USSR_Army/Character_USSR_Officer.et",
     riflemen: {
       USSR_Army: "{DCB41B3746FDD1BE}Prefabs/Characters/Factions/OPFOR/USSR_Army/Character_USSR_Rifleman.et",
       KLMK: "{145DBC42B19FC4D6}Prefabs/Characters/Factions/OPFOR/USSR_Army/KLMK/Character_USSR_Rifleman_KLMK.et",
@@ -681,6 +684,8 @@ export const FACTIONS = {
     squadBase: ["{58B2B630FDD64B6D}", "{58B2B630FDD64B53}", "{58B2B630FDD64B51}", "{58B2B630FDD64B50}"],
     squadFifth: "{61C8F1ACA9FDB12D}",
     spawnPoint: "{72713ED566A531F3}PrefabsEditable/SpawnPoints/E_SpawnPoint_FIA.et",
+    // FIA has no Officer prefab — PL (platoon leader) is the senior role
+    hvt: "{FE65E8C60C751352}Prefabs/Characters/Factions/INDFOR/FIA/Character_FIA_PL.et",
     riflemen: {
       FIA: "{84B40583F4D1B7A3}Prefabs/Characters/Factions/INDFOR/FIA/Character_FIA_Rifleman.et",
     },
@@ -873,6 +878,30 @@ export const K = {
     { guid: "{68568A2CAE545D3E}", sx: -1, sz: -1 },
     { guid: "{68568A2CAE5446CE}", sx: -1, sz: 1 },
   ],
+  // --- Objectives (real SF tasks, Objectives.layer) ---
+  // LayerTask*/Slot* base prefabs + their component-instance GUIDs (fixed —
+  // overrides must reuse them, never mint). Harvested from vanilla
+  // Compositions/LayerTasks/*.et cross-refs + TS_Mission_1 E_Tasks.layer.
+  // Note: LayerTaskMove.et's component class is plain SCR_ScenarioFrameworkLayerTask
+  // (the Move subclass shells add no properties; the completion logic lives in
+  // the m_sTaskPrefab's Task class, inherited from the base prefab).
+  LAYERTASK_KILL_PREFAB: "{2008B4EE6C4D528E}Prefabs/Systems/ScenarioFramework/Components/LayerTaskKill.et",
+  CMP_LT_KILL: "{5B02763B6A6D6C4B}",
+  SLOT_KILL_PREFAB: "{C70DC6CBD1AAEC9A}Prefabs/Systems/ScenarioFramework/Components/SlotKill.et",
+  CMP_SLOT_KILL: "{5B02763C1EAA0BF1}",
+  LAYERTASK_MOVE_PREFAB: "{246BEC080F393398}Prefabs/Systems/ScenarioFramework/Components/LayerTaskMove.et",
+  CMP_LT_MOVE: "{5A2283E9F84958A1}",
+  SLOT_MOVETO_PREFAB: "{A44004A770A5D8BE}Prefabs/Systems/ScenarioFramework/Components/SlotMoveTo.et",
+  CMP_SLOT_MOVETO: "{5A1EEEC837EEA27B}",
+  CMP_PLUGINTRIG_MOVETO: "{5A6C6D099D49E4BA}",
+  LAYERTASK_CLEAR_PREFAB: "{CDC0845AD90BA073}Prefabs/Systems/ScenarioFramework/Components/LayerTaskClearArea.et",
+  CMP_LT_CLEAR: "{5A6513F46D132331}",
+  SLOT_CLEAR_PREFAB: "{E53456990A756229}Prefabs/Systems/ScenarioFramework/Components/SlotClearArea.et",
+  CMP_SLOT_CLEAR: "{5A633AF525D5B972}",
+  CMP_PLUGINTRIG_CLEAR: "{5A633AF5368D26A3}",
+  // SF trigger (honors ALL PluginTrigger fields, unlike TriggerDominance) —
+  // Clear Area overrides SlotClearArea's m_sObjectToSpawn to this
+  TRIGGER_CHARACTER_SLOW: "{47D49EA6A216CFD5}Prefabs/Systems/ScenarioFramework/Triggers/TriggerCharacterSlow.et",
 };
 
 // Zone modules exposed in the builder UI (MVP set per Mod Defaults spec).
@@ -901,6 +930,17 @@ export const ZONE_MODULES = [
   { type: "TS_ScenarioFrameworkPluginFortification", label: "Fortifications", kind: "fortification", maxBudget: 4 },
   { type: "TS_ScenarioFrameworkPluginQRFFoot", label: "Foot Reinforcements", kind: "qrf-foot", pool: "m_aPrefabPool", sizes: ["large"], maxBudget: 4, maxOrigins: 3 },
   { type: "TS_ScenarioFrameworkPluginQRFMounted", label: "Vehicle Reinforcements", kind: "qrf-vehicle", pool: "m_aVehiclePrefabPool", maxBudget: 4, maxOrigins: 3 },
+];
+
+// Objective types exposed in the builder UI (Objectives tab). Single source
+// for the generator's emission switch and the web type-picker. Radius is the
+// user-facing trigger radius for area types (hvt has none — the HVT character
+// itself is the objective). Completion feedback = real SF task (LIST_ONLY, no
+// map marker) + ShowHint on finish; see lib.mjs objectivesLayer.
+export const OBJECTIVE_TYPES = [
+  { type: "hvt", label: "Eliminate HVT" },
+  { type: "clear", label: "Clear Area", radius: { min: 50, max: 500, default: 150 } },
+  { type: "reach", label: "Reach Location", radius: { min: 10, max: 100, default: 25 } },
 ];
 
 /**

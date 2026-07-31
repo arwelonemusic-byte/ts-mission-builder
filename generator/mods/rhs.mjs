@@ -57,6 +57,9 @@ export const RHS = {
       // the member override when a mission pits these two against each other
       friendlyWith: ["US"],
       spawnPoint: "{0CAE96554C7FEB3D}PrefabsEditable/SpawnPoints/E_SpawnPoint_US_USMC.et",
+      // HVT for Eliminate-HVT objectives (MEF officer — matches the default
+      // subfaction; source: RHS_Characters_USAF.conf, USMC catalog omits it)
+      hvt: "{8CD3EE2E80AB4820}Prefabs/Characters/Factions/BLUFOR/RHS_USAF/RHS_USAF_USMC_MEF/Character_RHS_USAF_USMC_Officer.et",
       riflemen: {
         USMC_MEF: `{CB4B1645B748D5D4}${P_USAF_C}/RHS_USAF_USMC_MEF/Character_RHS_USAF_USMC_Rifleman.et`,
         USMC_MEF_Desert: `{CA8780615993A41E}${P_USAF_C}/RHS_USAF_USMC_MEF_D/Character_RHS_USAF_USMC_D_Rifleman.et`,
@@ -306,6 +309,7 @@ export const RHS = {
       // the member override vs USSR AND vs MEI (alias resolves to USSR)
       friendlyWith: ["USSR"],
       spawnPoint: "{E86B0E337506B044}PrefabsEditable/SpawnPoints/E_SpawnPoint_RF_MSV.et",
+      hvt: "{A67F5A2E875AEB72}Prefabs/Characters/Factions/OPFOR/RHS_AFRF/MSV/Flora/Character_RHS_RF_MSV_Flora_Officer.et",
       riflemen: {
         MSV_Flora: `{7CCAB195F5A1D9CA}${P_MSV_C}/Flora/Character_RHS_RF_MSV_Flora_Rifleman.et`,
         MSV_VSR: `{3CEC77A6686C1BA3}${P_MSV_C}/VSR/Character_RHS_RF_MSV_VSR_Rifleman.et`,
@@ -610,6 +614,9 @@ export const RHS = {
       squadBase: ["{55CCB792D10AD8F4}", "{55CCB792D13759D8}", "{55CCB792D1218E95}", "{55CCB792D0C8B3CE}"],
       squadFifth: null,
       spawnPoint: "{F6678644B017C54D}PrefabsEditable/SpawnPoints/E_SpawnPoint_ION.et",
+      // ION ships no Officer prefab at all (catalog stub is empty; only the
+      // 12 *_Random characters are recoverable) — SL is the senior role
+      hvt: "{006311076DB5EE8A}Prefabs/Characters/Factions/INDFOR/RHS_ION/RandomSoldiers/Character_RHS_ION_SL_Random.et",
       // ENEMY-ONLY: plain ION character GUIDs are unrecoverable from the dump
       // (empty ION_Characters.conf; only *_Random group-filler variants are
       // referenced anywhere). No riflemen → the UI hides ION from the playable

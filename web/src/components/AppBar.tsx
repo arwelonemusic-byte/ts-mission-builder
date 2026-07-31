@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useT, type Lang } from "@/lib/i18n";
 
-export type StepId = "mission" | "players" | "enemy" | "spawn" | "zones" | "markers" | "briefing";
+export type StepId = "mission" | "players" | "enemy" | "spawn" | "zones" | "objectives" | "markers" | "briefing";
 
 /** 24×24 single-path stroke icons (rendered 16×16), from the v2 design. */
 const STEPS: { id: StepId; label: string; icon: string }[] = [
@@ -23,6 +23,12 @@ const STEPS: { id: StepId; label: string; icon: string }[] = [
     id: "zones",
     label: "Zones",
     icon: "M22 12a10 10 0 1 1-20 0a10 10 0 0 1 20 0M18 12a6 6 0 1 1-12 0a6 6 0 0 1 12 0M14 12a2 2 0 1 1-4 0a2 2 0 0 1 4 0",
+  },
+  {
+    // crosshair-in-shield: distinct from the concentric-circles Zones icon
+    id: "objectives",
+    label: "Objectives",
+    icon: "M12 22c5-2 8-6.5 8-12V5l-8-3-8 3v5c0 5.5 3 10 8 12M12 7v3M12 14v3M7.5 12h3M13.5 12h3",
   },
   {
     id: "markers",

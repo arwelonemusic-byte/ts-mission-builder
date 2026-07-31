@@ -53,6 +53,8 @@ export const UK = {
       // symmetric, so a US-vs-UK mission clears it via the member override
       friendlyWith: ["US"],
       spawnPoint: "{75262929CD256E99}PrefabsEditable/SpawnPoints/E_SpawnPoint_UK.et",
+      // HVT for Eliminate-HVT objectives (1989 Regulars = default subfaction)
+      hvt: "{6D4AB9E422430636}Prefabs/Characters/Factions/BLUFOR/UK_Army/1989/Regulars/Character_UK_1989_Regulars_Officer.et",
       riflemen: {
         "1989 Regulars": `{4AF2023E868540E7}${P_C89}/Regulars/Character_UK_1989_Regulars_Rifleman.et`,
         "1989 Special Forces": `{A2F125ECA3AD0305}${P_C89}/SpecialForces/Character_UK_1989_SpecialForces_Trooper.et`,

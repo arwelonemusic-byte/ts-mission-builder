@@ -43,6 +43,7 @@ import {
   distanceLabel,
   distancePillHtml,
   markerHtml,
+  objectiveBadgeHtml,
   originBadgeHtml,
   pingHtml,
   sectorChipHtml,
@@ -64,7 +65,8 @@ export type Map3DProps = MapProps & {
 
 const ZONE_COLOR = 0x9333ea;
 const SELECT_COLOR = 0xffcc00;
-const OBJECTIVE_COLOR = 0x9f2828;
+const OBJECTIVE_COLOR = 0x9f2828; // sector "objective" rectangles
+const TASK_COLOR = 0xe8593c; // mission objectives (matches overlayHtml OBJECTIVE_COLOR)
 const AO_COLOR = 0x000000;
 const SPAWN_BLUE = 0x3fa9f5;
 const CRATE_GREEN = 0x50c878;
@@ -908,6 +910,48 @@ export default function MissionMap3D(props: Map3DProps) {
         });
       }
 
+      /* -- objectives: accent badge (draggable) + draped trigger-radius ring
+            for the area types; the ring re-drapes live during a badge drag -- */
+      for (const o of p.objectives) {
+        const selected = o.id === p.selectedObjectiveId;
+        let drapeRing: ((x: number, z: number) => void) | null = null;
+        if (o.radius) {
+          const ring = drapedLine(
+            grid,
+            96,
+            new THREE.LineDashedMaterial({
+              color: selected ? SELECT_COLOR : TASK_COLOR,
+              dashSize: 8,
+              gapSize: 6,
+            }),
+            true
+          );
+          overlay.add(ring.obj);
+          const disc = drapedGridMesh(grid, 48, 8, fillMaterial(TASK_COLOR, 0.1));
+          overlay.add(disc.obj);
+          drapeRing = (x, z) => {
+            ring.fill((i) => {
+              const a = (i / 96) * Math.PI * 2;
+              return [x + o.radius! * Math.cos(a), z + o.radius! * Math.sin(a)];
+            }, LINE_LIFT + (selected ? 0.3 : 0));
+            disc.fill((u, v) => {
+              const a = u * Math.PI * 2;
+              const rr = v * o.radius!;
+              return [x + rr * Math.cos(a), z + rr * Math.sin(a)];
+            }, FILL_LIFT);
+          };
+          drapeRing(o.x, o.z);
+        }
+        const badge = css2dNode(objectiveBadgeHtml(o.type, selected, !!p.fresh[o.id]), true);
+        badge.obj.position.set(o.x, meshY(grid, o.x, o.z) + ICON_LIFT, -o.z);
+        overlay.add(badge.obj);
+        makeDraggable(world, badge.el, badge.obj, ICON_LIFT, {
+          onClick: () => propsRef.current.onObjectiveClick(o.id),
+          onDragLive: (x, z) => drapeRing?.(x, z),
+          onDragEnd: (x, z) => propsRef.current.onObjectiveMoved(o.id, x, z),
+        });
+      }
+
       world.render();
     };
     world.syncOverlays();
@@ -1337,6 +1381,8 @@ export default function MissionMap3D(props: Map3DProps) {
     props.selectedOrigin,
     props.markers,
     props.selectedMarkerId,
+    props.objectives,
+    props.selectedObjectiveId,
     props.sectors,
     props.selectedSectorId,
     props.playableFaction,

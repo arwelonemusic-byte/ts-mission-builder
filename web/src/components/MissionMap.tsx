@@ -5,11 +5,13 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { layoutSpawnBundle, itemWorldCorners, rotateLocal, FACTIONS } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
-import type { MissionMarker, MissionSector, Zone } from "@/lib/mission";
+import type { MissionMarker, MissionObjective, MissionSector, Zone } from "@/lib/mission";
 import {
   distanceLabel,
   distancePillHtml,
   markerHtml,
+  objectiveBadgeHtml,
+  OBJECTIVE_COLOR,
   originBadgeHtml,
   pingHtml,
   zoneDotHtml,
@@ -55,6 +57,8 @@ export type MapProps = {
   spawn: MapSpawn;
   zones: Zone[];
   selectedZoneId: string | null;
+  objectives: MissionObjective[];
+  selectedObjectiveId: string | null;
   markers: MissionMarker[];
   selectedMarkerId: string | null;
   sectors: MissionSector[];
@@ -63,7 +67,7 @@ export type MapProps = {
   sectorDraw: "ao" | "objective" | null;
   /** Freshly placed ids ("spawn" / zone id / marker id) → entrance animation */
   fresh: Record<string, boolean>;
-  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | null;
+  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | null;
   focus: MapFocus | null;
   onMapClick: (x: number, z: number) => void;
   onZoneClick: (id: string) => void;
@@ -77,6 +81,8 @@ export type MapProps = {
   onSpawnMoved: (x: number, z: number) => void;
   onMarkerClick: (id: string) => void;
   onMarkerMoved: (id: string, x: number, z: number) => void;
+  onObjectiveClick: (id: string) => void;
+  onObjectiveMoved: (id: string, x: number, z: number) => void;
   onSectorDrawn: (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => void;
   onSectorClick: (id: string) => void;
   onSectorChanged: (
@@ -546,6 +552,45 @@ export default function MissionMap(props: MapProps) {
         propsRef.current.onMarkerMoved(mk.id, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
       });
     }
+
+    // Objectives: accent badge (draggable, click-selects) + non-interactive
+    // trigger-radius circle for the area types (clear/reach). The circle
+    // follows live during a badge drag, like the zone circle.
+    for (const o of props.objectives) {
+      const selected = o.id === props.selectedObjectiveId;
+      const circle = o.radius
+        ? L.circle([o.z, o.x], {
+            radius: o.radius,
+            color: selected ? "#ffcc00" : OBJECTIVE_COLOR,
+            weight: selected ? 3 : 2,
+            fillColor: OBJECTIVE_COLOR,
+            fillOpacity: 0.1,
+            dashArray: "6 6",
+            interactive: false,
+            className: props.fresh[o.id] ? "mb-fresh-path" : "",
+          }).addTo(overlay)
+        : null;
+      const badge = L.marker([o.z, o.x], {
+        icon: objectiveBadgeIcon(o.type, selected, !!props.fresh[o.id]),
+        draggable: true,
+      })
+        .bindTooltip(o.taskTitle || tr(props.lang, "Objective"), {
+          direction: "top",
+          offset: [0, -14],
+          opacity: 1,
+        })
+        .addTo(overlay);
+      badge.on("click", (e) => {
+        L.DomEvent.stopPropagation(e);
+        propsRef.current.onObjectiveClick(o.id);
+      });
+      badge.on("dragstart", () => badge.unbindTooltip());
+      badge.on("drag", () => circle?.setLatLng(badge.getLatLng()));
+      badge.on("dragend", () => {
+        const ll = badge.getLatLng();
+        propsRef.current.onObjectiveMoved(o.id, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
+      });
+    }
   }, [
     props.spawn,
     props.zones,
@@ -553,6 +598,8 @@ export default function MissionMap(props: MapProps) {
     props.selectedOrigin,
     props.markers,
     props.selectedMarkerId,
+    props.objectives,
+    props.selectedObjectiveId,
     props.sectors,
     props.selectedSectorId,
     props.playableFaction,
@@ -668,6 +715,21 @@ function originBadgeIcon(moduleType: string, color: string, selected: boolean) {
     iconSize: [32, 32],
     iconAnchor: [16, 16],
     html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">${badge}</div>`,
+  });
+}
+
+/** DivIcon wrapper for an objective badge; 32px transparent hit box on touch. */
+function objectiveBadgeIcon(type: MissionObjective["type"], selected: boolean, freshDrop = false) {
+  const badge = objectiveBadgeHtml(type, selected, freshDrop);
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [28, 28], iconAnchor: [14, 14], html: badge });
+  }
+  return L.divIcon({
+    className: "",
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    html: `<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">${badge}</div>`,
   });
 }
 

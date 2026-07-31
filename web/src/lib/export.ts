@@ -91,6 +91,21 @@ export async function toGeneratorMission(m: Mission) {
     });
   }
 
+  // Objectives → Objectives.layer LayerTask/Slot blocks (heightmap Y)
+  const objectives = [];
+  for (const o of m.objectives) {
+    const oy = await elevationAt(m.terrain, o.x, o.z);
+    objectives.push({
+      type: o.type,
+      pos: [y(o.x), y(oy), y(o.z)],
+      radius: o.radius,
+      taskTitle: o.taskTitle,
+      taskDesc: o.taskDesc,
+      hintTitle: o.hintTitle,
+      hintBody: o.hintBody,
+    });
+  }
+
   // Selected loadouts resolved to {name, prefab}, keeping catalogue order
   const loadoutSet = FACTIONS[m.playableFaction]?.loadoutSets[m.playableSubfaction] ?? [];
   const loadouts = loadoutSet.filter((l) => m.loadouts.includes(l.prefab));
@@ -137,6 +152,7 @@ export async function toGeneratorMission(m: Mission) {
     zones,
     markers,
     sectors,
+    objectives,
   };
 }
 

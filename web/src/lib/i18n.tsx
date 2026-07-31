@@ -161,6 +161,41 @@ const RU: Record<string, string> = {
   "Estimated enemy count": "Примерная численность противника",
   hostiles: "противников",
 
+  // Objectives tab (tab label + panel title reuse the "Objectives" key below)
+  "Add objective": "Добавить задачу",
+  "Pick a type… (cancel)": "Выберите тип… (отмена)",
+  "No objectives yet": "Задачи не добавлены",
+  "Objectives give players real in-game tasks — eliminate an HVT, clear an area, reach a location — with instant completion feedback.":
+    "Задачи дают игрокам реальные внутриигровые цели — ликвидировать цель, зачистить район, выйти к точке — с мгновенной обратной связью при выполнении.",
+  "Eliminate HVT": "Ликвидация цели",
+  "Clear Area": "Зачистка района",
+  "Reach Location": "Выход к точке",
+  "Spawns an enemy officer at the point. Completes when he is killed.":
+    "Создаёт офицера противника в точке. Выполняется, когда он ликвидирован.",
+  "Completes when players hold the area and no enemy troops remain inside.":
+    "Выполняется, когда игроки удерживают район и внутри не осталось противника.",
+  "Completes when a player reaches the point.": "Выполняется, когда игрок достигает точки.",
+  "Task title": "Название задачи",
+  "Task description": "Описание задачи",
+  "Completion hint": "Уведомление о выполнении",
+  "Hint title": "Заголовок уведомления",
+  "Hint text": "Текст уведомления",
+  "Delete objective": "Удалить задачу",
+  "the objective": "задачу",
+  // Prefilled task/hint texts (baked into the mission in the UI language)
+  "Eliminate the HVT": "Ликвидировать цель",
+  "Find and eliminate the enemy officer in the area.":
+    "Найдите и ликвидируйте офицера противника в указанном районе.",
+  "Objective complete": "Задача выполнена",
+  "The HVT has been eliminated.": "Цель ликвидирована.",
+  "Clear the area": "Зачистить район",
+  "Clear all enemy forces from the designated area.":
+    "Зачистите указанный район от сил противника.",
+  "The area has been cleared.": "Район зачищен.",
+  "Reach the location": "Выйти к точке",
+  "Get to the designated location.": "Выйдите к указанной точке.",
+  "The location has been reached.": "Точка достигнута.",
+
   // Markers tab
   Military: "Военные",
   Vanilla: "Стандартные",

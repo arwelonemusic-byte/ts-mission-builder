@@ -3,7 +3,7 @@
 // roots are center-anchored: 2D wraps them with iconAnchor = size/2, 3D
 // relies on CSS2DRenderer's default translate(-50%,-50%).
 import { ZONE_MODULES } from "mission-gen";
-import type { MissionMarker, Zone } from "./mission";
+import type { MissionMarker, ObjectiveType, Zone } from "./mission";
 import { findColor, findIcon, militaryIconUrl, MARKER_LABEL_OUTLINE, VANILLA_ATLAS } from "./markers";
 import { DISABLED_ICON_FILTER, MODULE_ICONS } from "./zoneModules";
 import type { Lang } from "./i18n";
@@ -83,6 +83,36 @@ export function originBadgeHtml(moduleType: string, color: string, selected: boo
     ? `<div style="position:absolute;inset:-6px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
     : "";
   return `<div style="position:relative;width:24px;height:24px;">${halo}<div style="width:24px;height:24px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="${glyphPath}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`;
+}
+
+/** Objectives accent (map badge, radius circle, placement ping) — distinct
+ * from zone purple #9333ea, sector red #9f2828 and marker yellow. */
+export const OBJECTIVE_COLOR = "#e8593c";
+
+/** Per-type white stroke glyphs (16×16 viewBox inner SVG markup), shared by
+ * the map badge below and the panel's type picker. */
+export const OBJECTIVE_GLYPHS: Record<ObjectiveType, string> = {
+  // crosshair
+  hvt:
+    `<circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="1.4" fill="none"/>` +
+    `<path d="M8 1v3M8 12v3M1 8h3M12 8h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>`,
+  // shield-check
+  clear:
+    `<path d="M8 1.5 L13 3.5 V7.5 C13 11 10.7 13.4 8 14.5 C5.3 13.4 3 11 3 7.5 V3.5 Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/>` +
+    `<path d="M5.8 8 L7.4 9.6 L10.2 6.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+  // flag
+  reach:
+    `<path d="M3.5 14.5 V2.2 M3.5 2.4 C5 1.4 6.5 1.4 8 2.4 C9.5 3.4 11 3.4 12.5 2.4 V8.6 C11 9.6 9.5 9.6 8 8.6 C6.5 7.6 5 7.6 3.5 8.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`,
+};
+
+/** Round badge at an objective's position: accent disc + white type glyph.
+ * Selection adds the standard yellow halo ring. Draggable in both views. */
+export function objectiveBadgeHtml(type: ObjectiveType, selected: boolean, freshDrop = false): string {
+  const halo = selected
+    ? `<div style="position:absolute;inset:-6px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
+    : "";
+  const drop = freshDrop ? "animation:mbDrop 0.4s cubic-bezier(0.22,1,0.36,1);" : "";
+  return `<div style="position:relative;width:28px;height:28px;${drop}">${halo}<div style="width:28px;height:28px;border-radius:50%;background:${OBJECTIVE_COLOR};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;color:#fff;"><svg width="15" height="15" viewBox="0 0 16 16">${OBJECTIVE_GLYPHS[type]}</svg></div></div>`;
 }
 
 /** Small square chip at a sector's center — the 3D view's select/move handle

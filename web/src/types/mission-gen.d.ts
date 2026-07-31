@@ -30,6 +30,8 @@ declare module "mission-gen" {
       squadBase: string[];
       squadFifth: string | null;
       spawnPoint: string;
+      /** HVT character for Eliminate-HVT objectives when this faction is the enemy */
+      hvt?: string;
       riflemen: Record<string, string>;
       loadoutSets: Record<string, { name: string; prefab: string }[]>;
       arsenalItems: { mode: string; ref: string }[];
@@ -77,6 +79,12 @@ declare module "mission-gen" {
     noBudget?: boolean;
     /** QRF modules: max user-placed reinforcement origins (spawn anchors) */
     maxOrigins?: number;
+  }[];
+  export const OBJECTIVE_TYPES: {
+    type: "hvt" | "clear" | "reach";
+    label: string;
+    /** Trigger radius bounds for area types; absent for hvt */
+    radius?: { min: number; max: number; default: number };
   }[];
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];

@@ -1,4 +1,4 @@
-import { FACTIONS, mintGuid } from "mission-gen";
+import { FACTIONS, OBJECTIVE_TYPES, mintGuid } from "mission-gen";
 
 /** sizes = Foot Patrols weight-slider selection (size classes for the group
  *  pool); absent = the module default (all sizes).
@@ -49,6 +49,24 @@ export type MissionSector = {
   rotation: number;
 };
 
+/** Mission objective (Objectives tab) → a real SF task in Objectives.layer
+ * (LIST_ONLY visibility — task list entry, no map marker) + a completion hint.
+ * radius only applies to area types (clear/reach); hvt has none. */
+export type ObjectiveType = "hvt" | "clear" | "reach";
+export type MissionObjective = {
+  id: string;
+  type: ObjectiveType;
+  x: number;
+  z: number;
+  radius?: number;
+  /** In-game task list entry */
+  taskTitle: string;
+  taskDesc: string;
+  /** Completion hint (8 s, playable faction only) */
+  hintTitle: string;
+  hintBody: string;
+};
+
 export type Mission = {
   version: 1;
   displayName: string;
@@ -84,11 +102,21 @@ export type Mission = {
   zones: Zone[];
   markers: MissionMarker[];
   sectors: MissionSector[];
+  objectives: MissionObjective[];
   guids: { addon: string; world: string; missionConf: string; thumbnail: string };
   /** Sanitized mission name the guids were minted for — a renamed mission is
    * a new addon and must not reuse them (see freshenGuids) */
   guidsName: string;
 };
+
+/** Clamp a radius to its objective type's bounds (undefined for hvt — no
+ * trigger area). Used by migrate() and the panel slider alike. */
+export function objectiveRadius(type: ObjectiveType, r?: number): number | undefined {
+  const def = OBJECTIVE_TYPES.find((t) => t.type === type)?.radius;
+  if (!def) return undefined;
+  const v = typeof r === "number" && Number.isFinite(r) ? r : def.default;
+  return Math.round(Math.max(def.min, Math.min(def.max, v)));
+}
 
 /** FACTIONS' TS type is inferred from the vanilla literal in catalogue.mjs;
  * mod-merged entries carry extra fields (mod tag, display label) the inferred
@@ -147,6 +175,7 @@ export function newMission(): Mission {
     zones: [],
     markers: [],
     sectors: [],
+    objectives: [],
     guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid(), thumbnail: mintGuid() },
     guidsName: "",
   };
@@ -237,6 +266,28 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     seenAo = true;
     return true;
   });
+  // Objectives arrived after the first saves; sanitize hand-edited entries
+  // (known type, numeric coords, string texts, radius clamped by type)
+  if (!Array.isArray(m.objectives)) m.objectives = [];
+  m.objectives = m.objectives
+    .filter(
+      (o) =>
+        o &&
+        (o.type === "hvt" || o.type === "clear" || o.type === "reach") &&
+        typeof o.x === "number" &&
+        typeof o.z === "number"
+    )
+    .map((o) => ({
+      id: String(o.id ?? `o${Math.random().toString(36).slice(2)}`),
+      type: o.type,
+      x: o.x,
+      z: o.z,
+      radius: objectiveRadius(o.type, o.radius),
+      taskTitle: String(o.taskTitle ?? ""),
+      taskDesc: String(o.taskDesc ?? ""),
+      hintTitle: String(o.hintTitle ?? ""),
+      hintBody: String(o.hintBody ?? ""),
+    }));
   if (!m.arty) m.arty = defaultArty();
   // Early builds shipped invented defaults (60/40/40); if the user never
   // touched artillery, silently swap in the prefab-matching counts.
