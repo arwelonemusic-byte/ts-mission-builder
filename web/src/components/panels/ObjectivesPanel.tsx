@@ -133,7 +133,9 @@ export default function ObjectivesPanel({
         </div>
       )}
 
-      {mission.objectives.map((o, i) => {
+      {/* While the type picker is open, existing cards hide — the picker is
+          the whole panel's focus (per design feedback 2026-07-31) */}
+      {!pickerOpen && mission.objectives.map((o, i) => {
         const selected = o.id === selectedObjectiveId;
         const radiusDef = typeDef(o.type)?.radius;
         return (
