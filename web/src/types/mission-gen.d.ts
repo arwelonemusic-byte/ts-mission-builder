@@ -81,10 +81,12 @@ declare module "mission-gen" {
     maxOrigins?: number;
   }[];
   export const OBJECTIVE_TYPES: {
-    type: "hvt" | "clear" | "reach" | "destroy";
+    type: "hvt" | "clear" | "reach" | "destroy" | "deliver";
     label: string;
-    /** Trigger radius bounds for area types; absent for hvt/destroy */
+    /** Trigger radius bounds for area types; absent for hvt/destroy/deliver */
     radius?: { min: number; max: number; default: number };
+    /** deliver only: delivery-trigger radius bounds */
+    deliveryRadius?: { min: number; max: number; default: number };
   }[];
   /** Destroy-object pool: root-destructible prefabs with shipped thumbnails
    * (web/public/icons/prefabs/<thumb>); vehicles are added by the web modal */

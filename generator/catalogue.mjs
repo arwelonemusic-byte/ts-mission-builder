@@ -1038,6 +1038,14 @@ export const OBJECTIVE_TYPES = [
   { type: "reach", label: "Reach Location", radius: { min: 10, max: 100, default: 25 } },
   // objectRef = DESTROY_OBJECTS entry or a faction vehicle ref (modal picker)
   { type: "destroy", label: "Destroy Object" },
+  // objectRef = vehicle to spawn at the objective point; delivery = second
+  // user-placed point whose trigger (deliveryRadius) completes the task when
+  // the vehicle is inside. Ground truth: the vanilla reference composition
+  // Compositions/LayerTasks/TaskDeliverVehicles.et — it does NOT use
+  // LayerTaskDeliver (that's carryable-intel machinery); it reuses
+  // LayerTaskMove + SlotMoveTo with SPECIFIC_PREFAB_NAME presence + a
+  // SCR_CustomTriggerConditionsSpecificPrefabCount condition.
+  { type: "deliver", label: "Deliver Vehicle", deliveryRadius: { min: 10, max: 100, default: 25 } },
 ];
 
 /**

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import {
+  DEFAULT_DELIVER_VEHICLE,
   DEFAULT_DESTROY_OBJECT,
   defaultLoadouts,
   downloadMissionJson,
@@ -89,10 +90,12 @@ export default function Editor() {
   const [mission, setMission] = useState<Mission | null>(null);
   const [lang, setLangState] = useState<Lang>("en");
   const [step, setStep] = useState<StepId>("mission");
-  const [placeMode, setPlaceMode] = useState<"spawn" | "zone" | "marker" | "qrf-origin" | "objective" | null>(null);
+  const [placeMode, setPlaceMode] = useState<"spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null>(null);
   // Which objective type an armed "objective" placement creates (type picker)
   const [pendingObjectiveType, setPendingObjectiveType] = useState<ObjectiveType | null>(null);
   const [selectedObjectiveId, setSelectedObjectiveId] = useState<string | null>(null);
+  // Which deliver objective an armed "delivery" placement feeds
+  const [deliveryTarget, setDeliveryTarget] = useState<string | null>(null);
   // Which zone+module an armed "qrf-origin" placement feeds (QRF reinforcements)
   const [originTarget, setOriginTarget] = useState<{ zoneId: string; moduleType: string } | null>(null);
   // Selected reinforcement origin (panel row ↔ map badge, two-way)
@@ -211,6 +214,7 @@ export default function Editor() {
         setOriginTarget(null);
         setSectorDraw(null);
         setPendingObjectiveType(null);
+        setDeliveryTarget(null);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -275,6 +279,12 @@ export default function Editor() {
   const removeObjective = (id: string) => {
     setMission((m) => (m ? { ...m, objectives: m.objectives.filter((o) => o.id !== id) } : m));
     setSelectedObjectiveId((cur) => (cur === id ? null : cur));
+    // Deleting the objective an armed delivery placement was for cancels it
+    setDeliveryTarget((cur) => {
+      if (cur !== id) return cur;
+      setPlaceMode((pm) => (pm === "delivery" ? null : pm));
+      return null;
+    });
   };
   const updateMarker = (id: string, patch: Partial<MissionMarker>) =>
     setMission((m) =>
@@ -302,7 +312,7 @@ export default function Editor() {
     setSelectedSectorId(null);
     setSectorDraw((cur) => (cur === kind ? null : kind));
   };
-  const armPlaceMode = (m: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | null) => {
+  const armPlaceMode = (m: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null) => {
     setSectorDraw(null);
     if (m !== "qrf-origin") setOriginTarget(null);
     if (m !== "objective") setPendingObjectiveType(null);
@@ -312,8 +322,20 @@ export default function Editor() {
   const armObjectivePlace = (type: ObjectiveType | null) => {
     setSectorDraw(null);
     setOriginTarget(null);
+    setDeliveryTarget(null);
     setPendingObjectiveType(type);
     setPlaceMode(type ? "objective" : null);
+  };
+  /** Toggle delivery-point placement for a deliver objective (same id re-toggles off). */
+  const armDeliveryPlace = (objectiveId: string) => {
+    setSectorDraw(null);
+    setOriginTarget(null);
+    setPendingObjectiveType(null);
+    setDeliveryTarget((cur) => {
+      const same = cur === objectiveId;
+      setPlaceMode(same ? null : "delivery");
+      return same ? null : objectiveId;
+    });
   };
   /** Toggle QRF origin placement for a zone+module (same pair re-toggles off). */
   const armOriginPlace = (zoneId: string, moduleType: string) => {
@@ -414,6 +436,7 @@ export default function Editor() {
     setOriginTarget(null);
     setSectorDraw(null);
     setPendingObjectiveType(null);
+    setDeliveryTarget(null);
     setStep(s);
   };
 
@@ -440,12 +463,19 @@ export default function Editor() {
               hintTitle: t("Objective complete"),
               hintBody: t("The target has been destroyed."),
             }
-          : {
-              taskTitle: t("Reach the location"),
-              taskDesc: t("Get to the designated location."),
-              hintTitle: t("Objective complete"),
-              hintBody: t("The location has been reached."),
-            };
+          : type === "deliver"
+            ? {
+                taskTitle: t("Deliver the vehicle"),
+                taskDesc: t("Get the vehicle to the delivery point intact."),
+                hintTitle: t("Objective complete"),
+                hintBody: t("The vehicle has been delivered."),
+              }
+            : {
+                taskTitle: t("Reach the location"),
+                taskDesc: t("Get to the designated location."),
+                hintTitle: t("Objective complete"),
+                hintBody: t("The location has been reached."),
+              };
 
   const onMapClick = (x: number, z: number) => {
     if (!mission) return;
@@ -487,7 +517,10 @@ export default function Editor() {
         x: xi,
         z: zi,
         radius: objectiveRadius(type),
-        objectRef: type === "destroy" ? DEFAULT_DESTROY_OBJECT : undefined,
+        objectRef:
+          type === "destroy" ? DEFAULT_DESTROY_OBJECT : type === "deliver" ? DEFAULT_DELIVER_VEHICLE : undefined,
+        delivery: type === "deliver" ? null : undefined,
+        deliveryRadius: type === "deliver" ? 25 : undefined,
         ...d,
       };
       setMission((m) => (m ? { ...m, objectives: [...m.objectives, objective] } : m));
@@ -496,6 +529,12 @@ export default function Editor() {
       markFresh(objective.id);
       setPlaceMode(null);
       setPendingObjectiveType(null);
+    } else if (placeMode === "delivery" && deliveryTarget) {
+      updateObjective(deliveryTarget, { delivery: { x: xi, z: zi } });
+      setSelectedObjectiveId(deliveryTarget);
+      mapApi()?.addPing(xi, zi, OBJECTIVE_COLOR);
+      setPlaceMode(null);
+      setDeliveryTarget(null);
     } else if (placeMode === "qrf-origin" && originTarget) {
       // Stays armed for multi-drop (like markers) until the module's origin
       // cap is reached; the panel button re-toggle / Esc cancels earlier.
@@ -638,6 +677,11 @@ export default function Editor() {
       goStep("players");
       return;
     }
+    if (mission.objectives.some((o) => o.type === "deliver" && !o.delivery)) {
+      say(t("Place a delivery point for every Deliver Vehicle objective (Objectives tab)."), "warn");
+      goStep("objectives");
+      return;
+    }
     setGen({ phase: "run", stage: 0 });
     let stage = 0;
     const ticker = window.setInterval(() => {
@@ -695,6 +739,7 @@ export default function Editor() {
     setOriginTarget(null);
     setSectorDraw(null);
     setPendingObjectiveType(null);
+    setDeliveryTarget(null);
     setPlaceMode(null);
     setStatus(null);
     setStep("mission");
@@ -741,7 +786,9 @@ export default function Editor() {
         ? t("a reinforcement origin")
         : placeMode === "objective"
           ? t("the objective")
-          : t("an AI zone");
+          : placeMode === "delivery"
+            ? t("the delivery point")
+            : t("an AI zone");
   const sectorNoun = sectorDraw === "ao" ? t("the AO sector") : t("an objective sector");
 
   return (
@@ -764,6 +811,7 @@ export default function Editor() {
             selectedObjectiveId,
             onObjectiveClick,
             onObjectiveMoved: (id: string, x: number, z: number) => updateObjective(id, { x, z }),
+            onDeliveryMoved: (id: string, x: number, z: number) => updateObjective(id, { delivery: { x, z } }),
             markers: mission.markers,
             selectedMarkerId,
             sectors: mission.sectors,
@@ -957,6 +1005,8 @@ export default function Editor() {
                 placing={placeMode === "objective"}
                 pendingType={pendingObjectiveType}
                 onArmObjective={armObjectivePlace}
+                deliveryTarget={placeMode === "delivery" ? deliveryTarget : null}
+                onArmDelivery={armDeliveryPlace}
                 selectedObjectiveId={selectedObjectiveId}
                 revealSeq={objectiveRevealSeq}
                 onSelectObjective={selectAndFocusObjective}

@@ -40,6 +40,7 @@ import { terrainByKey } from "@/lib/terrains";
 import { getSampler } from "@/lib/terrainSampler";
 import { compositeTerrainTexture } from "@/lib/tileComposite";
 import {
+  deliveryBadgeHtml,
   distanceLabel,
   distancePillHtml,
   markerHtml,
@@ -942,12 +943,71 @@ export default function MissionMap3D(props: Map3DProps) {
           };
           drapeRing(o.x, o.z);
         }
+        // Deliver: dashed line to the delivery point + flag badge + trigger
+        // ring, live-redraped during either end's drag (QRF-origin pattern).
+        let drapeLine: ((ox: number, oz: number, dx: number, dz: number) => void) | null = null;
+        const del = o.type === "deliver" && o.delivery ? { ...o.delivery } : null;
+        if (del) {
+          const line = drapedLine(
+            grid,
+            65,
+            new THREE.LineDashedMaterial({
+              color: TASK_COLOR,
+              dashSize: 8,
+              gapSize: 8,
+              transparent: true,
+              opacity: 0.85,
+            }),
+            false
+          );
+          overlay.add(line.obj);
+          const dRadius = o.deliveryRadius ?? 25;
+          const dRing = drapedLine(
+            grid,
+            96,
+            new THREE.LineDashedMaterial({ color: selected ? SELECT_COLOR : TASK_COLOR, dashSize: 6, gapSize: 5 }),
+            true
+          );
+          overlay.add(dRing.obj);
+          const drapeDelivery = (dx: number, dz: number) => {
+            dRing.fill((i) => {
+              const a = (i / 96) * Math.PI * 2;
+              return [dx + dRadius * Math.cos(a), dz + dRadius * Math.sin(a)];
+            }, LINE_LIFT);
+          };
+          drapeLine = (ox, oz, dx, dz) => {
+            line.fill((i) => {
+              const f = i / 64;
+              return [ox + (dx - ox) * f, oz + (dz - oz) * f];
+            }, LINE_LIFT);
+          };
+          drapeLine(o.x, o.z, del.x, del.z);
+          drapeDelivery(del.x, del.z);
+
+          const flag = css2dNode(deliveryBadgeHtml(selected), true);
+          flag.obj.position.set(del.x, meshY(grid, del.x, del.z) + ICON_LIFT, -del.z);
+          overlay.add(flag.obj);
+          makeDraggable(world, flag.el, flag.obj, ICON_LIFT, {
+            onClick: () => propsRef.current.onObjectiveClick(o.id),
+            onDragLive: (x, z) => {
+              del.x = x;
+              del.z = z;
+              drapeLine?.(o.x, o.z, x, z);
+              drapeDelivery(x, z);
+            },
+            onDragEnd: (x, z) => propsRef.current.onDeliveryMoved(o.id, x, z),
+          });
+        }
+
         const badge = css2dNode(objectiveBadgeHtml(o.type, selected, !!p.fresh[o.id]), true);
         badge.obj.position.set(o.x, meshY(grid, o.x, o.z) + ICON_LIFT, -o.z);
         overlay.add(badge.obj);
         makeDraggable(world, badge.el, badge.obj, ICON_LIFT, {
           onClick: () => propsRef.current.onObjectiveClick(o.id),
-          onDragLive: (x, z) => drapeRing?.(x, z),
+          onDragLive: (x, z) => {
+            drapeRing?.(x, z);
+            if (del) drapeLine?.(x, z, del.x, del.z);
+          },
           onDragEnd: (x, z) => propsRef.current.onObjectiveMoved(o.id, x, z),
         });
       }

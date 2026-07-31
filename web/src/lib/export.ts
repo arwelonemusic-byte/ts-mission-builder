@@ -95,11 +95,18 @@ export async function toGeneratorMission(m: Mission) {
   const objectives = [];
   for (const o of m.objectives) {
     const oy = await elevationAt(m.terrain, o.x, o.z);
+    let delivery;
+    if (o.type === "deliver" && o.delivery) {
+      const dy = await elevationAt(m.terrain, o.delivery.x, o.delivery.z);
+      delivery = [y(o.delivery.x), y(dy), y(o.delivery.z)];
+    }
     objectives.push({
       type: o.type,
       pos: [y(o.x), y(oy), y(o.z)],
       radius: o.radius,
       objectRef: o.objectRef,
+      delivery,
+      deliveryRadius: o.deliveryRadius,
       taskTitle: o.taskTitle,
       taskDesc: o.taskDesc,
       hintTitle: o.hintTitle,

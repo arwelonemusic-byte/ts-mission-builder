@@ -87,3 +87,26 @@ export function destroyEntry(m: Mission, ref: string | undefined): DestroyEntry 
   if (!ref) return null;
   return destroyPool(m).find((e) => e.ref === ref) ?? null;
 }
+
+/** Deliver-vehicle pool: every vehicle of vanilla + ENABLED-mod factions
+ * (not just the mission's two sides — steal-and-deliver plots want the full
+ * garage). Deduped by ref; vanilla factions come first in FACTIONS order. */
+export function deliverVehiclePool(m: Mission): DestroyEntry[] {
+  const entries: DestroyEntry[] = [];
+  const seen = new Set<string>();
+  for (const f of Object.values(FACTIONS)) {
+    if (f.mod && !m.mods.includes(f.mod)) continue;
+    for (const [key, ref] of Object.entries(f.vehicles ?? {})) {
+      if (seen.has(ref)) continue;
+      seen.add(ref);
+      entries.push({ ref, label: f.vehicleLabels?.[key] ?? key, cat: "vehicles", thumb: thumbFromRef(ref) });
+    }
+  }
+  return entries;
+}
+
+/** Pool entry lookup against the deliver pool (card display). */
+export function deliverEntry(m: Mission, ref: string | undefined): DestroyEntry | null {
+  if (!ref) return null;
+  return deliverVehiclePool(m).find((e) => e.ref === ref) ?? null;
+}

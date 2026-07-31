@@ -789,8 +789,10 @@ ${showHint(o)}`;
     const objectiveBlocks = missionObjectives
       .map((o, i) => {
         const n = i + 1;
-        const rel = posStr([o.pos[0] - origin[0], o.pos[1] - origin[1], o.pos[2] - origin[2]]);
         let layerPrefab, cmpClass, cmpGuid, slotBlock;
+        // The LayerTask entity's world position — objective pos for most
+        // types; the deliver branch moves it to the delivery point.
+        let layerPos = o.pos;
         if (o.type === "hvt") {
           const hvtRef = ENEMY.hvt;
           if (!hvtRef) throw new Error(`No HVT character for faction ${mission.enemyFaction}`);
@@ -880,6 +882,59 @@ ${showHint(o)}`;
      }
      coords 0 0 0
     }`;
+        } else if (o.type === "deliver") {
+          // Vehicle-delivery: the LayerTask sits at the DELIVERY point (its
+          // SlotMoveTo trigger completes the task when the chosen vehicle
+          // prefab is inside); the vehicle itself spawns from a plain
+          // SlotBase child at the objective position. Serialization mirrors
+          // the vanilla TaskDeliverVehicles.et reference composition.
+          if (!o.objectRef) throw new Error(`Deliver objective without objectRef`);
+          if (!o.delivery) throw new Error(`Deliver objective without a delivery point`);
+          const deliveryDef = OBJECTIVE_TYPES.find((t) => t.type === "deliver").deliveryRadius;
+          const dRadius = Math.round(o.deliveryRadius ?? deliveryDef.default);
+          layerPrefab = K.LAYERTASK_MOVE_PREFAB;
+          cmpClass = "SCR_ScenarioFrameworkLayerTask";
+          cmpGuid = K.CMP_LT_MOVE;
+          // The layer's coords (rel, computed below) must be the DELIVERY
+          // point; the vehicle slot is offset back to the objective position.
+          layerPos = o.delivery;
+          const vRel = posStr([
+            o.pos[0] - o.delivery[0],
+            o.pos[1] - o.delivery[1],
+            o.pos[2] - o.delivery[2],
+          ]);
+          slotBlock = `    GenericEntity SlotObjective${n} : "${K.SLOT_MOVETO_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotExtraction "${K.CMP_SLOT_MOVETO}" {
+       m_aPlugins {
+        SCR_ScenarioFrameworkPluginTrigger "${K.CMP_PLUGINTRIG_MOVETO}" {
+         m_fAreaRadius ${dRadius}
+         m_eActivationPresence SPECIFIC_PREFAB_NAME
+         m_aCustomTriggerConditions {
+          SCR_CustomTriggerConditionsSpecificPrefabCount "{${mintGuid()}}" {
+           m_aPrefabFilter {
+            SCR_ScenarioFrameworkPrefabFilterCount "{${mintGuid()}}" {
+             m_sSpecificPrefabName "${o.objectRef}"
+             m_bIncludeChildren 1
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+     coords 0 0 0
+    }
+    GenericEntity SlotObjective${n}Vehicle : "${K.SLOT_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotBase "${K.CMP_SF_SLOT}" {
+       m_sObjectToSpawn "${o.objectRef}"
+       m_bCanBeGarbageCollected 0
+      }
+     }
+     coords ${vRel}
+    }`;
         } else if (o.type === "destroy") {
           // objectRef = any prefab whose ROOT carries a damage manager
           // (DESTROY_OBJECTS pool or a faction vehicle — BaseVehicle has its
@@ -901,6 +956,7 @@ ${showHint(o)}`;
         } else {
           throw new Error(`Unknown objective type: ${o.type}`);
         }
+        const rel = posStr([layerPos[0] - origin[0], layerPos[1] - origin[1], layerPos[2] - origin[2]]);
         return `  GenericEntity Task_Objective${n} : "${layerPrefab}" {
    components {
     ${cmpClass} "${cmpGuid}" {

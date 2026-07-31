@@ -174,6 +174,17 @@ const MISSION = {
       hintBody: "Точка достигнута.",
     },
     {
+      type: "deliver",
+      pos: [2836.2, 73.5, 1620.4],
+      delivery: [1380.5, 37.2, 2378.9],
+      deliveryRadius: 30,
+      objectRef: "{259EE7B78C51B624}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469.et",
+      taskTitle: "Угнать УАЗ",
+      taskDesc: "В лагере противника стоит УАЗ-469. Угоните его и доставьте на базу.",
+      hintTitle: "Задача выполнена",
+      hintBody: "УАЗ доставлен на базу.",
+    },
+    {
       type: "destroy",
       pos: [2770.4, 74.0, 1610.9],
       objectRef: "{34AD2F398FDFE5B3}Prefabs/Props/Military/AmmoBoxes/EquipmentBoxStack/USSR/EquipmentBoxStack_USSR_01_V5.et",

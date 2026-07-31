@@ -81,8 +81,8 @@ export default function ZonesPanel({
   removeZone,
 }: {
   mission: Mission;
-  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | null;
-  setPlaceMode: (m: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | null) => void;
+  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null;
+  setPlaceMode: (m: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null) => void;
   /** Armed QRF origin placement: which zone+module the next map click feeds */
   originTarget: { zoneId: string; moduleType: string } | null;
   /** Toggle origin placement for a zone+module (re-toggle to cancel) */

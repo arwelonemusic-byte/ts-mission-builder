@@ -206,6 +206,24 @@ const RU: Record<string, string> = {
   "Select object…": "Выбрать объект…",
   Change: "Изменить",
   "Select target object": "Выберите целевой объект",
+  // Deliver vehicle
+  "Deliver Vehicle": "Доставка техники",
+  "Spawns a vehicle at the point. Completes when it is driven to the delivery location.":
+    "Создаёт технику в точке. Выполняется, когда её доставляют в пункт назначения.",
+  "Deliver the vehicle": "Доставить технику",
+  "Get the vehicle to the delivery point intact.": "Доставьте технику в пункт назначения в целости.",
+  "The vehicle has been delivered.": "Техника доставлена.",
+  Vehicle: "Техника",
+  "Select vehicle": "Выберите технику",
+  "Place delivery point (click map)": "Разместить пункт назначения (клик по карте)",
+  "Move delivery point (click map)": "Передвинуть пункт назначения (клик по карте)",
+  "A delivery point is required to generate the mission.":
+    "Для генерации миссии необходимо разместить пункт назначения.",
+  "Delivery trigger radius": "Радиус зоны доставки",
+  "the delivery point": "пункт назначения",
+  "Delivery point": "Пункт назначения",
+  "Place a delivery point for every Deliver Vehicle objective (Objectives tab).":
+    "Разместите пункт назначения для каждой задачи «Доставка техники» (вкладка Задачи).",
   Communications: "Связь",
   Fuel: "Топливо",
   Caches: "Склады",

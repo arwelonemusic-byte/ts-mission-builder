@@ -107,7 +107,26 @@ export const OBJECTIVE_GLYPHS: Record<ObjectiveType, string> = {
   destroy:
     `<circle cx="7" cy="10" r="4.5" stroke="currentColor" stroke-width="1.4" fill="none"/>` +
     `<path d="M10.2 6.8 L12.4 4.6 M12.4 4.6 L11.4 2.4 M12.4 4.6 L14.6 5.6 M12.4 4.6 L14.2 2.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" fill="none"/>`,
+  // steering wheel
+  deliver:
+    `<circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4" fill="none"/>` +
+    `<circle cx="8" cy="8" r="1.6" stroke="currentColor" stroke-width="1.2" fill="none"/>` +
+    `<path d="M8 9.6 V13.5 M6.6 7.2 L3 5.8 M9.4 7.2 L13 5.8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>`,
 };
+
+/** Small checkered-flag badge for a deliver objective's delivery point.
+ * Same accent family as the objective badge; draggable in both views. */
+export function deliveryBadgeHtml(selected: boolean): string {
+  const halo = selected
+    ? `<div style="position:absolute;inset:-5px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
+    : "";
+  const flag =
+    `<svg width="12" height="12" viewBox="0 0 16 16">` +
+    `<path d="M4 14.5 V2 H12.5 V9 H4" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>` +
+    `<path d="M4 2 H8.25 V5.5 H4 Z M8.25 5.5 H12.5 V9 H8.25 Z" fill="#fff"/>` +
+    `</svg>`;
+  return `<div style="position:relative;width:22px;height:22px;">${halo}<div style="width:22px;height:22px;border-radius:50%;background:${OBJECTIVE_COLOR};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;">${flag}</div></div>`;
+}
 
 /** Round badge at an objective's position: accent disc + white type glyph.
  * Selection adds the standard yellow halo ring. Draggable in both views. */

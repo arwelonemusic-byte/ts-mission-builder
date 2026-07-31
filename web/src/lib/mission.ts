@@ -54,7 +54,7 @@ export type MissionSector = {
  * radius only applies to area types (clear/reach); hvt/destroy have none.
  * objectRef (destroy only) = prefab to spawn as the demolition target —
  * a DESTROY_OBJECTS entry or a faction vehicle ref (modal picker). */
-export type ObjectiveType = "hvt" | "clear" | "reach" | "destroy";
+export type ObjectiveType = "hvt" | "clear" | "reach" | "destroy" | "deliver";
 export type MissionObjective = {
   id: string;
   type: ObjectiveType;
@@ -62,6 +62,11 @@ export type MissionObjective = {
   z: number;
   radius?: number;
   objectRef?: string;
+  /** deliver only: user-placed delivery point (null until placed) + its
+   * trigger radius. The vehicle (objectRef) spawns at x/z and the task
+   * completes when it sits inside the delivery trigger. */
+  delivery?: { x: number; z: number } | null;
+  deliveryRadius?: number;
   /** In-game task list entry */
   taskTitle: string;
   taskDesc: string;
@@ -116,6 +121,16 @@ export type Mission = {
  * without an objectRef would fail generation. */
 export const DEFAULT_DESTROY_OBJECT =
   "{34AD2F398FDFE5B3}Prefabs/Props/Military/AmmoBoxes/EquipmentBoxStack/USSR/EquipmentBoxStack_USSR_01_V5.et";
+
+/** Fallback deliver vehicle (vanilla UAZ-469). */
+export const DEFAULT_DELIVER_VEHICLE = "{259EE7B78C51B624}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469.et";
+
+/** Clamp a delivery-trigger radius to the deliver type's bounds. */
+export function deliveryRadiusClamp(r?: number): number {
+  const def = OBJECTIVE_TYPES.find((t) => t.type === "deliver")?.deliveryRadius ?? { min: 10, max: 100, default: 25 };
+  const v = typeof r === "number" && Number.isFinite(r) ? r : def.default;
+  return Math.round(Math.max(def.min, Math.min(def.max, v)));
+}
 
 /** Clamp a radius to its objective type's bounds (undefined for hvt — no
  * trigger area). Used by migrate() and the panel slider alike. */
@@ -281,7 +296,7 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     .filter(
       (o) =>
         o &&
-        (o.type === "hvt" || o.type === "clear" || o.type === "reach" || o.type === "destroy") &&
+        (o.type === "hvt" || o.type === "clear" || o.type === "reach" || o.type === "destroy" || o.type === "deliver") &&
         typeof o.x === "number" &&
         typeof o.z === "number"
     )
@@ -291,11 +306,20 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
       x: o.x,
       z: o.z,
       radius: objectiveRadius(o.type, o.radius),
-      // destroy without a target can't generate — default to the Soviet cache
+      // objectRef-less destroy/deliver can't generate — default the target
       objectRef:
         o.type === "destroy"
           ? String(o.objectRef || DEFAULT_DESTROY_OBJECT)
-          : undefined,
+          : o.type === "deliver"
+            ? String(o.objectRef || DEFAULT_DELIVER_VEHICLE)
+            : undefined,
+      delivery:
+        o.type === "deliver" && typeof o.delivery?.x === "number" && typeof o.delivery?.z === "number"
+          ? { x: o.delivery.x, z: o.delivery.z }
+          : o.type === "deliver"
+            ? null
+            : undefined,
+      deliveryRadius: o.type === "deliver" ? deliveryRadiusClamp(o.deliveryRadius) : undefined,
       taskTitle: String(o.taskTitle ?? ""),
       taskDesc: String(o.taskDesc ?? ""),
       hintTitle: String(o.hintTitle ?? ""),

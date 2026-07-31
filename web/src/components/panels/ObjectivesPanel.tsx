@@ -6,8 +6,8 @@
 // type arms map placement for it (standard placement banner, Esc cancels).
 import { useEffect, useMemo, useRef, useState } from "react";
 import { OBJECTIVE_TYPES } from "mission-gen";
-import { objectiveRadius, type Mission, type MissionObjective, type ObjectiveType } from "@/lib/mission";
-import { DESTROY_CATEGORIES, destroyEntry, destroyPool, type DestroyCategory, type DestroyEntry } from "@/lib/destroyObjects";
+import { deliveryRadiusClamp, objectiveRadius, type Mission, type MissionObjective, type ObjectiveType } from "@/lib/mission";
+import { DESTROY_CATEGORIES, deliverEntry, deliverVehiclePool, destroyEntry, destroyPool, type DestroyCategory, type DestroyEntry } from "@/lib/destroyObjects";
 import { OBJECTIVE_COLOR, OBJECTIVE_GLYPHS } from "@/lib/overlayHtml";
 import { useT } from "@/lib/i18n";
 import { Field, GhostButton, PlusIcon, SectionLabel, Slider, TextArea, TextInput, XButton } from "@/components/ui";
@@ -17,6 +17,7 @@ const TYPE_DESCRIPTIONS: Record<ObjectiveType, string> = {
   clear: "Completes when players hold the area and no enemy troops remain inside.",
   reach: "Completes when a player reaches the point.",
   destroy: "Spawns a destructible object or vehicle at the point. Completes when it is destroyed.",
+  deliver: "Spawns a vehicle at the point. Completes when it is driven to the delivery location.",
 };
 
 function TypeGlyph({ type, size = 16 }: { type: ObjectiveType; size?: number }) {
@@ -37,6 +38,8 @@ export default function ObjectivesPanel({
   placing,
   pendingType,
   onArmObjective,
+  deliveryTarget,
+  onArmDelivery,
   selectedObjectiveId,
   revealSeq,
   onSelectObjective,
@@ -47,6 +50,9 @@ export default function ObjectivesPanel({
   placing: boolean;
   pendingType: ObjectiveType | null;
   onArmObjective: (type: ObjectiveType | null) => void;
+  /** Objective id an armed delivery-point placement feeds (null = not armed) */
+  deliveryTarget: string | null;
+  onArmDelivery: (objectiveId: string) => void;
   selectedObjectiveId: string | null;
   revealSeq: number;
   onSelectObjective: (id: string) => void;
@@ -55,9 +61,10 @@ export default function ObjectivesPanel({
 }) {
   const t = useT();
   const [pickerOpen, setPickerOpen] = useState(false);
-  // Which objective's target-object modal is open (destroy type only)
+  // Which objective's target modal is open (destroy + deliver types)
   const [objectModalId, setObjectModalId] = useState<string | null>(null);
   const pool = useMemo(() => destroyPool(mission), [mission.playableFaction, mission.enemyFaction]); // eslint-disable-line react-hooks/exhaustive-deps
+  const vehiclePool = useMemo(() => deliverVehiclePool(mission), [mission.mods]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // When an objective is selected on the map, reveal its card in the panel
   const cardRefs = useRef(new Map<string, HTMLDivElement>());
@@ -176,11 +183,14 @@ export default function ObjectivesPanel({
             {selected && (
               /* Controls must not bubble to the card's onClick (map re-focus) */
               <div className="flex flex-col gap-3" onClick={(e) => e.stopPropagation()}>
-                {o.type === "destroy" && (() => {
-                  const entry = destroyEntry(mission, o.objectRef);
+                {(o.type === "destroy" || o.type === "deliver") && (() => {
+                  const entry =
+                    o.type === "destroy" ? destroyEntry(mission, o.objectRef) : deliverEntry(mission, o.objectRef);
                   return (
                     <div className="flex flex-col gap-2">
-                      <span className="text-[12px] text-white">{t("Target object")}</span>
+                      <span className="text-[12px] text-white">
+                        {o.type === "destroy" ? t("Target object") : t("Vehicle")}
+                      </span>
                       <button
                         type="button"
                         onClick={() => setObjectModalId(o.id)}
@@ -195,6 +205,41 @@ export default function ObjectivesPanel({
                     </div>
                   );
                 })()}
+                {o.type === "deliver" && (
+                  <div className="flex flex-col gap-2">
+                    <GhostButton
+                      active={deliveryTarget === o.id}
+                      onClick={() => onArmDelivery(o.id)}
+                    >
+                      {deliveryTarget === o.id
+                        ? t("Click the map… (cancel)")
+                        : o.delivery
+                          ? t("Move delivery point (click map)")
+                          : t("Place delivery point (click map)")}
+                    </GhostButton>
+                    {!o.delivery && deliveryTarget !== o.id && (
+                      <span className="text-[11px] leading-4 text-[#f4db50]">
+                        {t("A delivery point is required to generate the mission.")}
+                      </span>
+                    )}
+                    {o.delivery && (
+                      <>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[12px] text-white">{t("Delivery trigger radius")}</span>
+                          <span className="text-[12px] text-white/60">{o.deliveryRadius ?? 25} m</span>
+                        </div>
+                        <Slider
+                          min={10}
+                          max={100}
+                          step={5}
+                          value={o.deliveryRadius ?? 25}
+                          onChange={(v) => updateObjective(o.id, { deliveryRadius: deliveryRadiusClamp(v) })}
+                          trackColor="#2e3439"
+                        />
+                      </>
+                    )}
+                  </div>
+                )}
                 {radiusDef && (
                   <>
                     <div className="flex items-center justify-between">
@@ -247,7 +292,8 @@ export default function ObjectivesPanel({
         if (!target) return null;
         return (
           <ObjectPickerModal
-            pool={pool}
+            pool={target.type === "deliver" ? vehiclePool : pool}
+            title={target.type === "deliver" ? t("Select vehicle") : t("Select target object")}
             current={target.objectRef}
             onPick={(ref) => {
               updateObjective(objectModalId, { objectRef: ref });
@@ -299,11 +345,13 @@ function ObjectThumb({ entry, size }: { entry: DestroyEntry | null; size?: numbe
 /** Full-screen modal: scrollable thumbnail grid + category filter chips. */
 function ObjectPickerModal({
   pool,
+  title,
   current,
   onPick,
   onClose,
 }: {
   pool: DestroyEntry[];
+  title: string;
   current: string | undefined;
   onPick: (ref: string) => void;
   onClose: () => void;
@@ -337,11 +385,11 @@ function ObjectPickerModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2">
-          <h2 className="font-slab text-[16px] font-medium text-white flex-1">{t("Select target object")}</h2>
+          <h2 className="font-slab text-[16px] font-medium text-white flex-1">{title}</h2>
           <XButton ariaLabel={t("Dismiss")} onClick={onClose} />
         </div>
 
-        <div className="flex flex-wrap gap-1">
+        <div className={`flex flex-wrap gap-1 ${cats.length <= 1 ? "hidden" : ""}`}>
           {[{ key: "all" as const, label: "All" }, ...cats].map((c) => (
             <button
               key={c.key}

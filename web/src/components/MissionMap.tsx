@@ -10,6 +10,7 @@ import {
   distanceLabel,
   distancePillHtml,
   markerHtml,
+  deliveryBadgeHtml,
   objectiveBadgeHtml,
   OBJECTIVE_COLOR,
   originBadgeHtml,
@@ -67,7 +68,7 @@ export type MapProps = {
   sectorDraw: "ao" | "objective" | null;
   /** Freshly placed ids ("spawn" / zone id / marker id) → entrance animation */
   fresh: Record<string, boolean>;
-  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | null;
+  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null;
   focus: MapFocus | null;
   onMapClick: (x: number, z: number) => void;
   onZoneClick: (id: string) => void;
@@ -83,6 +84,8 @@ export type MapProps = {
   onMarkerMoved: (id: string, x: number, z: number) => void;
   onObjectiveClick: (id: string) => void;
   onObjectiveMoved: (id: string, x: number, z: number) => void;
+  /** deliver objective's delivery point dragged to a new position */
+  onDeliveryMoved: (id: string, x: number, z: number) => void;
   onSectorDrawn: (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => void;
   onSectorClick: (id: string) => void;
   onSectorChanged: (
@@ -590,6 +593,58 @@ export default function MissionMap(props: MapProps) {
         const ll = badge.getLatLng();
         propsRef.current.onObjectiveMoved(o.id, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
       });
+
+      // Deliver objective: delivery point = dashed line + flag badge +
+      // trigger-radius circle, all following live during drags.
+      if (o.type === "deliver" && o.delivery) {
+        const d = o.delivery;
+        const line = L.polyline(
+          [
+            [o.z, o.x],
+            [d.z, d.x],
+          ],
+          { color: OBJECTIVE_COLOR, weight: 2, dashArray: "6 6", opacity: 0.85, interactive: false }
+        ).addTo(overlay);
+        badge.on("drag", () => {
+          const ll = badge.getLatLng();
+          line.setLatLngs([
+            [ll.lat, ll.lng],
+            [d.z, d.x],
+          ]);
+        });
+        const dCircle = L.circle([d.z, d.x], {
+          radius: o.deliveryRadius ?? 25,
+          color: selected ? "#ffcc00" : OBJECTIVE_COLOR,
+          weight: 2,
+          fillColor: OBJECTIVE_COLOR,
+          fillOpacity: 0.1,
+          dashArray: "6 6",
+          interactive: false,
+        }).addTo(overlay);
+        const flag = L.marker([d.z, d.x], {
+          icon: deliveryBadgeIcon(selected),
+          draggable: true,
+        })
+          .bindTooltip(tr(props.lang, "Delivery point"), { direction: "top", offset: [0, -12], opacity: 1 })
+          .addTo(overlay);
+        flag.on("click", (e) => {
+          L.DomEvent.stopPropagation(e);
+          propsRef.current.onObjectiveClick(o.id);
+        });
+        flag.on("dragstart", () => flag.unbindTooltip());
+        flag.on("drag", () => {
+          const ll = flag.getLatLng();
+          dCircle.setLatLng(ll);
+          line.setLatLngs([
+            [o.z, o.x],
+            [ll.lat, ll.lng],
+          ]);
+        });
+        flag.on("dragend", () => {
+          const ll = flag.getLatLng();
+          propsRef.current.onDeliveryMoved(o.id, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
+        });
+      }
     }
   }, [
     props.spawn,
@@ -709,6 +764,21 @@ function originBadgeIcon(moduleType: string, color: string, selected: boolean) {
   const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   if (!coarse) {
     return L.divIcon({ className: "", iconSize: [24, 24], iconAnchor: [12, 12], html: badge });
+  }
+  return L.divIcon({
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">${badge}</div>`,
+  });
+}
+
+/** DivIcon wrapper for a delivery-point flag; 32px transparent hit box on touch. */
+function deliveryBadgeIcon(selected: boolean) {
+  const badge = deliveryBadgeHtml(selected);
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [22, 22], iconAnchor: [11, 11], html: badge });
   }
   return L.divIcon({
     className: "",
