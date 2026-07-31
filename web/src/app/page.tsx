@@ -569,6 +569,13 @@ export default function Editor() {
     if (m !== mission) setMission(m);
     try {
       const { fileCount, dirName } = await exportMission(m);
+      // Fire-and-forget: archive the generated mission server-side (stats +
+      // recoverable copy). Export success never depends on this.
+      fetch("/api/generated", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(m),
+      }).catch(() => {});
       setGen(null);
       say(
         t("Mission written to {dir}/ ({n} files).")
