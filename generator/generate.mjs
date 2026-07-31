@@ -399,7 +399,7 @@ const BANDITS_MISSION = {
     {
       ...MISSION.zones[1],
       plugins: [
-        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["UAZ452_Armed_Bandit"] },
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["UAZ469_PKM"] },
       ],
     },
   ],

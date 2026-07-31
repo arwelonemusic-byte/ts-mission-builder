@@ -75,7 +75,17 @@ export const MEI = {
       // vanilla USSR crew for BRDM2/BTR70 AND for UAZ469_PKM_MEI (it inherits
       // the vanilla UAZ's occupant slots). Force insurgent crews instead;
       // the Randomized prefab varies the outfit per seat.
-      patrolCrew: ["{9CE1BEFD75DE8BF1}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Randomized.et"],
+      // CONCRETE characters only — Character_MEI_Randomized is an editor
+      // variant-table wrapper over an unarmed CIV base; outside the GM editor
+      // pipeline (FillCompartments spawns directly) it spawns the base:
+      // unarmed identical civilians (bug found 2026-07-31)
+      patrolCrew: [
+        "{76B11940F6EDF623}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman1.et",
+        "{EB364CCCBCFD29A5}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman2.et",
+        "{0EAA0035B018BECE}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman3.et",
+        "{339E250DC57437F9}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman4.et",
+        "{D60269F4C991A092}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman5.et",
+      ],
       // Vanilla USSR pools (insurgents captured Soviet positions — user call)
       fortifications: {
         road: [

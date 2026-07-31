@@ -44,21 +44,36 @@ export const BANDITS = {
       riflemen: {},
       loadoutSets: {},
       arsenalItems: [],
+      // The mod's "UAZ452_Armed_Bandit" is NOT armed — it's a pure editor
+      // budget-cost override of the transport van (author misnomer, dropped).
+      // The mod ships no armed vehicle, so the gun-truck slot is the vanilla
+      // USSR UAZ-469 PKM (captured); the Bukhanka stays as the honest
+      // troop-carrier option.
       vehicles: {
+        UAZ469_PKM: "{0B4DEA8078B78A9B}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469_PKM.et",
+        UAZ452_transport_Bandit: "{9B9DF3CDAFDF6BE3}Prefabs/Vehicles/Wheeled/UAZ452/UAZ452_transport_Bandit.et",
         S105_Bandit: "{DC08B2446B718430}Prefabs/Vehicles/Wheeled/S105/S105_Bandit.et",
         S105_Bandit_02: "{BB74B5B15F8A091B}Prefabs/Vehicles/Wheeled/S105/S105_Bandit_02.et",
-        UAZ452_transport_Bandit: "{9B9DF3CDAFDF6BE3}Prefabs/Vehicles/Wheeled/UAZ452/UAZ452_transport_Bandit.et",
-        UAZ452_Armed_Bandit: "{A7E5B1A06532EA8A}Prefabs/Vehicles/Wheeled/UAZ452/UAZ452_Armed_Bandit.et",
       },
       vehicleLabels: {
+        UAZ469_PKM: "UAZ-469 PKM (captured)",
+        UAZ452_transport_Bandit: "UAZ-452 Van",
         S105_Bandit: "S105 Car",
         S105_Bandit_02: "S105 Car (alt)",
-        UAZ452_transport_Bandit: "UAZ-452 Van",
-        UAZ452_Armed_Bandit: "UAZ-452 (armed)",
       },
-      patrolVehicleKeys: ["UAZ452_Armed_Bandit"],
-      // Reskins inherit occupant slots (the MEI lesson) — force bandit crews
-      patrolCrew: ["{D86A4C5D4E6DE670}Prefabs/Characters/Factions/PLASTICBANDIT/Character_PLASTICBANDIT_Randomized.et"],
+      patrolVehicleKeys: ["UAZ469_PKM", "UAZ452_transport_Bandit"],
+      // CONCRETE characters only — Character_PLASTICBANDIT_Randomized is an
+      // editor variant-table wrapper over an unarmed BaseLoadout; direct
+      // spawns (FillCompartments) get the base: unarmed identical clones
+      // (playtest-caught 2026-07-31)
+      patrolCrew: [
+        "{40E3BABD93B85F2D}Prefabs/Characters/Factions/PLASTICBANDIT/Scav/Character_PLASTICBANDIT_Scav_Rookie.et",
+        "{C1F886698C7AB55F}Prefabs/Characters/Factions/PLASTICBANDIT/Scav/Character_PLASTICBANDIT_Scav_Rookie_2.et",
+        "{08AFE0C974319080}Prefabs/Characters/Factions/PLASTICBANDIT/Scav/Character_PLASTICBANDIT_Scav_Veteran.et",
+        "{ED01FD5B050F8D1C}Prefabs/Characters/Factions/PLASTICBANDIT/Scav/Character_PLASTICBANDIT_Scav_Gopnik.et",
+        "{1063DF1108C9D39B}Prefabs/Characters/Factions/PLASTICBANDIT/Stalker/Character_PLASTICBANDIT_Stalker_Rookie.et",
+        "{34F236B87F308240}Prefabs/Characters/Factions/PLASTICBANDIT/Stalker/Character_PLASTICBANDIT_Stalker_Veteran.et",
+      ],
       // Vanilla USSR pools — no compositions in the mod; scavenged Soviet
       // positions fit the fiction (same refs as MEI)
       fortifications: {
@@ -82,25 +97,24 @@ export const BANDITS = {
         ],
       },
       // ONE pool, no subfaction choice (EnemyPanel hides single-set factions).
-      // Slot counts from the group prefabs: Squad 10, FireTeams 6, MGTeam 4,
-      // Patrol/RPGTeam/Sharpshooter 3.
+      // CONCRETE-SLOT groups ONLY: Squad(10)/Patrol(3)/FireTeam(6)/MGTeam
+      // fill their slots with the Character_PLASTICBANDIT_Randomized
+      // variant-table wrapper — outside the GM editor those slots spawn the
+      // unarmed base, so the groups are EXCLUDED until the mod author ships
+      // concrete-slot groups. Remaining: RPGTeam(3), Sharpshooter(2+Shadow),
+      // FireTeam_Heavy(6, doubles as medium+large+defense — SF-set pattern).
       defaultGroupSet: "Bandits",
       groupSets: {
         Bandits: {
           label: "Bandits",
-          sentry: `{7E7B234B9503F8D8}${P_BANDIT_G}/Group_PLASTICBANDIT_Patrol.et`,
-          defense: { ref: `{EE1CA3E20AA9E4F0}${P_BANDIT_G}/Group_PLASTICBANDIT_Squad.et`, size: 10 },
+          sentry: `{3B840E8559DD4F31}${P_BANDIT_G}/Group_PLASTICBANDIT_Sharpshooter.et`,
+          defense: { ref: `{7B3B2E1089F7AA26}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam_Heavy.et`, size: 6 },
           small: [
-            `{7E7B234B9503F8D8}${P_BANDIT_G}/Group_PLASTICBANDIT_Patrol.et`,
-            `{C4FEF5D8AC0DB8D6}${P_BANDIT_G}/Group_PLASTICBANDIT_MGTeam.et`,
             `{10D3AFE50879B195}${P_BANDIT_G}/Group_PLASTICBANDIT_RPGTeam.et`,
             `{3B840E8559DD4F31}${P_BANDIT_G}/Group_PLASTICBANDIT_Sharpshooter.et`,
           ],
-          medium: [
-            `{1F1451C4E968C477}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam.et`,
-            `{7B3B2E1089F7AA26}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam_Heavy.et`,
-          ],
-          large: [`{EE1CA3E20AA9E4F0}${P_BANDIT_G}/Group_PLASTICBANDIT_Squad.et`],
+          medium: [`{7B3B2E1089F7AA26}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam_Heavy.et`],
+          large: [`{7B3B2E1089F7AA26}${P_BANDIT_G}/Group_PLASTICBANDIT_FireTeam_Heavy.et`],
         },
       },
     },
