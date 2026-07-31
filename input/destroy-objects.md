@@ -148,11 +148,20 @@ on the map (Foxhound-style global override). For mission-local destroy targets p
 NEW prefab (own path + own GUID in our addon, parented to the vanilla prefab) with the
 component added — same recipe, no global shadowing, and the SlotDestroy spawns our prefab.
 
-## Thumbnail extraction pipeline (validated format, not yet built)
+## Thumbnail extraction pipeline (BUILT + validated 2026-07-31)
 
-`UI/Textures/EditorPreviews/**.edds` = 400×300 BC7_UNORM_SRGB, standard DDS header +
-ENF1 @0x24 + DX10 header + smallest-first mip table (all COPY in sampled files) — the
-exact format web/src/lib/edds.ts ENCODES. Decode: take the largest mip (last table
-entry), rewrap as a standard single-mip .dds, convert with DirectXTex texconv → PNG.
-RHS ships its own `UI/Textures/EditorPreviews/` (confirmed), so mod content gets
-thumbnails the same way.
+`generator/tools/extract-thumbnails.mjs` — takes prefab refs or EditorPreviews-relative
+`.edds` paths, emits PNGs (`--out <dir>`). Validated pixel-perfect on the whole 20-item
+MVP pool + vanilla/RHS vehicles + characters. Requires `D:\VSCode_dev\arma-reforger\texconv.exe`
+(DirectXTex, downloaded 2026-07-31; override via TEXCONV env var).
+
+Format ground truth: `UI/Textures/EditorPreviews/**.edds` = 400×300 BC7_UNORM_SRGB,
+standard DDS header + ENF1 @0x24 + DX10 header + smallest-first mip table. Small mips
+are COPY; the top mip is usually "LZ4 " with Enfusion's chunked framing (reverse-
+engineered): `[u32 totalDecompressed]` then per block `[u32 word][compressed bytes]`
+where compSize = word & 0x7fffffff (MSB marks the last block), each block decompresses
+to 64 KiB (last = remainder), and blocks are DEPENDENT — matches reference earlier
+blocks' output, so decode into one shared buffer. Decode: largest mip = LAST table
+entry → LZ4 → rewrap as single-mip .dds → texconv → PNG. Preview roots are discovered
+as `reference/*/UI/Textures/EditorPreviews` (vanilla first — RHS + Bandit dumps ship
+their own).
