@@ -28,9 +28,26 @@ export const DESTROY_CATEGORIES: { key: DestroyCategory; label: string }[] = [
   { key: "vehicles", label: "Vehicles" },
 ];
 
+/** British Forces ships no previews for its RESKINS of vanilla vehicles —
+ * show the vanilla base vehicle's thumbnail instead (same silhouette, US
+ * livery). BF's own Land Rovers + MEI's reskins have real extracted thumbs
+ * under their prefab basenames. Keyed by prefab basename (no .et). */
+const THUMB_FALLBACKS: Record<string, string> = {
+  M997_maxi_ambulance_UK: "M997_maxi_ambulance.png",
+  M923A1_transport_covered_UK: "M923A1_transport_covered.png",
+  M923A1_tanker_UK: "M923A1_tanker.png",
+  M923A1_arsenal_UK: "M923A1_arsenal.png",
+  M923A1_repair_UK: "M923A1_repair.png",
+  M923A1_engineer_UK: "M923A1_engineer.png",
+  BF_BRDM2_Conflict_UK: "BRDM2.png",
+  UH1H_UK: "UH1H.png",
+  UH1H_armed_UK: "UH1H_armed.png",
+  UH1H_armed_gunship_HE_UK: "UH1H_armed_gunship_HE.png",
+};
+
 const thumbFromRef = (ref: string) => {
-  const base = ref.split("/").pop() ?? "";
-  return base.replace(/\.et$/i, ".png");
+  const base = (ref.split("/").pop() ?? "").replace(/\.et$/i, "");
+  return THUMB_FALLBACKS[base] ?? `${base}.png`;
 };
 
 /** Full selectable pool for a mission: curated objects + both sides' vehicles. */

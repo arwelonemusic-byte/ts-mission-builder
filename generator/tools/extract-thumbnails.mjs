@@ -160,11 +160,21 @@ function eddsToDds(buf, srcName) {
 // Preview lookup
 
 function previewRoots() {
+  // Mods use different conventions: vanilla/RHS/Bandit ship
+  // UI/Textures/EditorPreviews, British Forces ships UI/PreviewImages,
+  // MEI ships hand-named files in Textures/ImagePreview.
+  const CONVENTIONS = [
+    ["UI", "Textures", "EditorPreviews"],
+    ["UI", "PreviewImages"],
+    ["Textures", "ImagePreview"],
+  ];
   const roots = [];
   for (const dir of readdirSync(REFERENCE_ROOT, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;
-    const p = join(REFERENCE_ROOT, dir.name, "UI", "Textures", "EditorPreviews");
-    if (existsSync(p)) roots.push(p);
+    for (const conv of CONVENTIONS) {
+      const p = join(REFERENCE_ROOT, dir.name, ...conv);
+      if (existsSync(p)) roots.push(p);
+    }
   }
   // vanilla first so shared paths resolve to vanilla art
   roots.sort((a, b) => Number(b.includes("ReforgerData")) - Number(a.includes("ReforgerData")));
