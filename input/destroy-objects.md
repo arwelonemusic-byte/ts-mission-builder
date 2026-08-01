@@ -209,6 +209,7 @@ it correctly) — harmless, the engine resolves the class from the chain.
   1500 HP, own-mesh debris + Dest_Prop_Metal_Medium particle), fresh `RplComponent`
   (chain ships none) and the editable component. The only target whose destructibility
   BI never authored — playtest-risk flagged.
-- Neither has a baked GM preview (not GM-placeable in vanilla) → the picker modal shows
-  the glyph placeholder. If real thumbnails are ever wanted, they'd have to be
-  screenshot-authored, not extracted.
+- Neither has a baked GM preview (not GM-placeable in vanilla) → thumbnails are
+  SCREENSHOT-AUTHORED, not extracted (user in-game screenshots 2026-08-01,
+  center-cropped 4:3 + downscaled to 200×150: E_ApproachRadar_RPL5_01.png /
+  E_ApproachRadar_TPN19_01.png in web/public/icons/prefabs/).
