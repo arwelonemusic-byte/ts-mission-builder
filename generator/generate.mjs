@@ -130,13 +130,13 @@ const MISSION = {
   ],
   markers: [
     // military: non-default faction+type → both written; text carried on base
-    { kind: "military", pos: [2795.3, 74.1, 1628.7], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [2795.3, 74.07, 1628.7], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
     // military all-defaults (BLUFOR infantry): empty type block, all omitted
     { kind: "military", pos: [1400, 38, 2450], text: "", faction: "BLUFOR", type: "INFANTRY" },
     // custom with icon/color/rotation/text
     { kind: "custom", pos: [2600, 70, 1750], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
     // custom all-defaults except text
-    { kind: "custom", pos: [2000, 50, 2000], text: "OBJ", icon: "CIRCLE", color: "WHITE", rotation: 0 },
+    { kind: "custom", pos: [2000, 29.81, 2000], text: "OBJ", icon: "CIRCLE", color: "WHITE", rotation: 0 },
   ],
   sectors: [
     // AO: prefab defaults — must emit NO component block, no angles (yaw 0)
@@ -149,7 +149,7 @@ const MISSION = {
   objectives: [
     {
       type: "hvt",
-      pos: [2820.5, 73.8, 1651.2],
+      pos: [2820.5, 72.88, 1651.2],
       taskTitle: "Ликвидировать командира",
       taskDesc: "В районе цели замечен старший офицер противника. Найдите и ликвидируйте его.",
       hintTitle: "Задача выполнена",
@@ -157,7 +157,7 @@ const MISSION = {
     },
     {
       type: "clear",
-      pos: [2795.3, 74.1, 1628.7],
+      pos: [2795.3, 74.07, 1628.7],
       radius: 200,
       taskTitle: "Зачистить лагерь",
       taskDesc: "Зачистите лагерь противника в указанном районе.",
@@ -166,7 +166,7 @@ const MISSION = {
     },
     {
       type: "reach",
-      pos: [2000, 50, 2000],
+      pos: [2000, 29.81, 2000],
       radius: 25,
       taskTitle: "Выйти к перекрестку",
       taskDesc: "Выйдите к перекрестку и осмотритесь.",
@@ -175,8 +175,8 @@ const MISSION = {
     },
     {
       type: "deliver",
-      pos: [2836.2, 73.5, 1620.4],
-      delivery: [1380.5, 37.2, 2378.9],
+      pos: [2836.2, 72.96, 1620.4],
+      delivery: [1380.5, 36.3, 2378.9],
       deliveryRadius: 30,
       objectRef: "{259EE7B78C51B624}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469.et",
       taskTitle: "Угнать УАЗ",
@@ -186,7 +186,7 @@ const MISSION = {
     },
     {
       type: "destroy",
-      pos: [2770.4, 74.0, 1610.9],
+      pos: [2770.4, 75.97, 1610.9],
       objectRef: "{34AD2F398FDFE5B3}Prefabs/Props/Military/AmmoBoxes/EquipmentBoxStack/USSR/EquipmentBoxStack_USSR_01_V5.et",
       taskTitle: "Уничтожить склад боеприпасов",
       taskDesc: "В лагере противника складированы боеприпасы. Найдите и уничтожьте их.",
@@ -197,7 +197,7 @@ const MISSION = {
     // RPL-5 = _on-body replication, TPN-19 = from-scratch destruction
     {
       type: "destroy",
-      pos: [2700.0, 74.0, 1570.0],
+      pos: [2700.0, 70.13, 1570.0],
       objectRef: "{DED4DB7D08E6E0BE}Prefabs/Structures/Military/Radar/ApproachRadar_RPL5_01/ApproachRadar_RPL5_01.et",
       taskTitle: "Уничтожить радар РПЛ-5",
       taskDesc: "Подорвите посадочный радар противника. Потребуется взрывчатка.",
@@ -206,7 +206,7 @@ const MISSION = {
     },
     {
       type: "destroy",
-      pos: [2660.0, 74.0, 1545.0],
+      pos: [2660.0, 61.27, 1545.0],
       objectRef: "{A0190D51FD62FF68}Prefabs/Structures/Military/Radar/ApproachRadar_TPN19_01/ApproachRadar_TPN19_01.et",
       taskTitle: "Уничтожить радар ТПН-19",
       taskDesc: "Уничтожьте радар управления заходом на посадку.",
