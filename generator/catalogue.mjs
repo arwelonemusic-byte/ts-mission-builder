@@ -1131,14 +1131,6 @@ export const DESTROY_OBJECTS = [
     fix: { guid: "6A6DD950D8D7B0A7", cls: "GenericEntity", id: "F0DBA538AC2A0552", cmp: "{58F89684469E44B1}" } },
   { ref: "{D1FFE458E8AC4BDB}Prefabs/Weapons/Mortars/2B14/Mortar_2B14.et", label: "2B14 82mm Mortar", cat: "weapons", thumb: "E_Mortar_2B14.png" },
   { ref: "{8094D99689ABE241}Prefabs/Weapons/Mortars/M252/Mortar_M252.et", label: "M252 81mm Mortar", cat: "weapons", thumb: "E_Mortar_N252.png" },
-  { ref: "{616F4E93658E5A3A}Prefabs/Props/Military/Generators/GeneratorFloodlight_USSR_01.et", label: "Floodlight Generator (Soviet)", cat: "industrial", thumb: "E_GeneratorFloodlight_USSR_01.png",
-    spawnRef: `{9374554DB0FDD181}${P_ED}/Props/Military/Generators/E_GeneratorFloodlight_USSR_01.et`,
-    fix: { guid: "6A6DD950B17F344E", cls: "GameEntity", id: "F0DBA538AC2A0552", cmp: "{51E082CF9891AD6F}" } },
-  { ref: "{0E94F28FD722B1D8}Prefabs/Props/Military/Generators/GeneratorFloodlight_US_01.et", label: "Floodlight Generator (US)", cat: "industrial", thumb: "E_GeneratorFloodlight_US_01.png",
-    spawnRef: `{95EFB2EE402F81DB}${P_ED}/Props/Military/Generators/E_GeneratorFloodlight_US_01.et`,
-    fix: { guid: "6A6DD9508D6EA742", cls: "GameEntity", id: "F0DBA538AC2A0552", cmp: "{51E082CF9891AD6F}" } },
-  { ref: "{4D100F180B3EFEC1}Prefabs/Structures/Industrial/Containers/Silos/Silo_01/Silo_01.et", label: "Industrial Silo", cat: "industrial", thumb: "E_Silo_01.png",
-    spawnRef: `{5AB985EFDEB44760}${P_ED}/Structures/Industrial/Containers/Silos/E_Silo_01.et` },
 ];
 
 // Zone modules exposed in the builder UI (MVP set per Mod Defaults spec).

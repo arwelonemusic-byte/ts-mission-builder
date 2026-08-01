@@ -213,3 +213,13 @@ it correctly) — harmless, the engine resolves the class from the chain.
   SCREENSHOT-AUTHORED, not extracted (user in-game screenshots 2026-08-01,
   center-cropped 4:3 + downscaled to 200×150: E_ApproachRadar_RPL5_01.png /
   E_ApproachRadar_TPN19_01.png in web/public/icons/prefabs/).
+
+## Industrial category removed (2026-08-01)
+
+Playtest verdict: both floodlight generators have BROKEN damage states — their
+`m_aDamagePhases` phase model points at `GeneratorPortable_USSR_01_dst_01.xob`
+(a different, smaller generator), so taking damage visibly swaps the model.
+Likely why BI left them destruction-disabled. The silo was judged an unlikely
+mission target. All three entries + the category chip removed; stale refs in
+saved missions degrade gracefully (destroyEntry -> null, lib.mjs spawns the raw
+ref as-is).

@@ -94,7 +94,7 @@ declare module "mission-gen" {
     /** stored identity (mission JSON) + thumb/label key — never changes */
     ref: string;
     label: string;
-    cat: "comms" | "fuel" | "cache" | "weapons" | "industrial";
+    cat: "comms" | "fuel" | "cache" | "weapons";
     thumb: string;
     /** GM-editable E_ variant actually spawned (lib.mjs resolves at emission) */
     spawnRef?: string;

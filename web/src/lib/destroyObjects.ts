@@ -8,7 +8,7 @@
 import { DESTROY_OBJECTS, FACTIONS } from "mission-gen";
 import type { Mission } from "./mission";
 
-export type DestroyCategory = "comms" | "fuel" | "cache" | "weapons" | "industrial" | "vehicles";
+export type DestroyCategory = "comms" | "fuel" | "cache" | "weapons" | "vehicles";
 
 export type DestroyEntry = {
   ref: string;
@@ -24,7 +24,6 @@ export const DESTROY_CATEGORIES: { key: DestroyCategory; label: string }[] = [
   { key: "fuel", label: "Fuel" },
   { key: "cache", label: "Caches" },
   { key: "weapons", label: "Weapons" },
-  { key: "industrial", label: "Industrial" },
   { key: "vehicles", label: "Vehicles" },
 ];
 

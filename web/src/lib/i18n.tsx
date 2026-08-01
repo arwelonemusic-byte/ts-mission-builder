@@ -228,7 +228,6 @@ const RU: Record<string, string> = {
   Fuel: "Топливо",
   Caches: "Склады",
   Weapons: "Вооружение",
-  Industrial: "Промышленные",
   // Destroy-object pool labels (DESTROY_OBJECTS in catalogue.mjs)
   "VOR Beacon": "Радиомаяк VOR",
   "Transmitter Tower (large)": "Радиовышка (большая)",
@@ -248,9 +247,6 @@ const RU: Record<string, string> = {
   "Weapon Cache (US)": "Склад оружия (США)",
   "2B14 82mm Mortar": "Миномёт 2Б14 (82 мм)",
   "M252 81mm Mortar": "Миномёт M252 (81 мм)",
-  "Floodlight Generator (Soviet)": "Генератор с прожектором (СССР)",
-  "Floodlight Generator (US)": "Генератор с прожектором (США)",
-  "Industrial Silo": "Промышленный силос",
 
   // Markers tab
   Military: "Военные",
