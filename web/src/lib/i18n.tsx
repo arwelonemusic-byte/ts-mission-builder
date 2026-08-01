@@ -238,6 +238,8 @@ const RU: Record<string, string> = {
   "RC-292 Field Antenna": "Полевая антенна RC-292",
   "R-123M Radio Set": "Радиостанция Р-123М",
   "AN/GRC-160 Radio Set": "Радиостанция AN/GRC-160",
+  "RPL-5 Approach Radar": "Посадочный радар РПЛ-5",
+  "TPN-19 Approach Radar": "Посадочный радар ТПН-19",
   "Fuel Bowser (Soviet)": "Топливозаправщик (СССР)",
   "Fuel Bowser (US)": "Топливозаправщик (США)",
   "Gas Tank (small)": "Газовый баллон (малый)",

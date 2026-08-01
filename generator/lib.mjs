@@ -958,16 +958,22 @@ ${showHint(o)}`;
           const dEntry = DESTROY_OBJECTS.find((d) => d.ref === o.objectRef);
           let dSpawn = o.objectRef;
           if (dEntry?.fix) {
-            const baseName = dEntry.spawnRef.split("/").pop().replace(/^E_/, "");
+            // Parent = the E_ variant when one exists, else the base ref
+            // (radars have no E_). cmp = multiphase override (component
+            // instance GUID from the base chain); extra = verbatim extra
+            // component blocks (fresh components: _on replication, editable,
+            // Rpl, from-scratch destruction).
+            const dParent = dEntry.spawnRef ?? dEntry.ref;
+            const baseName = dParent.split("/").pop().replace(/^E_/, "");
             const dPath = `Prefabs/DestroyTargets/Dest_${baseName}`;
+            const cmpBlock = dEntry.fix.cmp
+              ? `\n  SCR_DestructionMultiPhaseComponent "${dEntry.fix.cmp}" {\n   Enabled 1${dEntry.fix.body ?? ""}\n  }`
+              : "";
             destroyTargetFiles[dPath] = {
               guid: dEntry.fix.guid,
-              content: `${dEntry.fix.cls} : "${dEntry.spawnRef}" {
+              content: `${dEntry.fix.cls} : "${dParent}" {
  ID "${dEntry.fix.id}"
- components {
-  SCR_DestructionMultiPhaseComponent "${dEntry.fix.cmp}" {
-   Enabled 1${dEntry.fix.body ?? ""}
-  }
+ components {${cmpBlock}${dEntry.fix.extra ?? ""}
  }
 }
 `,

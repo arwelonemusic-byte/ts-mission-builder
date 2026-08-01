@@ -99,7 +99,7 @@ declare module "mission-gen" {
     /** GM-editable E_ variant actually spawned (lib.mjs resolves at emission) */
     spawnRef?: string;
     /** destruction-re-enable override prefab descriptor (generator-internal) */
-    fix?: { guid: string; cls: string; id: string; cmp: string; body?: string };
+    fix?: { guid: string; cls: string; id: string; cmp?: string; body?: string; extra?: string };
   }[];
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];

@@ -193,6 +193,26 @@ const MISSION = {
       hintTitle: "Задача выполнена",
       hintBody: "Склад боеприпасов уничтожен.",
     },
+    // Approach radars — exercise the fix-only (no spawnRef) emission path:
+    // RPL-5 = _on-body replication, TPN-19 = from-scratch destruction
+    {
+      type: "destroy",
+      pos: [2700.0, 74.0, 1570.0],
+      objectRef: "{DED4DB7D08E6E0BE}Prefabs/Structures/Military/Radar/ApproachRadar_RPL5_01/ApproachRadar_RPL5_01.et",
+      taskTitle: "Уничтожить радар РПЛ-5",
+      taskDesc: "Подорвите посадочный радар противника. Потребуется взрывчатка.",
+      hintTitle: "Задача выполнена",
+      hintBody: "Радар РПЛ-5 уничтожен.",
+    },
+    {
+      type: "destroy",
+      pos: [2660.0, 74.0, 1545.0],
+      objectRef: "{A0190D51FD62FF68}Prefabs/Structures/Military/Radar/ApproachRadar_TPN19_01/ApproachRadar_TPN19_01.et",
+      taskTitle: "Уничтожить радар ТПН-19",
+      taskDesc: "Уничтожьте радар управления заходом на посадку.",
+      hintTitle: "Задача выполнена",
+      hintBody: "Радар ТПН-19 уничтожен.",
+    },
   ],
 };
 

@@ -192,3 +192,23 @@ catalogue → byte-identical files across all generated missions (loadout-conf
 collide-by-design pattern). E_ root-class tokens can be stale (`E_AntennaVOR_01`
 says StaticModelEntity over an SCR_DestructibleBuildingEntity base; E_Silo_01 says
 it correctly) — harmless, the engine resolves the class from the chain.
+
+## Approach radars (2026-08-01, community request)
+
+- `{DED4DB7D08E6E0BE}...ApproachRadar_RPL5_01.et` — vanilla-destructible (multiphase
+  `Enabled 1`, 10000 HP, full debris/smoke FX, Rpl enabled in the leaf). Hit profile:
+  DamageReduction 150 / Explosive ×10 → immune to small arms, needs explosives/AT
+  (by design, good demolition target). Its `_on` sibling (rotating antenna, radar hum,
+  ProcAnim + StaticSound) is referenced only from binary worlds — no harvestable GUID —
+  so our `Dest_ApproachRadar_RPL5_01.et` parents the plain radar and replicates the
+  `_on` body verbatim, plus a fresh `SCR_EditableEntityComponent` (no E_ variant exists).
+- `{A0190D51FD62FF68}...ApproachRadar_TPN19_01.et` — NO destruction anywhere in its
+  chain (`ApproachRadar_base` → `StaticObject_base`, mesh + static rigidbody only).
+  `Dest_ApproachRadar_TPN19_01.et` ADDs from scratch: ct-inherited
+  `SCR_DestructionMultiPhaseComponent` (Default hitzone from DestructionMultiPhase_Base.ct,
+  1500 HP, own-mesh debris + Dest_Prop_Metal_Medium particle), fresh `RplComponent`
+  (chain ships none) and the editable component. The only target whose destructibility
+  BI never authored — playtest-risk flagged.
+- Neither has a baked GM preview (not GM-placeable in vanilla) → the picker modal shows
+  the glyph placeholder. If real thumbnails are ever wanted, they'd have to be
+  screenshot-authored, not extracted.

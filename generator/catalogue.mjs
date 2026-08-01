@@ -1016,6 +1016,72 @@ const RADIO_FX = (debrisGuid, particleGuid, xob) => `
     }
    }
    m_eMaterialSoundType BREAK_METAL`;
+// Approach radars (2026-08-01, community request): no E_ variants and no baked
+// GM previews exist (the modal falls back to the glyph placeholder). Both ship
+// as fix-only entries whose Dest_ prefab parents the BASE ref (no spawnRef).
+// RPL-5 is destructible in vanilla (Enabled 1, 10000 HP, DamageReduction 150 →
+// small arms do nothing, explosives/AT required — a proper demolition target);
+// its Dest_ prefab replicates the _on variant's body verbatim (rotating
+// antenna + radar hum — _on itself is referenced only from binary worlds, no
+// harvestable GUID) plus a fresh SCR_EditableEntityComponent so GMs can
+// manipulate it. TPN-19 has NO destruction anywhere in its chain
+// (StaticObject_base) — its Dest_ prefab ADDS a fresh ct-inherited multiphase
+// component (Default hitzone from the ct; own-mesh debris like the radios),
+// an RplComponent (the chain ships none — dynamic spawns must replicate) and
+// the editable component. PLAYTEST-RISK: TPN-19 is the only target whose
+// destructibility BI never authored.
+const RPL5_EXTRA = `
+  SignalsManagerComponent "{5A64FA729BC67B63}" {
+  }
+  RigidBody "{5872F0EB7DFB5A9D}" {
+   Kinematic 1
+  }
+  ProcAnimComponent "{5A4ED832D66CA486}" {
+   Enabled 1
+   Parameters {
+    ProcAnimParams "{5A4ED832D0272DD6}" {
+     SimulationDistance 2000
+    }
+   }
+  }
+  StaticSoundComponent "{5A508BDEC77599AE}" {
+   Filenames {
+    "{64F8970E7653FABF}Sounds/Structures/Military/Radar/Structures_ApproachRadar.acp"
+   }
+   Flags 0xe 0
+  }
+  SCR_EditableEntityComponent "{6A6DDEE07DCF2666}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6A6DDEE00559C5CE}" {
+    Name "RPL-5 Approach Radar"
+   }
+  }`;
+const TPN19_EXTRA = `
+  SCR_DestructionMultiPhaseComponent "{6A6DDEE090D8B87F}" : "{76DA308CC9E2AB84}Prefabs/Props/Core/DestructionMultiPhase_Base.ct" {
+   Enabled 1
+   m_fBaseHealth 1500
+   m_DestroySpawnObjects {
+    SCR_DebrisSpawnable "{6A6DDEE0E95716D9}" {
+     m_ModelPrefabs {
+      "{B24BEF6148F04A5B}Assets/Structures/Military/Radar/ApproachRadar_01/ApproachRadar_TPN19_01.xob"
+     }
+     m_fMass 800
+     m_fRandomVelocityLinear 0.5
+     m_eMaterialSoundType METAL_HEAVY
+    }
+    SCR_ParticleSpawnable "{6A6DDEE0D031E755}" {
+     m_vOffsetPosition 0 1 0
+     m_Particle "{66DAEB775AA8CA4C}Particles/Props/Dest_Prop_Metal_Medium.ptc"
+    }
+   }
+   m_eMaterialSoundType BREAK_METAL
+  }
+  RplComponent "{6A6DDEE0669A4D3F}" {
+  }
+  SCR_EditableEntityComponent "{6A6DDEE05107827A}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6A6DDEE09C790606}" {
+    Name "TPN-19 Approach Radar"
+   }
+  }`;
 export const DESTROY_OBJECTS = [
   { ref: "{5C9F32A26A42876F}Prefabs/Structures/Infrastructure/Towers/AntennaVOR_01/AntennaVOR_01.et", label: "VOR Beacon", cat: "comms", thumb: "E_AntennaVOR_01.png",
     spawnRef: `{375B97602241A792}${P_ED}/Structures/Infrastructure/Towers/E_AntennaVOR_01.et` },
@@ -1039,6 +1105,10 @@ export const DESTROY_OBJECTS = [
     spawnRef: `{70221BAD9B11066A}${P_ED}/Props/Military/Radios/E_RadioStation_ANGRC160_01.et`,
     fix: { guid: "6A6DD9507D513850", cls: "GenericEntity", id: "F0DBA538AC2A0552", cmp: "{5624A88D86EFE8BA}",
       body: RADIO_FX("6A6DD95068517421", "6A6DD95076BC060B", "{1C690C170310109F}Assets/Props/Military/Radios/RadioStation_ANGRC160_01.xob") } },
+  { ref: "{DED4DB7D08E6E0BE}Prefabs/Structures/Military/Radar/ApproachRadar_RPL5_01/ApproachRadar_RPL5_01.et", label: "RPL-5 Approach Radar", cat: "comms", thumb: "E_ApproachRadar_RPL5_01.png",
+    fix: { guid: "6A6DDEE07EC8DB3F", cls: "GenericEntity", id: "F0DBA538AC2A0552", extra: RPL5_EXTRA } },
+  { ref: "{A0190D51FD62FF68}Prefabs/Structures/Military/Radar/ApproachRadar_TPN19_01/ApproachRadar_TPN19_01.et", label: "TPN-19 Approach Radar", cat: "comms", thumb: "E_ApproachRadar_TPN19_01.png",
+    fix: { guid: "6A6DDEE0269A706A", cls: "StaticModelEntity", id: "56ACD1C4DB91DB10", extra: TPN19_EXTRA } },
   { ref: "{92BE346D5E0BD792}Prefabs/Props/Military/Fuel/MobileWaterTank_USSR_01_fuel.et", label: "Fuel Bowser (Soviet)", cat: "fuel", thumb: "E_MobileFuelTank_USSR_01.png",
     spawnRef: `{FC4BE1ACA1209194}${P_ED}/Props/Military/WaterTanks/E_MobileFuelTank_USSR_01.et`,
     // the _fuel variants explicitly set Enabled 0 over the water-tank base's
