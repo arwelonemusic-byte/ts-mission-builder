@@ -1087,8 +1087,13 @@ export const DESTROY_OBJECTS = [
     spawnRef: `{375B97602241A792}${P_ED}/Structures/Infrastructure/Towers/E_AntennaVOR_01.et` },
   { ref: "{DBCDEC45DB834E8A}Prefabs/Structures/Infrastructure/Towers/TransmitterTower_01/TransmitterTower_01.et", label: "Transmitter Tower (large)", cat: "comms", thumb: "E_TransmitterTower_01.png",
     spawnRef: `{1BB9E9ECC5AD0E88}${P_ED}/Structures/Infrastructure/Towers/E_TransmitterTower_01.et` },
+  // Each tower size has its OWN base prefab; large+small bases set Enabled 1
+  // but BI forgot the flag on TransmitterTower_01_medium_base.et (playtest-
+  // caught 2026-08-01: medium was still immune after the E_ swap) — so medium
+  // alone needs the fix, cmp = the medium base's component instance
   { ref: "{7E2380494811A5FB}Prefabs/Structures/Infrastructure/Towers/TransmitterTower_01/TransmitterTower_01_medium.et", label: "Transmitter Tower (medium)", cat: "comms", thumb: "E_TransmitterTower_01_medium.png",
-    spawnRef: `{9E879BA4C7F579D2}${P_ED}/Structures/Infrastructure/Towers/E_TransmitterTower_01_medium.et` },
+    spawnRef: `{9E879BA4C7F579D2}${P_ED}/Structures/Infrastructure/Towers/E_TransmitterTower_01_medium.et`,
+    fix: { guid: "6A6DEA6BB2C3F0D9", cls: "StaticModelEntity", id: "50D67C36F43527FE", cmp: "{6724D3416F75923D}" } },
   { ref: "{6A004A8F0571D456}Prefabs/Structures/Infrastructure/Towers/TransmitterTower_01/TransmitterTower_01_small.et", label: "Transmitter Tower (small)", cat: "comms", thumb: "E_TransmitterTower_01_small.png",
     spawnRef: `{A8D91E11AE815152}${P_ED}/Structures/Infrastructure/Towers/E_TransmitterTower_01_small.et` },
   { ref: "{5B8922E61D8DF345}Prefabs/Props/Military/Antennas/Antenna_R161_01.et", label: "R-161 Field Antenna", cat: "comms", thumb: "E_Antenna_R161_01.png",

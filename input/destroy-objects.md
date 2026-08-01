@@ -223,3 +223,11 @@ Likely why BI left them destruction-disabled. The silo was judged an unlikely
 mission target. All three entries + the category chip removed; stale refs in
 saved missions degrade gracefully (destroyEntry -> null, lib.mjs spawns the raw
 ref as-is).
+
+## Transmitter Tower (medium) fix (2026-08-01)
+
+Each tower size has its OWN base prefab: TransmitterTower_01_base and _small_base
+both set Enabled 1, but BI forgot the flag on _medium_base (its destruction
+config is otherwise complete) - medium stayed immune after the E_ swap
+(playtest-caught). Fixed with the standard fix entry: Dest_TransmitterTower_01_medium.et
+overriding cmp {6724D3416F75923D} with Enabled 1.
