@@ -208,6 +208,15 @@ export const UK = {
         UH1H_gunship_UK: "UH-1H Gunship",
       },
       patrolVehicleKeys: ["LR3_SWB_GPMG", "LR3_LWB_GPMG", "LR3_LWB_recce", "LR3_LWB_recce_M2HB", "BRDM2_UK"],
+      // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
+      // so captured/borrowed vehicles never spawn their prefab-default crews
+      patrolCrew: [
+        `{4AF2023E868540E7}${P_C89}/Regulars/Character_UK_1989_Regulars_Rifleman.et`,
+        `{D0F124C1610D3232}${P_C89}/Regulars/Character_UK_1989_Regulars_LSW.et`,
+        `{B10659FFD99279DC}${P_C89}/Regulars/Character_UK_1989_Regulars_Rifleman_LAT_LAW80.et`,
+        `{F9E2E97FA21AA133}${P_C89}/Regulars/Character_UK_1989_Regulars_Section2IC.et`,
+        `{59DC74EF0ECF7E49}${P_C89}/Regulars/Character_UK_1989_Regulars_Medic.et`,
+      ],
       // UK-skinned vanilla-US-based Conflict compositions
       fortifications: {
         road: [

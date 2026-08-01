@@ -378,6 +378,15 @@ export const FACTIONS = {
     // Mounted-patrol candidates (keys into `vehicles`), ordered light -> heavy.
     // Which of these actually patrol is a PER-ZONE selection in the mission.
     patrolVehicleKeys: ["M151A2_M2HB", "M1025_armed_M2HB", "LAV25"],
+    // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
+    // so captured/borrowed vehicles never spawn their prefab-default crews
+    patrolCrew: [
+      "{26A9756790131354}Prefabs/Characters/Factions/BLUFOR/US_Army/Character_US_Rifleman.et",
+      "{5B1996C05B1E51A4}Prefabs/Characters/Factions/BLUFOR/US_Army/Character_US_AR.et",
+      "{84029128FA6F6BB9}Prefabs/Characters/Factions/BLUFOR/US_Army/Character_US_GL.et",
+      "{27BF1FF235DD6036}Prefabs/Characters/Factions/BLUFOR/US_Army/Character_US_LAT.et",
+      "{C9E4FEAF5AAC8D8C}Prefabs/Characters/Factions/BLUFOR/US_Army/Character_US_Medic.et",
+    ],
     // Fortifications module composition pools (road checkpoints/barricades +
     // roadside bunkers/MG nests); source: Fortification module brief
     fortifications: {
@@ -608,6 +617,15 @@ export const FACTIONS = {
       Mi8MT_gunship_HEDP: "Mi-8MT Gunship HEDP",
     },
     patrolVehicleKeys: ["UAZ469_PKM", "BRDM2", "BTR70"],
+    // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
+    // so captured/borrowed vehicles never spawn their prefab-default crews
+    patrolCrew: [
+      "{DCB41B3746FDD1BE}Prefabs/Characters/Factions/OPFOR/USSR_Army/Character_USSR_Rifleman.et",
+      "{23ADBBC31B6A3DC6}Prefabs/Characters/Factions/OPFOR/USSR_Army/Character_USSR_AR.et",
+      "{8E0FE664CE7D1CA9}Prefabs/Characters/Factions/OPFOR/USSR_Army/Character_USSR_GL.et",
+      "{BF643BE4ADBDFDD3}Prefabs/Characters/Factions/OPFOR/USSR_Army/Character_USSR_LAT.et",
+      "{AB9726163EC1BD81}Prefabs/Characters/Factions/OPFOR/USSR_Army/Character_USSR_Medic.et",
+    ],
     fortifications: {
       road: ROAD_FORTS_USSR,
       roadside: [
@@ -816,6 +834,15 @@ export const FACTIONS = {
       BTR70_FIA: "BTR-70",
     },
     patrolVehicleKeys: ["UAZ469_PKM_FIA", "UAZ469_UK59_FIA", "BRDM2_FIA", "BTR70_FIA"],
+    // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
+    // so captured/borrowed vehicles never spawn their prefab-default crews
+    patrolCrew: [
+      "{84B40583F4D1B7A3}Prefabs/Characters/Factions/INDFOR/FIA/Character_FIA_Rifleman.et",
+      "{58E47E5A4D599432}Prefabs/Characters/Factions/INDFOR/FIA/Character_FIA_MG.et",
+      "{C77DFB8546B3F2A2}Prefabs/Characters/Factions/INDFOR/FIA/Character_FIA_LAT.et",
+      "{45A02CA25CBA9443}Prefabs/Characters/Factions/INDFOR/FIA/Character_FIA_Medic.et",
+      "{677B515F119222C2}Prefabs/Characters/Factions/INDFOR/FIA/Character_FIA_SL.et",
+    ],
     fortifications: {
       road: ROAD_FORTS_USSR, // FIA has no own road compositions (per brief)
       roadside: [

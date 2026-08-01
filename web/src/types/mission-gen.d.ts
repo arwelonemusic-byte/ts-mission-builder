@@ -40,8 +40,10 @@ declare module "mission-gen" {
       vehicles: Record<string, string>;
       vehicleLabels: Record<string, string>;
       patrolVehicleKeys: string[];
-      /** Character prefabs for mounted-patrol crews — needed when the faction
-       *  borrows vehicles whose default occupants are another faction (MEI) */
+      /** Character prefabs for mounted-patrol / vehicle-QRF crews. Required
+       *  for every faction (lib.mjs throws on vehicle modules without it) —
+       *  always emitted so borrowed/captured vehicles never spawn their
+       *  prefab-default (wrong-faction) crews. Concrete prefabs only. */
       patrolCrew?: string[];
       fortifications: { road: string[]; roadside: string[] };
       defaultGroupSet: string;

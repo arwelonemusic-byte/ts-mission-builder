@@ -210,6 +210,15 @@ export const RHS = {
         UH1H_armed: "UH-1H (armed)",
       },
       patrolVehicleKeys: ["M151A2_M2HB", "M1025_armed_M2HB_USAF", "LAV25_RHS"],
+      // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
+      // so captured/borrowed vehicles never spawn their prefab-default crews
+      patrolCrew: [
+        `{CB4B1645B748D5D4}${P_USAF_C}/RHS_USAF_USMC_MEF/Character_RHS_USAF_USMC_Rifleman.et`,
+        `{66876AB6DB22430B}${P_USAF_C}/RHS_USAF_USMC_MEF/Character_RHS_USAF_USMC_AR.et`,
+        `{6B5214972C952A21}${P_USAF_C}/RHS_USAF_USMC_MEF/Character_RHS_USAF_USMC_GL.et`,
+        `{AE2E93B28352053F}${P_USAF_C}/RHS_USAF_USMC_MEF/Character_RHS_USAF_USMC_LAT.et`,
+        `{0C1639553F575AD3}${P_USAF_C}/RHS_USAF_USMC_MEF/Character_RHS_USAF_USMC_Medic.et`,
+      ],
       // RHS-native Conflict fortification editables (E_*), faction-tagged _USMC_
       fortifications: {
         road: [
@@ -495,6 +504,16 @@ export const RHS = {
         Mi8MT_armed_black: "Mi-8MT (armed)",
       },
       patrolVehicleKeys: ["UAZ469_PKM", "BTR70_AFRF", "K4386_Armed", "APC_K17_Berezok"],
+      // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
+      // so captured/borrowed vehicles (vanilla UAZ469_PKM here) never spawn
+      // their prefab-default vanilla USSR crews (user-reported 2026-08-01)
+      patrolCrew: [
+        `{7CCAB195F5A1D9CA}${P_MSV_C}/Flora/Character_RHS_RF_MSV_Flora_Rifleman.et`,
+        `{DE4C67D3C8F6704D}${P_MSV_C}/Flora/Character_RHS_RF_MSV_Flora_AR.et`,
+        `{D39919F23F411967}${P_MSV_C}/Flora/Character_RHS_RF_MSV_Flora_GL.et`,
+        `{9E5162BC890ADFCF}${P_MSV_C}/Flora/Character_RHS_RF_MSV_Flora_SR.et`,
+        `{D9AF475A4E5DC52C}${P_MSV_C}/Flora/Character_RHS_RF_MSV_Flora_Medic.et`,
+      ],
       fortifications: {
         road: [
           `{ABB02215262D81F5}${P_FORT}/E_Checkpoint_S_AFRF_01.et`,
@@ -614,13 +633,15 @@ export const RHS = {
       squadBase: ["{55CCB792D10AD8F4}", "{55CCB792D13759D8}", "{55CCB792D1218E95}", "{55CCB792D0C8B3CE}"],
       squadFifth: null,
       spawnPoint: "{F6678644B017C54D}PrefabsEditable/SpawnPoints/E_SpawnPoint_ION.et",
-      // ION ships no Officer prefab at all (catalog stub is empty; only the
-      // 12 *_Random characters are recoverable) — SL is the senior role
-      hvt: "{006311076DB5EE8A}Prefabs/Characters/Factions/INDFOR/RHS_ION/RandomSoldiers/Character_RHS_ION_SL_Random.et",
-      // ENEMY-ONLY: plain ION character GUIDs are unrecoverable from the dump
-      // (empty ION_Characters.conf; only *_Random group-filler variants are
-      // referenced anywhere). No riflemen → the UI hides ION from the playable
-      // dropdown.
+      // ION ships no Officer prefab at all — SL is the senior role. Concrete
+      // prefab (individual-spawn rule); GUID recovered 2026-08-01 from the
+      // SL_Random wrapper's variant table.
+      hvt: "{EDECFE7965364081}Prefabs/Characters/Factions/INDFOR/RHS_ION/Character_RHS_ION_SL.et",
+      // ENEMY-ONLY by curation: ION_Characters.conf is an empty stub, but the
+      // plain character GUIDs ARE recoverable — each *_Random wrapper's
+      // SCR_EditableEntityVariantData lists all 3 concrete variants per role
+      // (15 total: Rifleman/Marksman/Medic/Scout/SL ×3, harvested 2026-08-01).
+      // No riflemen → the UI hides ION from the playable dropdown.
       riflemen: {},
       loadoutSets: {},
       arsenalItems: [
@@ -662,6 +683,16 @@ export const RHS = {
         M1025_armed_M2HB_MDO_ION_Camo: "M1025 M2HB (MDO, camo)",
       },
       patrolVehicleKeys: ["M1025_armed_M2HB_ION"],
+      // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool).
+      // Concrete ION characters, harvested 2026-08-01 from the *_Random
+      // wrappers' variant tables (see the riflemen note above)
+      patrolCrew: [
+        "{AC4213B6EA90F029}Prefabs/Characters/Factions/INDFOR/RHS_ION/Character_RHS_ION_Rifleman.et",
+        "{14B31EA458C5E4EB}Prefabs/Characters/Factions/INDFOR/RHS_ION/Character_RHS_ION_Rifleman2.et",
+        "{F12F525D54207380}Prefabs/Characters/Factions/INDFOR/RHS_ION/Character_RHS_ION_Rifleman3.et",
+        "{AB12C80AE86DC7DD}Prefabs/Characters/Factions/INDFOR/RHS_ION/Character_RHS_ION_Scout.et",
+        "{51ACA7578D7D01F5}Prefabs/Characters/Factions/INDFOR/RHS_ION/Character_RHS_ION_Medic.et",
+      ],
       // ION has no own ConflictRHS fortification set — it reuses the USMC pool
       // (same pattern as FIA reusing the USSR pool in the vanilla catalogue)
       fortifications: {
