@@ -165,3 +165,30 @@ blocks' output, so decode into one shared buffer. Decode: largest mip = LAST tab
 entry → LZ4 → rewrap as single-mip .dds → texconv → PNG. Preview roots are discovered
 as `reference/*/UI/Textures/EditorPreviews` (vanilla first — RHS + Bandit dumps ship
 their own).
+
+## Destructibility playtest + override fix (2026-08-01)
+
+In-game test of the full MVP pool (spawned via SlotDestroy, base prefabs): only the
+VOR beacon, transmitter towers, industrial silo and both mortars took damage — the
+other 12 were immune. Root cause: `Prefabs/Props/Core/DestructionMultiPhase_Base.ct`
+sets `Enabled 0` on `SCR_DestructionMultiPhaseComponent` (BI disabled prop
+destruction engine-wide, re-enabling per prefab). Working set = building-destruction
+entities (`SCR_DestructibleBuildingEntity`: VOR, silo), explicit `Enabled 1`
+overrides (transmitter tower base), and Turret damage managers (mortars). The fuel
+bowser `_fuel` variants explicitly RE-disable (`Enabled 0`) over the water-tank
+base's enabled config. Production precedent for re-enabling: Operation Foxhound's
+`Antenna_S_USSR_01.et` composition (`Enabled 1` on the R-161's component).
+
+Fix (see catalogue.mjs `DESTROY_OBJECTS` + lib.mjs): every non-mortar entry now
+spawns its **E_ editable variant** (GM-manipulable during events; E_ chains also
+re-enable RplComponent where the base disables it — E_GasTank/E_RadioStation/
+E_EquipmentBoxStack), and the 12 immune entries get a mission-local
+`Prefabs/DestroyTargets/Dest_<name>.et` child prefab overriding the multiphase
+component (base instance GUID) with `Enabled 1`. The two radio sets carry a fully
+UNCONFIGURED component (no phases/debris/FX — enabling alone = silent vanish), so
+their overrides add `m_fBaseHealth 300` + own-mesh debris + `Dest_Prop_Metal_Medium`
+particle + `BREAK_METAL` sound. All resource + inner GUIDs are fixed in the
+catalogue → byte-identical files across all generated missions (loadout-conf
+collide-by-design pattern). E_ root-class tokens can be stale (`E_AntennaVOR_01`
+says StaticModelEntity over an SCR_DestructibleBuildingEntity base; E_Silo_01 says
+it correctly) — harmless, the engine resolves the class from the chain.

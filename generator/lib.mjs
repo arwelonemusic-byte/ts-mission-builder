@@ -754,6 +754,16 @@ ${slotBlocks}
   // m_aTriggerActionsOnFinish. m_sFactionKey MUST be a playable faction or
   // task creation fails at Init.
   let objectivesLayer = "";
+  // Destroy-target override prefabs (Prefabs/DestroyTargets/Dest_<name>.et):
+  // vanilla prop destruction is disabled engine-wide (Enabled 0 in
+  // DestructionMultiPhase_Base.ct) — DESTROY_OBJECTS entries with a `fix`
+  // descriptor get a mission-local child prefab of their E_ variant that
+  // flips the multiphase component back on (component-instance GUID reused
+  // from the base chain, per the standard override rule). GUIDs and content
+  // are fixed in the catalogue, so every generated mission ships identical
+  // files — path collisions across mission addons are byte-identical, the
+  // same collide-by-design pattern as the loadout conf overrides.
+  const destroyTargetFiles = {};
   const missionObjectives = mission.objectives ?? [];
   if (missionObjectives.length) {
     const playableKey = effKey(mission.playableFaction);
@@ -940,14 +950,39 @@ ${showHint(o)}`;
           // (DESTROY_OBJECTS pool or a faction vehicle — BaseVehicle has its
           // own GetDamageManager fast path). SCR_TaskDestroyObject hooks the
           // damage state; no plugins needed. GC protection like the HVT.
+          // objectRef stays the STORED identity; what spawns is resolved via
+          // the catalogue: fix -> mission-local destruction-enabled prefab,
+          // spawnRef -> the GM-editable E_ variant, else objectRef as-is
+          // (mortars, vehicles).
           if (!o.objectRef) throw new Error(`Destroy objective without objectRef`);
+          const dEntry = DESTROY_OBJECTS.find((d) => d.ref === o.objectRef);
+          let dSpawn = o.objectRef;
+          if (dEntry?.fix) {
+            const baseName = dEntry.spawnRef.split("/").pop().replace(/^E_/, "");
+            const dPath = `Prefabs/DestroyTargets/Dest_${baseName}`;
+            destroyTargetFiles[dPath] = {
+              guid: dEntry.fix.guid,
+              content: `${dEntry.fix.cls} : "${dEntry.spawnRef}" {
+ ID "${dEntry.fix.id}"
+ components {
+  SCR_DestructionMultiPhaseComponent "${dEntry.fix.cmp}" {
+   Enabled 1${dEntry.fix.body ?? ""}
+  }
+ }
+}
+`,
+            };
+            dSpawn = `{${dEntry.fix.guid}}${dPath}`;
+          } else if (dEntry?.spawnRef) {
+            dSpawn = dEntry.spawnRef;
+          }
           layerPrefab = K.LAYERTASK_DESTROY_PREFAB;
           cmpClass = "SCR_ScenarioFrameworkLayerTaskDestroy";
           cmpGuid = K.CMP_LT_DESTROY;
           slotBlock = `    GenericEntity SlotObjective${n} : "${K.SLOT_DESTROY_PREFAB}" {
      components {
       SCR_ScenarioFrameworkSlotDestroy "${K.CMP_SLOT_DESTROY}" {
-       m_sObjectToSpawn "${o.objectRef}"
+       m_sObjectToSpawn "${dSpawn}"
        m_bCanBeGarbageCollected 0
       }
      }
@@ -1007,6 +1042,11 @@ ${objectiveBlocks}
     [`${layersDir}/Objectives.layer`]: objectivesLayer,
     [`${layersDir}/Props.layer`]: "",
   };
+
+  for (const [dPath, d] of Object.entries(destroyTargetFiles)) {
+    files[dPath] = d.content;
+    files[`${dPath}.meta`] = meta("EntityTemplateResourceClass", d.guid, dPath);
+  }
 
   // The .png/.edds binaries come from the browser (canvas); here we only add
   // the sidecar that gives the pair its stable resource GUID.

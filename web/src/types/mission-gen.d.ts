@@ -91,10 +91,15 @@ declare module "mission-gen" {
   /** Destroy-object pool: root-destructible prefabs with shipped thumbnails
    * (web/public/icons/prefabs/<thumb>); vehicles are added by the web modal */
   export const DESTROY_OBJECTS: {
+    /** stored identity (mission JSON) + thumb/label key — never changes */
     ref: string;
     label: string;
     cat: "comms" | "fuel" | "cache" | "weapons" | "industrial";
     thumb: string;
+    /** GM-editable E_ variant actually spawned (lib.mjs resolves at emission) */
+    spawnRef?: string;
+    /** destruction-re-enable override prefab descriptor (generator-internal) */
+    fix?: { guid: string; cls: string; id: string; cmp: string; body?: string };
   }[];
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];
