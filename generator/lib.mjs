@@ -83,9 +83,14 @@ export function buildMissionFiles(mission, options = {}) {
   const TERRAIN = TERRAINS[mission.terrain];
   if (!F) throw new Error(`Unknown playable faction: ${mission.playableFaction}`);
   if (!ENEMY) throw new Error(`Unknown enemy faction: ${mission.enemyFaction}`);
+  if (ENEMY.playableOnly) throw new Error(`Faction ${mission.enemyFaction} is playable-only and can't be the enemy side`);
   if (!TERRAIN) throw new Error(`Unknown terrain: ${mission.terrain}`);
   const RIFLEMAN = F.riflemen[mission.playableSubfaction];
   if (!RIFLEMAN) throw new Error(`No rifleman for ${mission.playableFaction}/${mission.playableSubfaction}`);
+
+  // Alias factions (aliasOf) are UI-level entries over a vanilla faction —
+  // every serialized faction KEY must be the base's in-game key (SFS_US → US).
+  const effKey = (k) => FACTIONS[k].aliasOf ?? k;
 
   const guids = {
     addon: mission.guids?.addon ?? mintGuid(),
@@ -190,7 +195,7 @@ ${taskTypes}
  ID "${K.CRATE_ROOT_ID}"
  components {
   SCR_FactionAffiliationComponent "${K.CMP_FACTION_AFF}" {
-   "faction affiliation" "${mission.playableFaction}"
+   "faction affiliation" "${effKey(mission.playableFaction)}"
   }
  }
 }
@@ -302,7 +307,6 @@ ${briefEntries}
   // registry def declares the other side friendly (`friendlyWith`, in-game
   // keys; aliases resolve to their base key), that member's override clears
   // the list so the pair is hostile in THIS mission.
-  const effKey = (k) => FACTIONS[k].aliasOf ?? k;
   const sideKeys = [effKey(mission.playableFaction), effKey(mission.enemyFaction)];
   function clearedFriendsBlock(key) {
     const idx = sideKeys.indexOf(key);
@@ -326,7 +330,7 @@ ${briefEntries}
       : `  SCR_Faction "${f.entryGuid}" {`;
     // m_bIsAssignedRandomly defaults to 1 — turn it OFF on every faction so
     // squads take callsigns in order (1'1, 1'2, ...) instead of at random.
-    if (key !== mission.playableFaction)
+    if (key !== effKey(mission.playableFaction))
       return `${head}${f.confRef ? "\n   m_bIsPlayable 0" : ""}${clearedFriendsBlock(key)}
    m_CallsignInfo SCR_FactionCallsignInfo "${f.callsignGuid}" {
     m_bIsAssignedRandomly 0
@@ -387,11 +391,11 @@ SCR_LoadoutManager : "{AA4E7419A1FF65B0}Prefabs/MP/Managers/Loadouts/LoadoutMana
  m_aPlayerLoadouts {
   TS_PlayerArsenalLoadout "${K.LM_ARSENAL_LOADOUT}" {
    m_sLoadoutResource "${RIFLEMAN}"
-   m_sAffiliatedFaction "${mission.playableFaction}"
+   m_sAffiliatedFaction "${effKey(mission.playableFaction)}"
   }
   SCR_FactionPlayerLoadout "${K.LM_RIFLEMAN_LOADOUT}" {
    m_sLoadoutResource "${RIFLEMAN}"
-   m_sAffiliatedFaction "${mission.playableFaction}"
+   m_sAffiliatedFaction "${effKey(mission.playableFaction)}"
   }
  }
 }

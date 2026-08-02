@@ -16,6 +16,8 @@
 //               PLASTICBANDIT — enemy-only, FactionManager_Base append pattern)
 //   --afrf-mei  build the RHS-vs-MEI variant (TS_WebSpikeAFRFMEI: RHS_AFRF vs
 //               MEI — validates the friendly-faction clearing override)
+//   --sfs       build the SFS loadout-pack variant (TS_WebSpikeSFS: SFS_US
+//               "US Special Force Squad (Abrashka)" vs USSR — playable alias)
 //   --armenhof  build the modded-terrain variant (TS_WebSpikeArmenhof: vanilla
 //               US vs USSR on Armenhof, exercises terrain dependencies + nav refs)
 //   --chernarus same, on ChernarusMinus (terrain with transitive map-addon deps)
@@ -423,6 +425,29 @@ const BANDITS_MISSION = {
       ],
     },
   ],
+};
+
+// SFS spike: the Abrashka loadout pack as playable "faction" vs vanilla USSR
+// — first PLAYABLE use of the alias machinery (SFS_US resolves to US in every
+// serialized faction key; US member gets the playable/callsign block; deps =
+// the SFS addon whose gproj pulls GRS/Milsim/RHS transitively).
+const SFS_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeSFS",
+  dirName: "TS_WebSpikeSFS",
+  addonTitle: "TS Web Spike SFS Mission",
+  name: "TS_WebSpikeSFS",
+  displayName: "TS Web Spike SFS",
+  playableFaction: "SFS_US",
+  playableSubfaction: "Special Force Squad",
+  loadouts: FACTIONS.SFS_US.loadoutSets["Special Force Squad"].filter((l) =>
+    ["Rifleman", "Grenadier", "Machine Gunner", "Medic", "SL", "Sniper"].includes(l.name)
+  ),
+  guids: {
+    addon: "7C41D9A2E85B3F10",
+    world: "3AF8B2C7D1946E5C",
+    missionConf: "9E27C4B8A6D1F3E4",
+  },
 };
 
 // Armenhof spike: vanilla factions on a modded terrain — proves a mission
@@ -946,7 +971,9 @@ const BUILT = process.argv.includes("--zarichne")
                 ? AFRF_MEI_MISSION
               : process.argv.includes("--mei")
                 ? MEI_MISSION
-                : MISSION;
+                : process.argv.includes("--sfs")
+                  ? SFS_MISSION
+                  : MISSION;
 const { files, addonDirName } = buildMissionFiles(BUILT);
 const addonDir = join(ADDONS_ROOT, addonDirName);
 

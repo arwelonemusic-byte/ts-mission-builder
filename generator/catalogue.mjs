@@ -15,6 +15,7 @@ import { RHS } from "./mods/rhs.mjs";
 import { UK } from "./mods/uk.mjs";
 import { MEI } from "./mods/mei.mjs";
 import { BANDITS } from "./mods/bandits.mjs";
+import { SFS } from "./mods/sfs.mjs";
 
 export const TERRAINS = {
   arland: {
@@ -895,7 +896,7 @@ export const FACTIONS = {
 // (e.g. MEI = USSR + character/voice overrides): the whole vanilla entry is
 // copied underneath the def, and lib.mjs skips it in the FactionManager
 // emission because the vanilla member covers it.
-export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS };
+export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS, [SFS.id]: SFS };
 for (const mod of Object.values(MODS)) {
   for (const [key, faction] of Object.entries(mod.factions)) {
     const base = faction.aliasOf ? FACTIONS[faction.aliasOf] : undefined;

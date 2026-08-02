@@ -248,6 +248,8 @@ export default function Editor() {
   const playableFactionKeys = factionKeys.filter(
     (k) => Object.keys(FACTIONS[k].riflemen ?? {}).length > 0
   );
+  // Loadout-pack pseudo-factions (SFS) can only be the playable side
+  const enemyFactionKeys = factionKeys.filter((k) => !FACTIONS[k].playableOnly);
   // Alias factions (aliasOf) share their base faction's in-game FactionKey —
   // both sides of an alias pair in one mission would be the same faction.
   // The enemy dropdown shows conflicting options disabled (EnemyPanel).
@@ -387,7 +389,7 @@ export default function Editor() {
       spawn: { ...mission.spawn, vehicles: [] },
     };
     if (pf === mission.enemyFaction || aliasConflict(pf, mission.enemyFaction)) {
-      const nextEnemy = factionKeys.find((f) => f !== pf && !aliasConflict(f, pf));
+      const nextEnemy = enemyFactionKeys.find((f) => f !== pf && !aliasConflict(f, pf));
       if (nextEnemy) Object.assign(patch, enemyPatch(nextEnemy, mission.zones));
     }
     update(patch);
@@ -424,7 +426,7 @@ export default function Editor() {
       aliasConflict(mission.enemyFaction, playable)
     ) {
       const nextEnemy = Object.keys(FACTIONS).find(
-        (f) => allowed(f) && f !== playable && !aliasConflict(f, playable)
+        (f) => allowed(f) && !FACTIONS[f].playableOnly && f !== playable && !aliasConflict(f, playable)
       );
       if (nextEnemy) Object.assign(patch, enemyPatch(nextEnemy, mission.zones));
     }
@@ -969,7 +971,7 @@ export default function Editor() {
               <EnemyPanel
                 mission={mission}
                 update={update}
-                factionKeys={factionKeys}
+                factionKeys={enemyFactionKeys}
                 onEnemyFaction={setEnemyFaction}
               />
             )}
