@@ -591,7 +591,7 @@ ${farpBlock}`;
   SCR_ScenarioFrameworkArea "${K.CMP_SF_AREA}" {
    m_fAreaRadius ${z.radius}
    m_bDynamicDespawn 1
-   m_iDynamicDespawnRange ${Math.round(z.radius + 400)}
+   m_iDynamicDespawnRange ${Math.round(z.radius + 600)}
   }
  }
  coords ${posStr(z.pos)}
