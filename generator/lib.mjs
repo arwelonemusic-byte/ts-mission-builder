@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleSizeClass } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -609,6 +609,59 @@ ${farpBlock}`;
     })
     .join("");
 
+  // --- Props.layer + prop-defense areas ---
+  // Props are plain world entities (FARP-style placement): the E_/base
+  // prefab at the sampled position with a compass-bearing yaw (prefabs face
+  // local +Z, so yaw 0 = north). A defended prop adds a distinctly-named
+  // Area/Layer/SlotAI trio appended to AO.layer — dynamic despawn ON with
+  // the range left at the class default (750), no area radius; the SlotAI's
+  // default 30 m defend waypoint keeps the group holding the prop.
+  const props = mission.props ?? [];
+  const propsLayer = props
+    .map((p, i) => {
+      const yaw = +((p.rotation ?? 0) % 360).toFixed(1);
+      const angles = yaw ? `\n angles 0 ${yaw} 0` : "";
+      return `GenericEntity Prop${i + 1} : "${p.ref}" {\n coords ${posStr(p.pos)}${angles}\n}\n`;
+    })
+    .join("");
+  const propDefenseBlocks = props
+    .map((p, i) => {
+      if (!p.defense) return "";
+      const entry = PROPS.find((e) => e.ref === p.ref);
+      const cat = entry && PROP_CATEGORIES.find((c) => c.key === entry.cat);
+      if (!cat?.defense) throw new Error(`Prop ${i + 1} (${p.ref}) is not in a defense-capable category`);
+      const group = resolvePropDefenseGroup(mission.enemyFaction, mission.enemyGroupSets ?? mission.enemyGroupSet, p.defense.sizes, i);
+      return `GenericEntity AreaPropDef${i + 1} : "${K.AREA_PREFAB}" {
+ components {
+  SCR_ScenarioFrameworkArea "${K.CMP_SF_AREA}" {
+   m_bDynamicDespawn 1
+  }
+ }
+ coords ${posStr(p.pos)}
+ {
+  GenericEntity LayerPropDef${i + 1} : "${K.LAYER_PREFAB}" {
+   components {
+    SCR_ScenarioFrameworkLayerBase "${K.CMP_SF_LAYER}" {
+    }
+   }
+   coords 0 0 0
+   {
+    GenericEntity SlotAIPropDef${i + 1} : "${K.SLOTAI_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotAI "${K.CMP_SF_SLOTAI}" {
+       m_sObjectToSpawn "${group}"
+      }
+     }
+     coords 0 0 0
+    }
+   }
+  }
+ }
+}
+`;
+    })
+    .join("");
+
   // --- Markers.layer ---
   // Workbench pattern (see Operation Crayfish): ONE Area wraps all markers,
   // one Layer inside it, one $grp SlotMarker group with a named body per
@@ -1049,11 +1102,11 @@ ${objectiveBlocks}
     [`${K.BRIEFING_PATH}.meta`]: meta("CONFResourceClass", K.BRIEFING_GUID, K.BRIEFING_PATH),
     [`${layersDir}/default.layer`]: defaultLayer,
     [`${layersDir}/Spawn.layer`]: spawnLayer,
-    [`${layersDir}/AO.layer`]: aoLayer,
+    [`${layersDir}/AO.layer`]: aoLayer + propDefenseBlocks,
     [`${layersDir}/Markers.layer`]: markersLayer,
     [`${layersDir}/QRF.layer`]: qrfLayer,
     [`${layersDir}/Objectives.layer`]: objectivesLayer,
-    [`${layersDir}/Props.layer`]: "",
+    [`${layersDir}/Props.layer`]: propsLayer,
   };
 
   for (const [dPath, d] of Object.entries(destroyTargetFiles)) {

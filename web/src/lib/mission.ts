@@ -1,4 +1,7 @@
-import { FACTIONS, OBJECTIVE_TYPES, mintGuid } from "mission-gen";
+import { FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid } from "mission-gen";
+
+/** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
+export type PlaceMode = "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | "prop" | null;
 
 /** sizes = Foot Patrols weight-slider selection (size classes for the group
  *  pool); absent = the module default (all sizes).
@@ -75,6 +78,21 @@ export type MissionObjective = {
   hintBody: string;
 };
 
+/** Placed prop (Props tab) → a plain world entity in Props.layer. ref is a
+ * PROPS catalogue entry (stored identity); rotation is a compass bearing
+ * (prefabs face local +Z, 0 = north). defense (only meaningful for
+ * defense-capable categories) adds an enemy group holding the prop;
+ * defenseSizes = the 5-stop patrol-weight window (absent = stop 3, all). */
+export type MissionProp = {
+  id: string;
+  ref: string;
+  x: number;
+  z: number;
+  rotation: number;
+  defense: boolean;
+  defenseSizes?: string[];
+};
+
 export type Mission = {
   version: 1;
   displayName: string;
@@ -111,6 +129,7 @@ export type Mission = {
   markers: MissionMarker[];
   sectors: MissionSector[];
   objectives: MissionObjective[];
+  props: MissionProp[];
   guids: { addon: string; world: string; missionConf: string; thumbnail: string };
   /** Sanitized mission name the guids were minted for — a renamed mission is
    * a new addon and must not reuse them (see freshenGuids) */
@@ -199,6 +218,7 @@ export function newMission(): Mission {
     markers: [],
     sectors: [],
     objectives: [],
+    props: [],
     guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid(), thumbnail: mintGuid() },
     guidsName: "",
   };
@@ -325,6 +345,30 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
       hintTitle: String(o.hintTitle ?? ""),
       hintBody: String(o.hintBody ?? ""),
     }));
+  // Props arrived after the first saves; sanitize hand-edited entries.
+  // Unknown refs (catalogue changed) backfill DEFAULT_PROP — keeps the
+  // user's placement; defense is dropped where the category doesn't allow it.
+  if (!Array.isArray(m.props)) m.props = [];
+  m.props = m.props
+    .filter((p) => p && typeof p.x === "number" && typeof p.z === "number")
+    .map((p) => {
+      const ref = PROPS.some((e) => e.ref === p.ref) ? String(p.ref) : DEFAULT_PROP;
+      const entry = PROPS.find((e) => e.ref === ref);
+      const canDefend = !!PROP_CATEGORIES.find((c) => c.key === entry?.cat)?.defense;
+      return {
+        id: String(p.id ?? `p${Math.random().toString(36).slice(2)}`),
+        ref,
+        x: p.x,
+        z: p.z,
+        rotation: ((Math.round(+p.rotation) % 360) + 360) % 360 || 0,
+        defense: canDefend && p.defense === true,
+        defenseSizes: (() => {
+          if (!canDefend || !Array.isArray(p.defenseSizes)) return undefined;
+          const s = p.defenseSizes.filter((v) => v === "small" || v === "medium" || v === "large");
+          return s.length ? s : undefined;
+        })(),
+      };
+    });
   if (!m.arty) m.arty = defaultArty();
   // Early builds shipped invented defaults (60/40/40); if the user never
   // touched artillery, silently swap in the prefab-matching counts.

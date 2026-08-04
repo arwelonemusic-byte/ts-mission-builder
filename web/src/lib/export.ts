@@ -1,6 +1,7 @@
 import { buildMissionFiles, FACTIONS, itemWorldCorners, layoutSpawnBundle } from "mission-gen";
-import type { Mission } from "./mission";
+import type { Mission, MissionProp } from "./mission";
 import { missionIds } from "./mission";
+import { propCanDefend, propEntry, propRect } from "./props";
 import { getSampler } from "./terrainSampler";
 import { iconEnum, MARKER_FACTIONS, MILITARY_TYPES } from "./markers";
 import { thumbnailPixels, thumbnailPngBytes } from "./thumbnail";
@@ -114,6 +115,18 @@ export async function toGeneratorMission(m: Mission) {
     });
   }
 
+  // Props → Props.layer entities (+ AO.layer defense trios in the generator)
+  const props = [];
+  for (const p of m.props) {
+    const py = await elevationAt(m.terrain, p.x, p.z);
+    props.push({
+      ref: p.ref,
+      pos: [y(p.x), y(py), y(p.z)],
+      rotation: p.rotation,
+      defense: p.defense && propCanDefend(p.ref) ? { sizes: p.defenseSizes } : null,
+    });
+  }
+
   // Selected loadouts resolved to {name, prefab}, keeping catalogue order
   const loadoutSet = FACTIONS[m.playableFaction]?.loadoutSets[m.playableSubfaction] ?? [];
   const loadouts = loadoutSet.filter((l) => m.loadouts.includes(l.prefab));
@@ -161,6 +174,7 @@ export async function toGeneratorMission(m: Mission) {
     markers,
     sectors,
     objectives,
+    props,
   };
 }
 
@@ -180,6 +194,28 @@ export async function spawnSlopeDelta(m: Mission): Promise<number> {
   };
   const corners = itemWorldCorners(box, m.spawn.x, m.spawn.z, m.spawn.yaw);
   const pts: [number, number][] = [...(corners as [number, number][]), [m.spawn.x, m.spawn.z]];
+  for (let i = 0; i < corners.length; i++) {
+    const [ax, az] = corners[i];
+    const [bx, bz] = corners[(i + 1) % corners.length];
+    pts.push([(ax + bx) / 2, (az + bz) / 2]);
+  }
+  const ys = pts.map(([px, pz]) => s.sample(px, pz)).filter((v) => Number.isFinite(v));
+  if (ys.length < 2) return 0;
+  return Math.max(...ys) - Math.min(...ys);
+}
+
+/**
+ * Max elevation difference (m) across a prop's footprint — same 9-point
+ * sampling as spawnSlopeDelta (corners + edge midpoints + center of the
+ * rotated box). Disc footprints use their bounding square.
+ */
+export async function propSlopeDelta(m: Mission, p: MissionProp): Promise<number> {
+  const entry = propEntry(p.ref);
+  if (!entry) return 0;
+  const s = await getSampler(m.terrain);
+  const r = propRect(entry.fp);
+  const corners = itemWorldCorners({ x: r.offX, z: r.offZ, w: r.w, len: r.len }, p.x, p.z, p.rotation);
+  const pts: [number, number][] = [...(corners as [number, number][]), [p.x, p.z]];
   for (let i = 0; i < corners.length; i++) {
     const [ax, az] = corners[i];
     const [bx, bz] = corners[(i + 1) % corners.length];

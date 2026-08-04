@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FACTIONS, vehicleSizeClass } from "mission-gen";
-import type { Mission } from "@/lib/mission";
+import type { Mission, PlaceMode } from "@/lib/mission";
 import { useT } from "@/lib/i18n";
 import { Divider, GhostButton, SectionLabel, SelectInput, Slider, Toggle } from "../ui";
 
@@ -14,8 +14,8 @@ export default function SpawnPanel({
   slope,
 }: {
   mission: Mission;
-  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null;
-  setPlaceMode: (m: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null) => void;
+  placeMode: PlaceMode;
+  setPlaceMode: (m: PlaceMode) => void;
   updateSpawn: (patch: Partial<Mission["spawn"]>) => void;
   slope: number | null;
 }) {

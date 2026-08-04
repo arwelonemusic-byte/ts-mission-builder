@@ -35,10 +35,11 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
-import { layoutSpawnBundle, itemWorldCorners } from "mission-gen";
+import { layoutSpawnBundle, itemWorldCorners, rotateLocal } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
 import { getSampler } from "@/lib/terrainSampler";
 import { compositeTerrainTexture } from "@/lib/tileComposite";
+import { propEntry, propRect } from "@/lib/props";
 import {
   deliveryBadgeHtml,
   distanceLabel,
@@ -47,6 +48,7 @@ import {
   objectiveBadgeHtml,
   originBadgeHtml,
   pingHtml,
+  propBadgeHtml,
   sectorChipHtml,
   zoneDotHtml,
 } from "@/lib/overlayHtml";
@@ -68,6 +70,7 @@ const ZONE_COLOR = 0x9333ea;
 const SELECT_COLOR = 0xffcc00;
 const OBJECTIVE_COLOR = 0x9f2828; // sector "objective" rectangles
 const TASK_COLOR = 0xe8593c; // mission objectives (matches overlayHtml OBJECTIVE_COLOR)
+const PROP_GREEN = 0x4ade80; // props (matches overlayHtml PROP_COLOR)
 const AO_COLOR = 0x000000;
 const SPAWN_BLUE = 0x3fa9f5;
 const CRATE_GREEN = 0x50c878;
@@ -1012,6 +1015,76 @@ export default function MissionMap3D(props: Map3DProps) {
         });
       }
 
+      /* -- props: green badge (draggable) + draped footprint outline + facing
+            tick along local +Z; everything re-drapes live during a drag -- */
+      for (const pr of p.props) {
+        const selected = pr.id === p.selectedPropId;
+        const entry = propEntry(pr.ref);
+        const r = entry ? propRect(entry.fp) : null;
+        const lineColor = selected ? SELECT_COLOR : PROP_GREEN;
+        let drapeFp: ((x: number, z: number) => void) | null = null;
+        if (r && (r.disc || r.w >= 1 || r.len >= 1)) {
+          let drapeShape: (x: number, z: number) => void;
+          if (r.disc) {
+            const ring = drapedLine(
+              grid,
+              64,
+              new THREE.LineDashedMaterial({ color: lineColor, dashSize: 3, gapSize: 2 }),
+              true
+            );
+            overlay.add(ring.obj);
+            const radius = r.w / 2;
+            drapeShape = (x, z) =>
+              ring.fill((i) => {
+                const a = (i / 64) * Math.PI * 2;
+                return [x + radius * Math.cos(a), z + radius * Math.sin(a)];
+              }, LINE_LIFT);
+          } else {
+            const per = Math.min(32, Math.max(4, Math.ceil(Math.max(r.w, r.len) / 5)));
+            const outline = drapedLine(
+              grid,
+              per * 4,
+              new THREE.LineDashedMaterial({ color: lineColor, dashSize: 3, gapSize: 2 }),
+              true
+            );
+            overlay.add(outline.obj);
+            drapeShape = (x, z) => {
+              const corners = itemWorldCorners(
+                { x: r.offX, z: r.offZ, w: r.w, len: r.len },
+                x,
+                z,
+                pr.rotation
+              );
+              outline.fill(perimeter(corners, per), LINE_LIFT);
+            };
+          }
+          // Facing tick: front-edge midpoint → 4 m outward along local +Z
+          const tickLine = drapedLine(grid, 8, new THREE.LineBasicMaterial({ color: lineColor }), false);
+          overlay.add(tickLine.obj);
+          const frontX = r.disc ? 0 : r.offX;
+          const frontZ = (r.disc ? 0 : r.offZ) + (r.disc ? r.w : r.len) / 2;
+          const [ax, az] = rotateLocal(frontX, frontZ, pr.rotation);
+          const [bx, bz] = rotateLocal(frontX, frontZ + 4, pr.rotation);
+          drapeFp = (x, z) => {
+            drapeShape(x, z);
+            tickLine.fill((i) => {
+              const f = i / 8;
+              return [x + ax + (bx - ax) * f, z + az + (bz - az) * f];
+            }, LINE_LIFT);
+          };
+          drapeFp(pr.x, pr.z);
+        }
+
+        const badge = css2dNode(propBadgeHtml(selected, !!p.fresh[pr.id]), true);
+        badge.obj.position.set(pr.x, meshY(grid, pr.x, pr.z) + ICON_LIFT, -pr.z);
+        overlay.add(badge.obj);
+        makeDraggable(world, badge.el, badge.obj, ICON_LIFT, {
+          onClick: () => propsRef.current.onPropClick(pr.id),
+          onDragLive: (x, z) => drapeFp?.(x, z),
+          onDragEnd: (x, z) => propsRef.current.onPropMoved(pr.id, x, z),
+        });
+      }
+
       world.render();
     };
     world.syncOverlays();
@@ -1443,6 +1516,8 @@ export default function MissionMap3D(props: Map3DProps) {
     props.selectedMarkerId,
     props.objectives,
     props.selectedObjectiveId,
+    props.props,
+    props.selectedPropId,
     props.sectors,
     props.selectedSectorId,
     props.playableFaction,

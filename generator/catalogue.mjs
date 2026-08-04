@@ -17,6 +17,9 @@ import { MEI } from "./mods/mei.mjs";
 import { BANDITS } from "./mods/bandits.mjs";
 import { SFS } from "./mods/sfs.mjs";
 
+// Props tab catalogue (placeable prefabs + footprints) lives in its own file.
+export { PROPS, PROP_CATEGORIES, DEFAULT_PROP } from "./props.mjs";
+
 export const TERRAINS = {
   arland: {
     label: "Arland",
@@ -1258,6 +1261,19 @@ export function resolveDefenseGroup(factionKey, groupSetKeys) {
     if (!best || set.defense.size > best.size) best = set.defense;
   }
   return best.ref;
+}
+
+/**
+ * Defense group for a defended prop: one prefab from the merged pool of the
+ * requested size classes (the prop card's 5-stop slider reuses the zone
+ * patrol-weight windows; resolveGroupPool already falls back to all classes
+ * when the window is empty for the selected sets). ordinal (prop index)
+ * round-robins the pool so several defended props get varied groups while
+ * regeneration stays deterministic.
+ */
+export function resolvePropDefenseGroup(factionKey, groupSetKeys, sizes, ordinal = 0) {
+  const pool = resolveGroupPool(factionKey, groupSetKeys, sizes?.length ? sizes : ["small", "medium", "large"]);
+  return pool[ordinal % pool.length];
 }
 
 export function resolveSentryPool(factionKey, groupSetKeys) {

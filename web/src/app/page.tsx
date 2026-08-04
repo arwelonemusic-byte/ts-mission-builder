@@ -19,15 +19,17 @@ import {
   type Mission,
   type MissionMarker,
   type MissionObjective,
+  type MissionProp,
   type MissionSector,
   type ObjectiveType,
+  type PlaceMode,
   type Zone,
 } from "@/lib/mission";
 import { rangeLabel, totalEnemyRange } from "@/lib/enemyEstimate";
 import { exportMission, spawnSlopeDelta } from "@/lib/export";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
-import { OBJECTIVE_COLOR } from "@/lib/overlayHtml";
+import { OBJECTIVE_COLOR, PROP_COLOR } from "@/lib/overlayHtml";
 import { LangProvider, loadLang, saveLang, tr, zonesCountLabel, type Lang } from "@/lib/i18n";
 import AppBar, { type StepId } from "@/components/AppBar";
 import GenerateOverlay, { GEN_STAGES, type GenState } from "@/components/GenerateOverlay";
@@ -39,6 +41,7 @@ import EnemyPanel from "@/components/panels/EnemyPanel";
 import SpawnPanel from "@/components/panels/SpawnPanel";
 import ZonesPanel from "@/components/panels/ZonesPanel";
 import ObjectivesPanel from "@/components/panels/ObjectivesPanel";
+import PropsPanel from "@/components/panels/PropsPanel";
 import MarkersPanel, { type MarkerDraft, type MarkersTab } from "@/components/panels/MarkersPanel";
 import BriefingPanel from "@/components/panels/BriefingPanel";
 
@@ -55,6 +58,7 @@ const STEP_TITLES: Record<StepId, string> = {
   spawn: "Spawn",
   zones: "AI Zones",
   objectives: "Objectives",
+  props: "Props",
   markers: "Markers",
   briefing: "Briefing",
 };
@@ -65,8 +69,9 @@ const STEP_NUMS: Record<StepId, string> = {
   enemy: "04",
   zones: "05",
   objectives: "06",
-  markers: "07",
-  briefing: "08",
+  props: "07",
+  markers: "08",
+  briefing: "09",
 };
 
 // Mobile bottom-sheet sizing per tab: these fill the whole height (their
@@ -90,10 +95,13 @@ export default function Editor() {
   const [mission, setMission] = useState<Mission | null>(null);
   const [lang, setLangState] = useState<Lang>("en");
   const [step, setStep] = useState<StepId>("mission");
-  const [placeMode, setPlaceMode] = useState<"spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null>(null);
+  const [placeMode, setPlaceMode] = useState<PlaceMode>(null);
   // Which objective type an armed "objective" placement creates (type picker)
   const [pendingObjectiveType, setPendingObjectiveType] = useState<ObjectiveType | null>(null);
   const [selectedObjectiveId, setSelectedObjectiveId] = useState<string | null>(null);
+  const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
+  // Which prefab an armed "prop" placement creates (picked in the modal first)
+  const [pendingPropRef, setPendingPropRef] = useState<string | null>(null);
   // Which deliver objective an armed "delivery" placement feeds
   const [deliveryTarget, setDeliveryTarget] = useState<string | null>(null);
   // Which zone+module an armed "qrf-origin" placement feeds (QRF reinforcements)
@@ -214,6 +222,7 @@ export default function Editor() {
         setOriginTarget(null);
         setSectorDraw(null);
         setPendingObjectiveType(null);
+        setPendingPropRef(null);
         setDeliveryTarget(null);
       }
     };
@@ -288,6 +297,14 @@ export default function Editor() {
       return null;
     });
   };
+  const updateProp = (id: string, patch: Partial<MissionProp>) =>
+    setMission((m) =>
+      m ? { ...m, props: m.props.map((p) => (p.id === id ? { ...p, ...patch } : p)) } : m
+    );
+  const removeProp = (id: string) => {
+    setMission((m) => (m ? { ...m, props: m.props.filter((p) => p.id !== id) } : m));
+    setSelectedPropId((cur) => (cur === id ? null : cur));
+  };
   const updateMarker = (id: string, patch: Partial<MissionMarker>) =>
     setMission((m) =>
       m ? { ...m, markers: m.markers.map((mk) => (mk.id === id ? { ...mk, ...patch } : mk)) } : m
@@ -314,10 +331,11 @@ export default function Editor() {
     setSelectedSectorId(null);
     setSectorDraw((cur) => (cur === kind ? null : kind));
   };
-  const armPlaceMode = (m: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null) => {
+  const armPlaceMode = (m: PlaceMode) => {
     setSectorDraw(null);
     if (m !== "qrf-origin") setOriginTarget(null);
     if (m !== "objective") setPendingObjectiveType(null);
+    if (m !== "prop") setPendingPropRef(null);
     setPlaceMode(m);
   };
   /** Arm objective placement for a type from the panel picker (null = cancel). */
@@ -327,6 +345,15 @@ export default function Editor() {
     setDeliveryTarget(null);
     setPendingObjectiveType(type);
     setPlaceMode(type ? "objective" : null);
+  };
+  /** Arm prop placement for a prefab from the picker modal (null = cancel). */
+  const armPropPlace = (ref: string | null) => {
+    setSectorDraw(null);
+    setOriginTarget(null);
+    setDeliveryTarget(null);
+    setPendingObjectiveType(null);
+    setPendingPropRef(ref);
+    setPlaceMode(ref ? "prop" : null);
   };
   /** Toggle delivery-point placement for a deliver objective (same id re-toggles off). */
   const armDeliveryPlace = (objectiveId: string) => {
@@ -438,6 +465,7 @@ export default function Editor() {
     setOriginTarget(null);
     setSectorDraw(null);
     setPendingObjectiveType(null);
+    setPendingPropRef(null);
     setDeliveryTarget(null);
     setStep(s);
   };
@@ -487,6 +515,7 @@ export default function Editor() {
       setSelectedSectorId(null);
       setSelectedOrigin(null);
       setSelectedObjectiveId(null);
+      setSelectedPropId(null);
       return;
     }
     const xi = +x.toFixed(1);
@@ -531,6 +560,15 @@ export default function Editor() {
       markFresh(objective.id);
       setPlaceMode(null);
       setPendingObjectiveType(null);
+    } else if (placeMode === "prop" && pendingPropRef) {
+      // Pick-first flow: the prefab was chosen in the modal before arming
+      const prop: MissionProp = { id: freshId(), ref: pendingPropRef, x: xi, z: zi, rotation: 0, defense: false };
+      setMission((m) => (m ? { ...m, props: [...m.props, prop] } : m));
+      setSelectedPropId(prop.id);
+      mapApi()?.addPing(xi, zi, PROP_COLOR);
+      markFresh(prop.id);
+      setPlaceMode(null);
+      setPendingPropRef(null);
     } else if (placeMode === "delivery" && deliveryTarget) {
       updateObjective(deliveryTarget, { delivery: { x: xi, z: zi } });
       setSelectedObjectiveId(deliveryTarget);
@@ -589,6 +627,19 @@ export default function Editor() {
     setSelectedObjectiveId(id);
     const o = mission?.objectives.find((ob) => ob.id === id);
     if (o) focusOn(o.x, o.z, Math.max(200, (o.radius ?? 0) * 1.5));
+  };
+
+  /* ----- prop selection (panel card ↔ map badge, two-way) ----- */
+  const [propRevealSeq, setPropRevealSeq] = useState(0);
+  const onPropClick = (id: string) => {
+    setSelectedPropId(id);
+    setPropRevealSeq((s) => s + 1);
+    setStep("props");
+  };
+  const selectAndFocusProp = (id: string) => {
+    setSelectedPropId(id);
+    const p = mission?.props.find((pr) => pr.id === id);
+    if (p) focusOn(p.x, p.z, 150);
   };
 
   /* ----- QRF origin selection (panel row ↔ map badge, two-way) ----- */
@@ -738,9 +789,11 @@ export default function Editor() {
     setSelectedSectorId(null);
     setSelectedOrigin(null);
     setSelectedObjectiveId(null);
+    setSelectedPropId(null);
     setOriginTarget(null);
     setSectorDraw(null);
     setPendingObjectiveType(null);
+    setPendingPropRef(null);
     setDeliveryTarget(null);
     setPlaceMode(null);
     setStatus(null);
@@ -790,7 +843,9 @@ export default function Editor() {
           ? t("the objective")
           : placeMode === "delivery"
             ? t("the delivery point")
-            : t("an AI zone");
+            : placeMode === "prop"
+              ? t("the prop")
+              : t("an AI zone");
   const sectorNoun = sectorDraw === "ao" ? t("the AO sector") : t("an objective sector");
 
   return (
@@ -814,6 +869,10 @@ export default function Editor() {
             onObjectiveClick,
             onObjectiveMoved: (id: string, x: number, z: number) => updateObjective(id, { x, z }),
             onDeliveryMoved: (id: string, x: number, z: number) => updateObjective(id, { delivery: { x, z } }),
+            props: mission.props,
+            selectedPropId,
+            onPropClick,
+            onPropMoved: (id: string, x: number, z: number) => updateProp(id, { x, z }),
             markers: mission.markers,
             selectedMarkerId,
             sectors: mission.sectors,
@@ -1014,6 +1073,19 @@ export default function Editor() {
                 onSelectObjective={selectAndFocusObjective}
                 updateObjective={updateObjective}
                 removeObjective={removeObjective}
+              />
+            )}
+            {step === "props" && (
+              <PropsPanel
+                mission={mission}
+                placing={placeMode === "prop"}
+                pendingRef={pendingPropRef}
+                onArmProp={armPropPlace}
+                selectedPropId={selectedPropId}
+                revealSeq={propRevealSeq}
+                onSelectProp={selectAndFocusProp}
+                updateProp={updateProp}
+                removeProp={removeProp}
               />
             )}
             {step === "markers" && (

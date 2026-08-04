@@ -105,6 +105,26 @@ declare module "mission-gen" {
     /** destruction-re-enable override prefab descriptor (generator-internal) */
     fix?: { guid: string; cls: string; id: string; cmp?: string; body?: string; extra?: string };
   }[];
+  /** Prop footprint: full XZ sizes in meters (w = local X, len = local Z,
+   * offX/offZ = box-center offset in prefab-local space) or a disc { d } */
+  export type PropFootprint = { w: number; len: number; offX?: number; offZ?: number; d?: undefined } | { d: number; w?: undefined; len?: undefined; offX?: undefined; offZ?: undefined };
+  export const PROP_CATEGORIES: {
+    key: "militaryBase" | "fortification" | "minefield" | "cargo" | "wreck" | "other";
+    label: string;
+    /** props in this category may carry an enemy defense group */
+    defense?: boolean;
+  }[];
+  export const PROPS: {
+    /** stored identity (mission JSON) — E_ variant where vanilla has one */
+    ref: string;
+    label: string;
+    cat: "militaryBase" | "fortification" | "minefield" | "cargo" | "wreck" | "other";
+    /** false = no E_ mirror in vanilla: spawns fine but not GM-editable */
+    editable?: boolean;
+    fp: PropFootprint;
+  }[];
+  export const DEFAULT_PROP: string;
+  export function resolvePropDefenseGroup(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[] | undefined, ordinal?: number): string;
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];
   export function resolveDefenseGroup(factionKey: string, groupSetKeys: string | string[] | undefined): string;

@@ -2,22 +2,23 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
-import type { Mission, Zone, ZoneModule } from "@/lib/mission";
+import type { Mission, PlaceMode, Zone, ZoneModule } from "@/lib/mission";
 import { rangeLabel, zoneEnemyRange } from "@/lib/enemyEstimate";
 import { MODULE_DESCRIPTIONS, MODULE_ICONS } from "@/lib/zoneModules";
 import { useLang, useT, zoneName } from "@/lib/i18n";
 import { CheckRow, GhostButton, PlusIcon, Slider } from "../ui";
 
 /** Foot Patrols weight slider: 5 stops over contiguous size-class windows.
- * Only the selected stop's label is shown. Stop 3 (all sizes) = default. */
-const PATROL_WEIGHT_STOPS: { sizes: string[]; label: string }[] = [
+ * Only the selected stop's label is shown. Stop 3 (all sizes) = default.
+ * Exported: the Props tab's defense-group size slider reuses the stops. */
+export const PATROL_WEIGHT_STOPS: { sizes: string[]; label: string }[] = [
   { sizes: ["small"], label: "Small groups only" },
   { sizes: ["small", "medium"], label: "Small to medium groups" },
   { sizes: ["small", "medium", "large"], label: "Mix of all group sizes" },
   { sizes: ["medium", "large"], label: "Medium to large groups" },
   { sizes: ["large"], label: "Only large groups" },
 ];
-function weightStop(sizes?: string[]): number {
+export function weightStop(sizes?: string[]): number {
   if (!sizes?.length) return 3;
   const key = [...sizes].sort().join(",");
   const idx = PATROL_WEIGHT_STOPS.findIndex((s) => [...s.sizes].sort().join(",") === key);
@@ -81,8 +82,8 @@ export default function ZonesPanel({
   removeZone,
 }: {
   mission: Mission;
-  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null;
-  setPlaceMode: (m: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null) => void;
+  placeMode: PlaceMode;
+  setPlaceMode: (m: PlaceMode) => void;
   /** Armed QRF origin placement: which zone+module the next map click feeds */
   originTarget: { zoneId: string; moduleType: string } | null;
   /** Toggle origin placement for a zone+module (re-toggle to cancel) */

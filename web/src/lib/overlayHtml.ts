@@ -138,6 +138,26 @@ export function objectiveBadgeHtml(type: ObjectiveType, selected: boolean, fresh
   return `<div style="position:relative;width:28px;height:28px;${drop}">${halo}<div style="width:28px;height:28px;border-radius:50%;background:${OBJECTIVE_COLOR};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;color:#fff;"><svg width="15" height="15" viewBox="0 0 16 16">${OBJECTIVE_GLYPHS[type]}</svg></div></div>`;
 }
 
+/** Props accent (map badge, footprint outline, placement ping) — distinct
+ * from zone purple, objective red-orange, QRF orange and marker yellow. */
+export const PROP_COLOR = "#4ade80";
+
+/** Prop glyph: a cube (16×16 viewBox inner SVG markup), shared by the map
+ * badge, the panel empty-state and the picker's placeholder tile. */
+export const PROP_GLYPH =
+  `<path d="M8 1.5 L14 4.75 V11.25 L8 14.5 L2 11.25 V4.75 Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/>` +
+  `<path d="M2.3 5 L8 8 L13.7 5 M8 8 V14.2" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="none"/>`;
+
+/** Round badge at a prop's position: green disc + white cube glyph.
+ * Selection adds the standard yellow halo ring. Draggable in both views. */
+export function propBadgeHtml(selected: boolean, freshDrop = false): string {
+  const halo = selected
+    ? `<div style="position:absolute;inset:-6px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
+    : "";
+  const drop = freshDrop ? "animation:mbDrop 0.4s cubic-bezier(0.22,1,0.36,1);" : "";
+  return `<div style="position:relative;width:24px;height:24px;${drop}">${halo}<div style="width:24px;height:24px;border-radius:50%;background:${PROP_COLOR};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;color:#fff;"><svg width="13" height="13" viewBox="0 0 16 16">${PROP_GLYPH}</svg></div></div>`;
+}
+
 /** Small square chip at a sector's center — the 3D view's select/move handle
  * (2D uses the outline stroke instead). */
 export function sectorChipHtml(kind: "ao" | "objective", selected: boolean): string {

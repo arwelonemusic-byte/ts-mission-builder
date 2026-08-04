@@ -5,7 +5,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { layoutSpawnBundle, itemWorldCorners, rotateLocal, FACTIONS } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
-import type { MissionMarker, MissionObjective, MissionSector, Zone } from "@/lib/mission";
+import type { MissionMarker, MissionObjective, MissionProp, MissionSector, PlaceMode, Zone } from "@/lib/mission";
+import { propEntry, propRect } from "@/lib/props";
 import {
   distanceLabel,
   distancePillHtml,
@@ -15,6 +16,8 @@ import {
   OBJECTIVE_COLOR,
   originBadgeHtml,
   pingHtml,
+  PROP_COLOR,
+  propBadgeHtml,
   zoneDotHtml,
   zoneTooltipHtml,
 } from "@/lib/overlayHtml";
@@ -60,6 +63,8 @@ export type MapProps = {
   selectedZoneId: string | null;
   objectives: MissionObjective[];
   selectedObjectiveId: string | null;
+  props: MissionProp[];
+  selectedPropId: string | null;
   markers: MissionMarker[];
   selectedMarkerId: string | null;
   sectors: MissionSector[];
@@ -68,7 +73,7 @@ export type MapProps = {
   sectorDraw: "ao" | "objective" | null;
   /** Freshly placed ids ("spawn" / zone id / marker id) → entrance animation */
   fresh: Record<string, boolean>;
-  placeMode: "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | null;
+  placeMode: PlaceMode;
   focus: MapFocus | null;
   onMapClick: (x: number, z: number) => void;
   onZoneClick: (id: string) => void;
@@ -86,6 +91,8 @@ export type MapProps = {
   onObjectiveMoved: (id: string, x: number, z: number) => void;
   /** deliver objective's delivery point dragged to a new position */
   onDeliveryMoved: (id: string, x: number, z: number) => void;
+  onPropClick: (id: string) => void;
+  onPropMoved: (id: string, x: number, z: number) => void;
   onSectorDrawn: (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => void;
   onSectorClick: (id: string) => void;
   onSectorChanged: (
@@ -646,6 +653,97 @@ export default function MissionMap(props: MapProps) {
         });
       }
     }
+
+    // Props: green badge (draggable, click-selects) + true-scale rotated
+    // footprint outline + facing tick (prefabs face local +Z — MG nests and
+    // bunkers fire toward the tick). Footprint + tick follow live on drag.
+    for (const pr of props.props) {
+      const selected = pr.id === props.selectedPropId;
+      const entry = propEntry(pr.ref);
+      const r = entry ? propRect(entry.fp) : null;
+      const color = selected ? "#ffcc00" : PROP_COLOR;
+      const freshCls = props.fresh[pr.id] ? "mb-fresh-path" : "";
+      let fpCircle: L.Circle | null = null;
+      let fpPoly: L.Polygon | null = null;
+      let baseCorners: [number, number][] | null = null;
+      if (r && r.disc) {
+        fpCircle = L.circle([pr.z, pr.x], {
+          radius: r.w / 2,
+          color,
+          weight: 2,
+          fillColor: PROP_COLOR,
+          fillOpacity: 0.08,
+          dashArray: "4 4",
+          interactive: false,
+          className: freshCls,
+        }).addTo(overlay);
+      } else if (r && (r.w >= 1 || r.len >= 1)) {
+        baseCorners = itemWorldCorners(
+          { x: r.offX, z: r.offZ, w: r.w, len: r.len },
+          pr.x,
+          pr.z,
+          pr.rotation
+        ) as [number, number][];
+        fpPoly = L.polygon(
+          baseCorners.map(([cx, cz]) => [cz, cx] as [number, number]),
+          {
+            color,
+            weight: 2,
+            fillColor: PROP_COLOR,
+            fillOpacity: 0.08,
+            dashArray: "4 4",
+            interactive: false,
+            className: freshCls,
+          }
+        ).addTo(overlay);
+      }
+      // Facing tick: front-edge midpoint → 4 m outward along local +Z
+      let tick: L.Polyline | null = null;
+      let tickBase: [number, number][] | null = null;
+      if (r) {
+        const frontX = r.disc ? 0 : r.offX;
+        const frontZ = (r.disc ? 0 : r.offZ) + (r.disc ? r.w : r.len) / 2;
+        const [ax, az] = rotateLocal(frontX, frontZ, pr.rotation);
+        const [bx, bz] = rotateLocal(frontX, frontZ + 4, pr.rotation);
+        tickBase = [
+          [pr.x + ax, pr.z + az],
+          [pr.x + bx, pr.z + bz],
+        ];
+        tick = L.polyline(
+          tickBase.map(([cx, cz]) => [cz, cx] as [number, number]),
+          { color, weight: 3, opacity: 0.9, interactive: false }
+        ).addTo(overlay);
+      }
+      const badge = L.marker([pr.z, pr.x], {
+        icon: propBadgeIcon(selected, !!props.fresh[pr.id]),
+        draggable: true,
+      })
+        .bindTooltip(entry ? tr(props.lang, entry.label) : tr(props.lang, "Prop"), {
+          direction: "top",
+          offset: [0, -12],
+          opacity: 1,
+        })
+        .addTo(overlay);
+      badge.on("click", (e) => {
+        L.DomEvent.stopPropagation(e);
+        propsRef.current.onPropClick(pr.id);
+      });
+      badge.on("dragstart", () => badge.unbindTooltip());
+      badge.on("drag", () => {
+        const ll = badge.getLatLng();
+        const dx = ll.lng - pr.x;
+        const dz = ll.lat - pr.z;
+        fpCircle?.setLatLng(ll);
+        if (fpPoly && baseCorners)
+          fpPoly.setLatLngs(baseCorners.map(([cx, cz]) => [cz + dz, cx + dx] as [number, number]));
+        if (tick && tickBase)
+          tick.setLatLngs(tickBase.map(([cx, cz]) => [cz + dz, cx + dx] as [number, number]));
+      });
+      badge.on("dragend", () => {
+        const ll = badge.getLatLng();
+        propsRef.current.onPropMoved(pr.id, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
+      });
+    }
   }, [
     props.spawn,
     props.zones,
@@ -655,6 +753,8 @@ export default function MissionMap(props: MapProps) {
     props.selectedMarkerId,
     props.objectives,
     props.selectedObjectiveId,
+    props.props,
+    props.selectedPropId,
     props.sectors,
     props.selectedSectorId,
     props.playableFaction,
@@ -800,6 +900,21 @@ function objectiveBadgeIcon(type: MissionObjective["type"], selected: boolean, f
     iconSize: [36, 36],
     iconAnchor: [18, 18],
     html: `<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">${badge}</div>`,
+  });
+}
+
+/** DivIcon wrapper for a prop badge; 32px transparent hit box on touch. */
+function propBadgeIcon(selected: boolean, freshDrop = false) {
+  const badge = propBadgeHtml(selected, freshDrop);
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [24, 24], iconAnchor: [12, 12], html: badge });
+  }
+  return L.divIcon({
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">${badge}</div>`,
   });
 }
 

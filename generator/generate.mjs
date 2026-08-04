@@ -216,6 +216,20 @@ const MISSION = {
       hintBody: "Радар ТПН-19 уничтожен.",
     },
   ],
+  // Props: exercise every emission path — defended fortification (rotated,
+  // AreaPropDef block with a small-window group), minefield module, wreck,
+  // and a base-prefab (no E_ variant) entry. Positions along the road SW of
+  // the AO.
+  props: [
+    // MG nest facing east (yaw 90), defended by a small-window group
+    { ref: "{047B9C8AAB50CE0F}PrefabsEditable/Auto/Compositions/Slotted/SlotFlatSmall/E_MachineGunNest_S_USSR_01.et", pos: [2050, 31.2, 2040], rotation: 90, defense: { sizes: ["small"] } },
+    // AT minefield on the road — minefield cat is not defense-capable, plain
+    { ref: "{D3FDAE504F8621E8}PrefabsEditable/EffectsModules/Mine/EffectModule_MineField_Medium_US.et", pos: [1980, 29.5, 1985], rotation: 45, defense: null },
+    // wreck, yaw 0 → no angles line
+    { ref: "{82008EE10AB80D6E}PrefabsEditable/Auto/Props/Wrecks/E_UAZ469_wreck.et", pos: [2010, 30.1, 2010], rotation: 0, defense: null },
+    // base prefab (no E_ mirror) — emits as-is, not GM-editable
+    { ref: "{114DE81321786CD9}Prefabs/Compositions/Slotted/SlotFlatSmall/MachineGunNest_S_USSR_01_PKM.et", pos: [2100, 32.4, 2080], rotation: 270, defense: { sizes: ["medium", "large"] } },
+  ],
 };
 
 // RHS spike variant: same layout/zones, RHS factions + RHS content overrides.
