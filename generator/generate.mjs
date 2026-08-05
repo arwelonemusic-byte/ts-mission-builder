@@ -30,7 +30,7 @@
 //   --zargabad  same, on Zargabad
 //   --zarichne  same, on Zarichne
 
-import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { buildMissionFiles, FACTIONS } from "./lib.mjs";
 
@@ -988,7 +988,36 @@ const BUILT = process.argv.includes("--zarichne")
                 : process.argv.includes("--sfs")
                   ? SFS_MISSION
                   : MISSION;
-const { files, addonDirName } = buildMissionFiles(BUILT);
+// CLI heightmap sampler (same .bin/.json pair the web app ships) so spikes
+// get terrain-accurate bundle Y and prop tilt like a browser export. Falls
+// back to flat emission for terrains without a local heightmap.
+function cliSampler(terrainKey) {
+  try {
+    const dir = join(import.meta.dirname, "..", "web", "public", "heightmaps");
+    const meta = JSON.parse(readFileSync(join(dir, `${terrainKey}.json`), "utf8"));
+    const buf = readFileSync(join(dir, `${terrainKey}.bin`));
+    const u16 = new Uint16Array(buf.buffer, buf.byteOffset, buf.byteLength / 2);
+    const { worldWidthM, worldHeightM, widthPx, heightPx, minElevationM, heightScale } = meta;
+    // px per metre = 1/cellSizeM — pixel i sits at exactly i·cellSizeM
+    // (see web/src/lib/heightmap.ts for the stretch bug this replaces)
+    const xS = 1 / meta.cellSizeM;
+    const yS = 1 / meta.cellSizeM;
+    return (x, z) => {
+      if (x < 0 || x > worldWidthM || z < 0 || z > worldHeightM) return NaN;
+      const fx = x * xS, fy = z * yS;
+      const x0 = Math.min(widthPx - 1, Math.floor(fx)), y0 = Math.min(heightPx - 1, Math.floor(fy));
+      const x1 = Math.min(widthPx - 1, x0 + 1), y1 = Math.min(heightPx - 1, y0 + 1);
+      const tx = fx - x0, ty = fy - y0;
+      const h = (u16[y0 * widthPx + x0] * (1 - tx) + u16[y0 * widthPx + x1] * tx) * (1 - ty)
+              + (u16[y1 * widthPx + x0] * (1 - tx) + u16[y1 * widthPx + x1] * tx) * ty;
+      return minElevationM + h * heightScale;
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+const { files, addonDirName } = buildMissionFiles(BUILT, { sampleY: cliSampler(BUILT.terrain) });
 const addonDir = join(ADDONS_ROOT, addonDirName);
 
 if (process.argv.includes("--clean") && existsSync(addonDir)) {

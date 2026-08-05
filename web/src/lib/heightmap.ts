@@ -47,8 +47,15 @@ export async function loadHeightmap(
   }
 
   const { worldWidthM, worldHeightM, widthPx, heightPx, minElevationM, heightScale } = meta;
-  const xScale = (widthPx - 1) / worldWidthM;
-  const yScale = (heightPx - 1) / worldHeightM;
+  // Pixel i sits at EXACTLY i·cellSizeM metres: the extractor's downsample
+  // keeps every step-th terrain vertex (node-registered), so the last pixel
+  // is at (widthPx-1)·cellSizeM — usually short of worldWidthM (Arland:
+  // 4090 vs 4096). The old (widthPx-1)/worldWidthM mapping stretched the
+  // grid ~0.15%, reading terrain ~3 m south-west of the true point at
+  // mid-map — enough to bury a prop on a slope (engine-validated against
+  // Workbench getHeight probes, 2026-08-04).
+  const xScale = 1 / meta.cellSizeM;
+  const yScale = 1 / meta.cellSizeM;
 
   const maxPx = widthPx - 1;
   const maxPy = heightPx - 1;

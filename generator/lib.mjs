@@ -616,12 +616,54 @@ ${farpBlock}`;
   // Area/Layer/SlotAI trio appended to AO.layer — dynamic despawn ON with
   // the range left at the class default (750), no area radius; the SlotAI's
   // default 30 m defend waypoint keeps the group holding the prop.
+  //
+  // Terrain tilt: with a heightmap sampler available (web export), props get
+  // full `angles <pitch> <yaw> <roll>` so they hug slopes instead of
+  // floating at the front and sinking at the back. Sign convention was
+  // ground-truthed against terrain-snapped entities in extracted community
+  // worlds (Ruha GravelPile roll −4.5° vs slope-predicted −5.4°, Takistan
+  // cargo containers, Kunar GravelPile — 2026-08-04): pitch = +atan(slope
+  // along local +Z) (nose up when ground rises ahead), roll = −atan(slope
+  // along local +X) (right side dips on a right-rising slope). Lever arms =
+  // footprint half-extents (min 2 m) so the fitted plane matches what the
+  // prop spans; clamped ±30° (steeper reads as a placement error and the
+  // panel's uneven-ground warning already fired). Minefield effect modules
+  // stay flat — they're logical areas, the spawned mines snap individually.
   const props = mission.props ?? [];
+  // With a sampler, prop Y comes from the heightmap regardless of the input
+  // pos (a no-op for web exports, which sampled the same heightmap already —
+  // but it corrects hand-written CLI fixture Ys, which put spike props
+  // meters underground, playtest-caught 2026-08-04).
+  const propPos = (p) => {
+    if (!sampleYFn) return p.pos;
+    const y = sampleYFn(p.pos[0], p.pos[2]);
+    return Number.isFinite(y) ? [p.pos[0], +y.toFixed(3), p.pos[2]] : p.pos;
+  };
+  const propTilt = (p, yaw) => {
+    if (!sampleYFn) return [0, 0];
+    const entry = PROPS.find((e) => e.ref === p.ref);
+    if (!entry || entry.cat === "minefield") return [0, 0];
+    const fp = entry.fp ?? {};
+    const dR = Math.max(2, (fp.d ?? fp.w ?? 0) / 2);
+    const dF = Math.max(2, (fp.d ?? fp.len ?? 0) / 2);
+    const th = (yaw * Math.PI) / 180;
+    const fwd = [Math.sin(th), Math.cos(th)];
+    const right = [Math.cos(th), -Math.sin(th)];
+    const at = (v, k) => {
+      const y = sampleYFn(p.pos[0] + v[0] * k, p.pos[2] + v[1] * k);
+      return Number.isFinite(y) ? y : null;
+    };
+    const f1 = at(fwd, dF), f0 = at(fwd, -dF), r1 = at(right, dR), r0 = at(right, -dR);
+    if (f1 === null || f0 === null || r1 === null || r0 === null) return [0, 0];
+    const clamp = (v) => Math.max(-30, Math.min(30, +v.toFixed(1)));
+    return [clamp((Math.atan2(f1 - f0, 2 * dF) * 180) / Math.PI), clamp((-Math.atan2(r1 - r0, 2 * dR) * 180) / Math.PI)];
+  };
   const propsLayer = props
     .map((p, i) => {
       const yaw = +((p.rotation ?? 0) % 360).toFixed(1);
-      const angles = yaw ? `\n angles 0 ${yaw} 0` : "";
-      return `GenericEntity Prop${i + 1} : "${p.ref}" {\n coords ${posStr(p.pos)}${angles}\n}\n`;
+      const [pitch, roll] = propTilt(p, yaw);
+      const angles = pitch || yaw || roll ? `\n angles ${pitch} ${yaw} ${roll}` : "";
+      return `GenericEntity Prop${i + 1} : "${p.ref}" {\n coords ${posStr(propPos(p))}${angles}\n}\n`;
     })
     .join("");
   const propDefenseBlocks = props
@@ -637,7 +679,7 @@ ${farpBlock}`;
    m_bDynamicDespawn 1
   }
  }
- coords ${posStr(p.pos)}
+ coords ${posStr(propPos(p))}
  {
   GenericEntity LayerPropDef${i + 1} : "${K.LAYER_PREFAB}" {
    components {
