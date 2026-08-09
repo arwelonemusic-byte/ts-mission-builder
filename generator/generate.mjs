@@ -130,7 +130,8 @@ const MISSION = {
       pos: "2600 70 1750",
       radius: 400,
       plugins: [
-        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["BRDM2"] },
+        // Mixed armed + unarmed pool — exercises the transportVehicleKeys path
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["BRDM2", "Ural4320_transport_covered"] },
       ],
     },
   ],

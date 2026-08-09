@@ -210,6 +210,7 @@ export const RHS = {
         UH1H_armed: "UH-1H (armed)",
       },
       patrolVehicleKeys: ["M151A2_M2HB", "M1025_armed_M2HB_USAF", "LAV25_RHS"],
+      transportVehicleKeys: ["M151A2_transport", "M923A1_transport", "M923A1_transport_covered"],
       // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
       // so captured/borrowed vehicles never spawn their prefab-default crews
       patrolCrew: [
@@ -504,6 +505,7 @@ export const RHS = {
         Mi8MT_armed_black: "Mi-8MT (armed)",
       },
       patrolVehicleKeys: ["UAZ469_PKM", "BTR70_AFRF", "K4386_Armed", "APC_K17_Berezok"],
+      transportVehicleKeys: ["UAZ469_Camo", "Ural4320_transport", "Ural4320_transport_covered"],
       // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
       // so captured/borrowed vehicles (vanilla UAZ469_PKM here) never spawn
       // their prefab-default vanilla USSR crews (user-reported 2026-08-01)
@@ -683,6 +685,8 @@ export const RHS = {
         M1025_armed_M2HB_MDO_ION_Camo: "M1025 M2HB (MDO, camo)",
       },
       patrolVehicleKeys: ["M1025_armed_M2HB_ION"],
+      // ION ships armed M1025 variants only — no unarmed transports exist
+      transportVehicleKeys: [],
       // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool).
       // Concrete ION characters, harvested 2026-08-01 from the *_Random
       // wrappers' variant tables (see the riflemen note above)

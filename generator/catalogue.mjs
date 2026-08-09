@@ -384,6 +384,7 @@ export const FACTIONS = {
     // Mounted-patrol candidates (keys into `vehicles`), ordered light -> heavy.
     // Which of these actually patrol is a PER-ZONE selection in the mission.
     patrolVehicleKeys: ["M151A2_M2HB", "M1025_armed_M2HB", "LAV25"],
+    transportVehicleKeys: ["M151A2_transport", "M923A1_transport", "M923A1_transport_covered"],
     // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
     // so captured/borrowed vehicles never spawn their prefab-default crews
     patrolCrew: [
@@ -623,6 +624,7 @@ export const FACTIONS = {
       Mi8MT_gunship_HEDP: "Mi-8MT Gunship HEDP",
     },
     patrolVehicleKeys: ["UAZ469_PKM", "BRDM2", "BTR70"],
+    transportVehicleKeys: ["UAZ452_transport", "Ural4320_transport", "Ural4320_transport_covered"],
     // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
     // so captured/borrowed vehicles never spawn their prefab-default crews
     patrolCrew: [
@@ -840,6 +842,7 @@ export const FACTIONS = {
       BTR70_FIA: "BTR-70",
     },
     patrolVehicleKeys: ["UAZ469_PKM_FIA", "UAZ469_UK59_FIA", "BRDM2_FIA", "BTR70_FIA"],
+    transportVehicleKeys: ["UAZ452_transport_FIA", "Ural4320_FIA_transport", "Ural4320_FIA_transport_covered"],
     // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
     // so captured/borrowed vehicles never spawn their prefab-default crews
     patrolCrew: [

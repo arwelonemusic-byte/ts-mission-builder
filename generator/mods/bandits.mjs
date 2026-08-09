@@ -61,7 +61,11 @@ export const BANDITS = {
         S105_Bandit: "S105 Car",
         S105_Bandit_02: "S105 Car (alt)",
       },
-      patrolVehicleKeys: ["UAZ469_PKM", "UAZ452_transport_Bandit"],
+      patrolVehicleKeys: ["UAZ469_PKM"],
+      // The Bukhanka predates the armed/unarmed split (was in patrolVehicleKeys
+      // as the deliberate troop-carrier option); the S105 civilian cars stay
+      // out of the pool by the don't-overpopulate rule
+      transportVehicleKeys: ["UAZ452_transport_Bandit"],
       // CONCRETE characters only — Character_PLASTICBANDIT_Randomized is an
       // editor variant-table wrapper over an unarmed BaseLoadout; direct
       // spawns (FillCompartments) get the base: unarmed identical clones

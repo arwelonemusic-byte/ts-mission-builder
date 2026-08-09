@@ -136,6 +136,8 @@ const RU: Record<string, string> = {
   "Foot Patrols": "Пешие патрули",
   Garrison: "Гарнизон",
   "Vehicle Patrols": "Патрули на технике",
+  Armed: "С вооружением",
+  Unarmed: "Без вооружения",
   Fortifications: "Укрепления",
   "Large group in the center with a defend waypoint": "Большая группа в центре зоны с приказом обороняться",
   "Groups with random patrol waypoints": "Группы со случайными маршрутами патрулирования",

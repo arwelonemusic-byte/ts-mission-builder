@@ -302,27 +302,37 @@ export default function ZonesPanel({
                   )}
                   {mod && wantsVehicles && (
                     <div className="ml-1 pl-4 border-l border-[#2e3439] flex flex-col gap-1">
-                      {(enemy?.patrolVehicleKeys ?? []).map((vk: string) => {
-                        const checked = mod.vehicles?.includes(vk) ?? false;
-                        return (
-                          <CheckRow
-                            key={vk}
-                            checked={checked}
-                            onChange={(on) => {
-                              const cur = mod.vehicles ?? [];
-                              const next = on ? [...cur, vk] : cur.filter((k) => k !== vk);
-                              if (next.length === 0) return; // keep at least one vehicle
-                              updateZone(zn.id, {
-                                modules: zn.modules.map((mm) =>
-                                  mm.type === def.type ? { ...mm, vehicles: next } : mm
-                                ),
-                              });
-                            }}
-                          >
-                            {enemy?.vehicleLabels[vk] ?? vk}
-                          </CheckRow>
-                        );
-                      })}
+                      {[
+                        { heading: "Armed", keys: enemy?.patrolVehicleKeys ?? [] },
+                        { heading: "Unarmed", keys: enemy?.transportVehicleKeys ?? [] },
+                      ]
+                        .filter((grp) => grp.keys.length > 0)
+                        .map((grp) => (
+                          <div key={grp.heading} className="flex flex-col gap-1">
+                            <span className="text-[11px] text-white/40">{t(grp.heading)}</span>
+                            {grp.keys.map((vk: string) => {
+                              const checked = mod.vehicles?.includes(vk) ?? false;
+                              return (
+                                <CheckRow
+                                  key={vk}
+                                  checked={checked}
+                                  onChange={(on) => {
+                                    const cur = mod.vehicles ?? [];
+                                    const next = on ? [...cur, vk] : cur.filter((k) => k !== vk);
+                                    if (next.length === 0) return; // keep at least one vehicle
+                                    updateZone(zn.id, {
+                                      modules: zn.modules.map((mm) =>
+                                        mm.type === def.type ? { ...mm, vehicles: next } : mm
+                                      ),
+                                    });
+                                  }}
+                                >
+                                  {enemy?.vehicleLabels[vk] ?? vk}
+                                </CheckRow>
+                              );
+                            })}
+                          </div>
+                        ))}
                     </div>
                   )}
                   {mod && isQrf && origins.length > 0 && (

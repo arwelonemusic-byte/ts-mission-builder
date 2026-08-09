@@ -208,6 +208,7 @@ export const UK = {
         UH1H_gunship_UK: "UH-1H Gunship",
       },
       patrolVehicleKeys: ["LR3_SWB_GPMG", "LR3_LWB_GPMG", "LR3_LWB_recce", "LR3_LWB_recce_M2HB", "BRDM2_UK"],
+      transportVehicleKeys: ["LR3_SWB_transport", "LR3_LWB_transport", "M923A1_transport_covered_UK"],
       // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
       // so captured/borrowed vehicles never spawn their prefab-default crews
       patrolCrew: [

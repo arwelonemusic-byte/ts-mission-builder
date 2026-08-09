@@ -43,6 +43,9 @@ declare module "mission-gen" {
       vehicles: Record<string, string>;
       vehicleLabels: Record<string, string>;
       patrolVehicleKeys: string[];
+      /** Unarmed transport candidates for the same modules ("Unarmed" list in
+       *  the UI; empty for factions without unarmed vehicles, e.g. RHS ION) */
+      transportVehicleKeys: string[];
       /** Character prefabs for mounted-patrol / vehicle-QRF crews. Required
        *  for every faction (lib.mjs throws on vehicle modules without it) —
        *  always emitted so borrowed/captured vehicles never spawn their

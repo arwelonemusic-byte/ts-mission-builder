@@ -71,6 +71,7 @@ export const MEI = {
         BTR70: "BTR-70",
       },
       patrolVehicleKeys: ["UAZ469_PKM_MEI", "BRDM2", "BTR70"],
+      transportVehicleKeys: ["UAZ469_MEI", "Ural4320_transport_covered_MEI"],
       // Mounted patrols fill vehicles with the PREFAB's default occupants —
       // vanilla USSR crew for BRDM2/BTR70 AND for UAZ469_PKM_MEI (it inherits
       // the vanilla UAZ's occupant slots). Force insurgent crews instead;
