@@ -121,6 +121,8 @@ declare module "mission-gen" {
     cat: "militaryBase" | "fortification" | "minefield" | "cargo" | "wreck" | "other";
     /** false = no E_ mirror in vanilla: spawns fine but not GM-editable */
     editable?: boolean;
+    /** false = never terrain-tilt (vertical structures: antenna masts) */
+    tilt?: boolean;
     fp: PropFootprint;
   }[];
   export const DEFAULT_PROP: string;

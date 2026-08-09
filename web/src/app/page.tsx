@@ -470,41 +470,33 @@ export default function Editor() {
     setStep(s);
   };
 
-  // Prefilled task/hint texts for a freshly placed objective (current UI lang)
+  // Prefilled task texts for a freshly placed objective (current UI lang).
+  // Completion feedback is the native ON_FINISH task notification (carries the
+  // task title) — no per-objective hint texts since 2026-08-02.
   const objectiveTextDefaults = (type: ObjectiveType) =>
     type === "hvt"
       ? {
           taskTitle: t("Eliminate the HVT"),
           taskDesc: t("Find and eliminate the enemy officer in the area."),
-          hintTitle: t("Objective complete"),
-          hintBody: t("The HVT has been eliminated."),
         }
       : type === "clear"
         ? {
             taskTitle: t("Clear the area"),
             taskDesc: t("Clear all enemy forces from the designated area."),
-            hintTitle: t("Objective complete"),
-            hintBody: t("The area has been cleared."),
           }
         : type === "destroy"
           ? {
               taskTitle: t("Destroy the target"),
               taskDesc: t("Find and destroy the designated target."),
-              hintTitle: t("Objective complete"),
-              hintBody: t("The target has been destroyed."),
             }
           : type === "deliver"
             ? {
                 taskTitle: t("Deliver the vehicle"),
                 taskDesc: t("Get the vehicle to the delivery point intact."),
-                hintTitle: t("Objective complete"),
-                hintBody: t("The vehicle has been delivered."),
               }
             : {
                 taskTitle: t("Reach the location"),
                 taskDesc: t("Get to the designated location."),
-                hintTitle: t("Objective complete"),
-                hintBody: t("The location has been reached."),
               };
 
   const onMapClick = (x: number, z: number) => {

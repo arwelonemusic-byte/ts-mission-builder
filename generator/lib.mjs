@@ -642,7 +642,9 @@ ${farpBlock}`;
   const propTilt = (p, yaw) => {
     if (!sampleYFn) return [0, 0];
     const entry = PROPS.find((e) => e.ref === p.ref);
-    if (!entry || entry.cat === "minefield") return [0, 0];
+    // minefields = logical areas; tilt: false = vertical structures
+    // (antenna masts) that are built plumb regardless of ground slope
+    if (!entry || entry.cat === "minefield" || entry.tilt === false) return [0, 0];
     const fp = entry.fp ?? {};
     const dR = Math.max(2, (fp.d ?? fp.w ?? 0) / 2);
     const dF = Math.max(2, (fp.d ?? fp.len ?? 0) / 2);
@@ -852,9 +854,9 @@ ${slotBlocks}
   // marker, so objective positions stay hidden (m_fMarkerUpdateInterval keeps
   // its default 0 — nothing tracks a moving HVT). Completion is auto-detected
   // by each m_sTaskPrefab's Task class (Kill: damage-state hook; Move/Clear:
-  // trigger OnActivate) and fires the custom ShowHint via
-  // m_aTriggerActionsOnFinish. m_sFactionKey MUST be a playable faction or
-  // task creation fails at Init.
+  // trigger OnActivate) and announces itself via the NATIVE ON_FINISH task
+  // notification (see taskFields). m_sFactionKey MUST be a playable faction
+  // or task creation fails at Init.
   let objectivesLayer = "";
   // Destroy-target override prefabs (Prefabs/DestroyTargets/Dest_<name>.et):
   // vanilla prop destruction is disabled engine-wide (Enabled 0 in
@@ -869,28 +871,24 @@ ${slotBlocks}
   const missionObjectives = mission.objectives ?? [];
   if (missionObjectives.length) {
     const playableKey = effKey(mission.playableFaction);
-    // ShowHint m_sText supports <br/> markup; literal newlines would break the
+    // Task text supports <br/> markup; literal newlines would break the
     // .layer file. Quotes escape to ' like all other user text we serialize.
     const escObjText = (s) => String(s ?? "").replace(/"/g, "'").replace(/\r?\n/g, "<br/>");
-    const showHint = (o) => `     m_aTriggerActionsOnFinish {
-      SCR_ScenarioFrameworkActionShowHint "{${mintGuid()}}" {
-       m_iMaxNumberOfActivations 1
-       m_sTitle "${escObjText(o.hintTitle)}"
-       m_sText "${escObjText(o.hintBody)}"
-       m_iTimeout 8
-       m_sFactionKey "${playableKey}"
-      }
-     }`;
-    // m_eTaskNotificationSettings 0 suppresses the vanilla task popups
-    // (created/finished/failed — default is ALL flags): they'd duplicate our
-    // hint, and SCR_PopUpNotification has queue/stacking bugs (toolkit rule:
-    // hints over popups).
+    // m_eTaskNotificationSettings 2 = ON_FINISH only: the native, faction-
+    // filtered "task finished" popup carrying the task title. Replaced the
+    // custom ShowHint action 2026-08-02 — hints are suppressed entirely for
+    // players who disable Settings > Interface > Show Hints (user report),
+    // while task popups have no such opt-out. Enum quirk: the flags enum is
+    // INDEX-valued (ON_CREATED 0, ON_UPDATED 1, ON_FINISH 2, ON_FAILED 3,
+    // ON_CANCELLED 4) and HasFlag(x,0) is always true, so ON_CREATED can't be
+    // masked off by ANY value — harmless: it fires ~200 ms after task
+    // creation at world init, before anyone has spawned. With value 2 the
+    // ON_FAILED check ((2 & 3) == 3) and all others stay false.
     const taskFields = (o) => `     m_sFactionKey "${playableKey}"
      m_sTaskTitle "${escObjText(o.taskTitle)}"
      m_sTaskDescription "${escObjText(o.taskDesc)}"
      m_eTaskUIVisibility LIST_ONLY
-     m_eTaskNotificationSettings 0
-${showHint(o)}`;
+     m_eTaskNotificationSettings 2`;
     const radiusOf = (o) => {
       const def = OBJECTIVE_TYPES.find((t) => t.type === o.type)?.radius;
       return Math.round(o.radius ?? def?.default ?? 25);

@@ -177,31 +177,23 @@ const RU: Record<string, string> = {
   "Completes when a player reaches the point.": "Выполняется, когда игрок достигает точки.",
   "Task title": "Название задачи",
   "Task description": "Описание задачи",
-  "Completion hint": "Уведомление о выполнении",
-  "Hint title": "Заголовок уведомления",
-  "Hint text": "Текст уведомления",
   "Delete objective": "Удалить задачу",
   "the objective": "задачу",
-  // Prefilled task/hint texts (baked into the mission in the UI language)
+  // Prefilled task texts (baked into the mission in the UI language)
   "Eliminate the HVT": "Ликвидировать цель",
   "Find and eliminate the enemy officer in the area.":
     "Найдите и ликвидируйте офицера противника в указанном районе.",
-  "Objective complete": "Задача выполнена",
-  "The HVT has been eliminated.": "Цель ликвидирована.",
   "Clear the area": "Зачистить район",
   "Clear all enemy forces from the designated area.":
     "Зачистите указанный район от сил противника.",
-  "The area has been cleared.": "Район зачищен.",
   "Reach the location": "Выйти к точке",
   "Get to the designated location.": "Выйдите к указанной точке.",
-  "The location has been reached.": "Точка достигнута.",
   // Destroy object
   "Destroy Object": "Уничтожение объекта",
   "Spawns a destructible object or vehicle at the point. Completes when it is destroyed.":
     "Создаёт разрушаемый объект или технику в точке. Выполняется при уничтожении.",
   "Destroy the target": "Уничтожить объект",
   "Find and destroy the designated target.": "Найдите и уничтожьте указанный объект.",
-  "The target has been destroyed.": "Объект уничтожен.",
   "Target object": "Целевой объект",
   "Select object…": "Выбрать объект…",
   Change: "Изменить",
@@ -212,7 +204,6 @@ const RU: Record<string, string> = {
     "Создаёт технику в точке. Выполняется, когда её доставляют в пункт назначения.",
   "Deliver the vehicle": "Доставить технику",
   "Get the vehicle to the delivery point intact.": "Доставьте технику в пункт назначения в целости.",
-  "The vehicle has been delivered.": "Техника доставлена.",
   Vehicle: "Техника",
   "Select vehicle": "Выберите технику",
   "Place delivery point (click map)": "Разместить пункт назначения (клик по карте)",

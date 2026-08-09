@@ -70,12 +70,11 @@ export type MissionObjective = {
    * completes when it sits inside the delivery trigger. */
   delivery?: { x: number; z: number } | null;
   deliveryRadius?: number;
-  /** In-game task list entry */
+  /** In-game task list entry. Completion feedback is the native ON_FINISH
+   * task notification (carries taskTitle) — the old per-objective hint texts
+   * were removed 2026-08-02 (migrate() silently drops them from old saves). */
   taskTitle: string;
   taskDesc: string;
-  /** Completion hint (8 s, playable faction only) */
-  hintTitle: string;
-  hintBody: string;
 };
 
 /** Placed prop (Props tab) → a plain world entity in Props.layer. ref is a
@@ -342,8 +341,6 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
       deliveryRadius: o.type === "deliver" ? deliveryRadiusClamp(o.deliveryRadius) : undefined,
       taskTitle: String(o.taskTitle ?? ""),
       taskDesc: String(o.taskDesc ?? ""),
-      hintTitle: String(o.hintTitle ?? ""),
-      hintBody: String(o.hintBody ?? ""),
     }));
   // Props arrived after the first saves; sanitize hand-edited entries.
   // Unknown refs (catalogue changed) backfill DEFAULT_PROP — keeps the

@@ -110,8 +110,6 @@ export async function toGeneratorMission(m: Mission) {
       deliveryRadius: o.deliveryRadius,
       taskTitle: o.taskTitle,
       taskDesc: o.taskDesc,
-      hintTitle: o.hintTitle,
-      hintBody: o.hintBody,
     });
   }
 

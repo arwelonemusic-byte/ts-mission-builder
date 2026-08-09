@@ -271,19 +271,6 @@ export default function ObjectivesPanel({
                     onChange={(e) => updateObjective(o.id, { taskDesc: e.target.value })}
                   />
                 </Field>
-                <SectionLabel>{t("Completion hint")}</SectionLabel>
-                <Field label={t("Hint title")}>
-                  <TextInput
-                    value={o.hintTitle}
-                    onChange={(e) => updateObjective(o.id, { hintTitle: e.target.value })}
-                  />
-                </Field>
-                <Field label={t("Hint text")}>
-                  <TextArea
-                    value={o.hintBody}
-                    onChange={(e) => updateObjective(o.id, { hintBody: e.target.value })}
-                  />
-                </Field>
               </div>
             )}
           </div>

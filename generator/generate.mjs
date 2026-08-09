@@ -154,8 +154,6 @@ const MISSION = {
       pos: [2820.5, 72.88, 1651.2],
       taskTitle: "Ликвидировать командира",
       taskDesc: "В районе цели замечен старший офицер противника. Найдите и ликвидируйте его.",
-      hintTitle: "Задача выполнена",
-      hintBody: "Командир противника ликвидирован.",
     },
     {
       type: "clear",
@@ -163,8 +161,6 @@ const MISSION = {
       radius: 200,
       taskTitle: "Зачистить лагерь",
       taskDesc: "Зачистите лагерь противника в указанном районе.",
-      hintTitle: "Задача выполнена",
-      hintBody: "Лагерь зачищен.",
     },
     {
       type: "reach",
@@ -172,8 +168,6 @@ const MISSION = {
       radius: 25,
       taskTitle: "Выйти к перекрестку",
       taskDesc: "Выйдите к перекрестку и осмотритесь.",
-      hintTitle: "Задача выполнена",
-      hintBody: "Точка достигнута.",
     },
     {
       type: "deliver",
@@ -183,8 +177,6 @@ const MISSION = {
       objectRef: "{259EE7B78C51B624}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469.et",
       taskTitle: "Угнать УАЗ",
       taskDesc: "В лагере противника стоит УАЗ-469. Угоните его и доставьте на базу.",
-      hintTitle: "Задача выполнена",
-      hintBody: "УАЗ доставлен на базу.",
     },
     {
       type: "destroy",
@@ -192,8 +184,6 @@ const MISSION = {
       objectRef: "{34AD2F398FDFE5B3}Prefabs/Props/Military/AmmoBoxes/EquipmentBoxStack/USSR/EquipmentBoxStack_USSR_01_V5.et",
       taskTitle: "Уничтожить склад боеприпасов",
       taskDesc: "В лагере противника складированы боеприпасы. Найдите и уничтожьте их.",
-      hintTitle: "Задача выполнена",
-      hintBody: "Склад боеприпасов уничтожен.",
     },
     // Approach radars — exercise the fix-only (no spawnRef) emission path:
     // RPL-5 = _on-body replication, TPN-19 = from-scratch destruction
@@ -203,8 +193,6 @@ const MISSION = {
       objectRef: "{DED4DB7D08E6E0BE}Prefabs/Structures/Military/Radar/ApproachRadar_RPL5_01/ApproachRadar_RPL5_01.et",
       taskTitle: "Уничтожить радар РПЛ-5",
       taskDesc: "Подорвите посадочный радар противника. Потребуется взрывчатка.",
-      hintTitle: "Задача выполнена",
-      hintBody: "Радар РПЛ-5 уничтожен.",
     },
     {
       type: "destroy",
@@ -212,8 +200,6 @@ const MISSION = {
       objectRef: "{A0190D51FD62FF68}Prefabs/Structures/Military/Radar/ApproachRadar_TPN19_01/ApproachRadar_TPN19_01.et",
       taskTitle: "Уничтожить радар ТПН-19",
       taskDesc: "Уничтожьте радар управления заходом на посадку.",
-      hintTitle: "Задача выполнена",
-      hintBody: "Радар ТПН-19 уничтожен.",
     },
   ],
   // Props: exercise every emission path — defended fortification (rotated,
