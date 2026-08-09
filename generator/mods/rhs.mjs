@@ -722,10 +722,12 @@ export const RHS = {
             `{7E4F9C92C7984C63}${P_ION_G}/RHS_ION_COY/Group_RHS_ION_COY_CloseProtectionTeam.et`,
             `{516C8C7400DF2C4D}${P_ION_G}/RHS_ION_COY/Group_RHS_ION_COY_StaticSecurityTeam.et`,
           ],
-          medium: [
-            `{6DAB535A749C809B}${P_ION_G}/RHS_ION_COY/Group_RHS_ION_COY_MobileSecurityTeam.et`,
-            `{9996C84DED36E625}${P_ION_G}/RHS_ION_COY/Group_RHS_ION_COY_SpecialProjectsTeam.et`,
-          ],
+          // MobileSecurityTeam {6DAB535A749C809B} is EXCLUDED: its
+          // m_aUnitPrefabSlots carry an armed HMMWV (M1025_armed_M2HB_ION)
+          // as a group member — foot patrols/prop defense spawned a gun
+          // truck (user-reported 2026-08-09; the only vehicle-in-slots
+          // group in the whole RHS dump)
+          medium: [`{9996C84DED36E625}${P_ION_G}/RHS_ION_COY/Group_RHS_ION_COY_SpecialProjectsTeam.et`],
           large: [`{51CA3A5A84652348}${P_ION_G}/RHS_ION_COY/Group_RHS_ION_COY_QuickReactionForce.et`],
         },
       },

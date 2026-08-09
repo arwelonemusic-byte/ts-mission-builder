@@ -56,7 +56,11 @@ FORECON Squad = 6. MSV RifleSquad = 6; FireGroup = 4; **ManeuverGroup = 2 declar
 
 Groups (all from the registries above): USAF USMC_MEF (14), USMC_MEF_Desert (14),
 MARSOC (11); AFRF MSV_Flora (10), MSV_VSR (10), MSV_VKPO_Summer (15),
-MSV_VKPO_Demiseason (14); ION_COY (5). Vehicles: USMC 20, MSV 22 of 27, ION 6.
+MSV_VKPO_Demiseason (14); ION_COY (4 — was 5: MobileSecurityTeam
+`{6DAB535A749C809B}` removed 2026-08-09, its m_aUnitPrefabSlots carry an armed
+HMMWV M1025_armed_M2HB_ION as a group member, the only vehicle-in-slots group
+in the whole RHS dump — foot patrols spawned a gun truck).
+Vehicles: USMC 20, MSV 22 of 27, ION 6.
 Characters: primary-variant role rosters per subfaction. Arsenal: ~20-item starter sets.
 Fortifications: Checkpoint S/M/L + Barricade_L (road), Bunker/MG nests/SandbagPositions
 (roadside); ION reuses USMC.
