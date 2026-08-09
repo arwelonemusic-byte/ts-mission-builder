@@ -257,13 +257,14 @@ export default function Editor() {
   const playableFactionKeys = factionKeys.filter(
     (k) => Object.keys(FACTIONS[k].riflemen ?? {}).length > 0
   );
-  // Loadout-pack pseudo-factions (SFS) can only be the playable side
+  // playableOnly marks factions with no enemy-side content (none currently —
+  // SFS gained AI groups in its 2026-08 update; mechanism kept for future mods)
   const enemyFactionKeys = factionKeys.filter((k) => !FACTIONS[k].playableOnly);
   // Alias factions (aliasOf) share their base faction's in-game FactionKey —
   // both sides of an alias pair in one mission would be the same faction.
   // The enemy dropdown shows conflicting options disabled (EnemyPanel).
   const aliasConflict = (a: string, b: string) =>
-    FACTIONS[a]?.aliasOf === b || FACTIONS[b]?.aliasOf === a;
+    a !== b && (FACTIONS[a]?.aliasOf ?? a) === (FACTIONS[b]?.aliasOf ?? b);
 
   const update = (patch: Partial<Mission>) => setMission((m) => (m ? { ...m, ...patch } : m));
   const updateSpawn = (patch: Partial<Mission["spawn"]>) =>

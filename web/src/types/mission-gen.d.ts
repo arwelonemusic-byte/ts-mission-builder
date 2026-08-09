@@ -20,7 +20,8 @@ declare module "mission-gen" {
       mod?: string;
       /** Vanilla faction key this faction is a reskin-alias of (e.g. MEI → USSR) */
       aliasOf?: string;
-      /** Loadout-pack pseudo-factions (SFS): playable side only, never enemy */
+      /** Factions with no enemy-side content: playable side only, never enemy
+       *  (none currently — SFS gained AI groups; kept for future mods) */
       playableOnly?: boolean;
       /** In-game faction keys this faction's conf declares friendly (symmetric!)
        *  — lib.mjs clears the list via member override when the mission pits

@@ -91,6 +91,12 @@ export function buildMissionFiles(mission, options = {}) {
   // Alias factions (aliasOf) are UI-level entries over a vanilla faction —
   // every serialized faction KEY must be the base's in-game key (SFS_US → US).
   const effKey = (k) => FACTIONS[k].aliasOf ?? k;
+  // Both sides resolving to one in-game faction (e.g. SFS_US vs US) means the
+  // "enemy" AI is friendly to the players — the UI blocks it, this is the backstop
+  if (effKey(mission.playableFaction) === effKey(mission.enemyFaction))
+    throw new Error(
+      `Playable (${mission.playableFaction}) and enemy (${mission.enemyFaction}) sides both resolve to in-game faction ${effKey(mission.playableFaction)}`
+    );
 
   const guids = {
     addon: mission.guids?.addon ?? mintGuid(),

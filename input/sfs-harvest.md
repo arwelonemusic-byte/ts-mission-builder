@@ -1,10 +1,12 @@
-# SFS US Loadout harvest (2026-08-02)
+# SFS US Loadout harvest (2026-08-02, groups update 2026-08-09)
 
 Mod: "SFS US Loadout" by abrashka — `SFSUSLoadout_69F2D31EB2E09C84`
 (https://reforger.armaplatform.com/workshop/69F2D31EB2E09C84). Integrated as
-the playable-only pseudo-faction **SFS_US** ("US Special Force Squad
-(Abrashka)"), `generator/mods/sfs.mjs`, via the `aliasOf: "US"` machinery.
-Extraction: `D:\VSCode_dev\arma-reforger\reference\SFS US Loadout` (23 files).
+the pseudo-faction **SFS_US** ("US Special Force Squad (Abrashka)"),
+`generator/mods/sfs.mjs`, via the `aliasOf: "US"` machinery. Originally
+playable-only; enemy-capable since the 2026-08 mod update added AI groups
+(see below). Extraction: `D:\VSCode_dev\arma-reforger\reference\SFS US Loadout`
+(40 files after re-extraction 2026-08-09).
 
 ## Shape of the mod
 
@@ -42,6 +44,34 @@ almost everyone; S&W "Spec Series" pistol (GRS Shadows pistol pack); Mk48 Tan
 (AT/LightAT); Launcher_M72A3 (LightAT); GM94 mags on the GL. Everyone carries
 Rangefinder Vector21, Garmin watch, Milsim TUO-HH-163-HP radio, stun grenades,
 ETool building gadget.
+
+## AI groups (mod update, harvested 2026-08-09)
+
+5 new group prefabs at `Prefabs/Groups/BLUFOR/` — same folder as vanilla but
+FRESH resource GUIDs (Workbench-duplicate style: FireTeam `{84E5BBAB25EA23E6}`
+is one digit off vanilla `{84E5BBAB25EA23E5}`), so NOT overrides — vanilla US
+groups are untouched. All parent a new SFS `Group_US_Base` (faction "US",
+2 rifleman slots), unit slots reference the mod's own SF characters (GUIDs
+above). Registered into the VANILLA US catalogs via clean overrides of
+`Configs/EntityCatalog/US/Groups_EntityCatalog_US.conf` (vanilla GUID
+`{4E70E7C4C2C17D4A}`) and `WeaponTripod_EntityCatalog_US.conf`
+(`{0E4B62F186F97C43}`, adds E_EquipmentBoxStack_US + E_CustomArsenalBox_US) —
+append-only, fresh member GUIDs, `m_eSlotTypes 7` spawner data on every group.
+GUID source = the catalog conf (prefab root IDs are the usual
+`0000000000000001`).
+
+| Group (editor name) | File | GUID | Slots |
+|---|---|---|---|
+| RifleSquad Custom | Group_US_RifleSquad | {9BC099F87CA1421D} | 9: SL, 2×FTL, 2×Rifleman, 2×GP, 2×LightAT |
+| FireTeam Custom | Group_US_FireTeam | {84E5BBAB25EA23E6} | 4: FTL, Rifleman, GP, LightAT |
+| FireTeam Guard Custom | Group_US_FireTeam_Guard | {0A8E20F50DA233E2} | 4: 2×Rifleman, GP, LightAT |
+| FireTeamLight Custom | Group_US_LightFireTeam | {860C1B99A79AE5ED} | 4: FTL, 3×Rifleman |
+| SentryTeam Custom | Group_US_SentryTeam | {3BF36BDEEB33AECA} | 2: 2×Rifleman |
+
+Also new in the update: `Character_US_PL.et` ships on disk but appears in NO
+conf (not in LoadoutManager_Editor.et, not in any catalog) — no harvestable
+GUID, which is why `hvt` uses the SL. New weapon prefabs (M4 Block2 UGL,
+URGI, suppressed Bacon M17, M40A5_UPD update) are internal to the characters.
 
 ## Dependency chain
 

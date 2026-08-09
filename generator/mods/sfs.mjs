@@ -1,29 +1,41 @@
 // US Special Force Squad (Abrashka) — "SFS US Loadout" (69F2D31EB2E09C84).
 //
-// NOT a faction: a playable-only loadout pack. The mod ships 12 modernized
+// NOT a faction: a loadout pack over vanilla US. The mod ships modernized
 // SF character prefabs at the vanilla US_Army paths but with THEIR OWN
 // resource GUIDs (Workbench-duplicate style — e.g. Crew {E1CB513B8B9B08F5}
 // vs vanilla {E1CB513B8B9B08F4}), all faction US, parented to the vanilla
 // US BaseLoadout. Integration = the aliasOf machinery (kept dormant since
 // MEI v1, first real playable use): SFS_US is a UI-level faction entry that
 // resolves to the in-game "US" faction at emission, inheriting entryGuid /
-// callsigns / spawn point / vehicles from vanilla US and carrying only its
-// own label, loadouts and arsenal. playableOnly hides it from the enemy
-// dropdown (it has no groups of its own — inherited US groupSets are never
-// used).
+// callsigns / spawn point / vehicles / fortifications from vanilla US and
+// carrying its own label, loadouts, arsenal and (since the 2026-08 mod
+// update) AI groups.
+//
+// ENEMY SIDE (mod update harvested 2026-08-09): the author added 5 AI group
+// prefabs (fresh GUIDs, own SFS Group_US_Base parent, faction "US", unit
+// slots = the mod's own SF characters) registered into the VANILLA US entity
+// catalogs via clean overrides of Groups_EntityCatalog_US.conf
+// {4E70E7C4C2C17D4A} / WeaponTripod_EntityCatalog_US.conf {0E4B62F186F97C43}
+// (append-only, fresh member GUIDs). groupSets/hvt/patrolCrew below override
+// the inherited US ones so an SFS enemy fields SF troops, not vanilla US Army.
+// Because SFS resolves to faction "US", SFS-vs-US (or vs any other US alias)
+// is impossible — blocked by the aliasConflict guards + a lib.mjs throw.
+// No PL/officer GUID is harvestable (Character_US_PL.et ships but appears in
+// no conf) → hvt = the SL.
 //
 // GUIDs ground-truthed from the extraction
 // (D:\VSCode_dev\arma-reforger\reference\SFS US Loadout): character resource
 // refs from the mod's own Prefabs/MP/Managers/Loadouts/LoadoutManager_Editor.et
-// override (the only conf-like GUID source — no .meta ships); item refs from
-// the character prefabs' inventories. All 12 characters are concrete
-// (VariantData-free) — safe for any spawn path.
+// override; group refs from Configs/EntityCatalog/US/Groups_EntityCatalog_US.conf
+// (no .meta ships); item refs from the character prefabs' inventories. All
+// characters are concrete (VariantData-free) — safe for any spawn path.
 //
 // Dependency anchor: the mod itself. Its .gproj declares GRS-ShadowsPistolPack,
 // GRS-Weapons, MilsimRadioNetwork, StunGrenade, FORTEX_ORSIS_T5000_TO_US,
 // MK46AMPMK48-FIXED and 401ksRussianLeafSuits; RHS (595F2BF2F44836FB) arrives
 // transitively via GRS-Weapons. One anchor GUID suffices (validated pattern).
 const P_SFS_C = "Prefabs/Characters/Factions/BLUFOR/US_Army";
+const P_SFS_G = "Prefabs/Groups/BLUFOR";
 
 export const SFS = {
   id: "sfs",
@@ -34,7 +46,34 @@ export const SFS = {
     SFS_US: {
       aliasOf: "US",
       label: "US Special Force Squad (Abrashka)",
-      playableOnly: true,
+      // No PL GUID source in the mod — the SL is the senior harvestable rank
+      hvt: `{922FDE221251B080}${P_SFS_C}/Character_US_SL.et`,
+      // Concrete SFS characters so patrols/QRF vehicles carry SF crews, not
+      // the prefab-default vanilla US ones (universal patrolCrew rule)
+      patrolCrew: [
+        `{E1CB513B8B9B08F5}${P_SFS_C}/Character_US_Crew.et`,
+        `{F44F87222B67E26A}${P_SFS_C}/Character_US_Rifleman.et`,
+        `{06A2C5FD02D05F65}${P_SFS_C}/Character_US_GP.et`,
+        `{526AEFB356C2F1BF}${P_SFS_C}/Character_US_LightAT.et`,
+        `{DD8871B53B595AEC}${P_SFS_C}/Character_US_FTL.et`,
+      ],
+      // ONE pool (EnemyPanel hides the troops list for single-set factions).
+      // Slot counts from m_aUnitPrefabSlots; classes per the project size rules.
+      defaultGroupSet: "SFS",
+      groupSets: {
+        SFS: {
+          label: "Special Force Squad",
+          sentry: `{3BF36BDEEB33AECA}${P_SFS_G}/Group_US_SentryTeam.et`,
+          defense: { ref: `{9BC099F87CA1421D}${P_SFS_G}/Group_US_RifleSquad.et`, size: 9 },
+          small: [`{3BF36BDEEB33AECA}${P_SFS_G}/Group_US_SentryTeam.et`],
+          medium: [
+            `{84E5BBAB25EA23E6}${P_SFS_G}/Group_US_FireTeam.et`,
+            `{0A8E20F50DA233E2}${P_SFS_G}/Group_US_FireTeam_Guard.et`,
+            `{860C1B99A79AE5ED}${P_SFS_G}/Group_US_LightFireTeam.et`,
+          ],
+          large: [`{9BC099F87CA1421D}${P_SFS_G}/Group_US_RifleSquad.et`],
+        },
+      },
       riflemen: {
         "Special Force Squad": `{F44F87222B67E26A}${P_SFS_C}/Character_US_Rifleman.et`,
       },

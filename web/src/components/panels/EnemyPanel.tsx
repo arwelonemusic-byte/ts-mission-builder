@@ -23,7 +23,7 @@ export default function EnemyPanel({
   // alias pair would be the same faction, so the pairing is disabled.
   const pf = mission.playableFaction;
   const aliasConflict = (f: string) =>
-    FACTIONS[f]?.aliasOf === pf || FACTIONS[pf]?.aliasOf === f;
+    f !== pf && (FACTIONS[f]?.aliasOf ?? f) === (FACTIONS[pf]?.aliasOf ?? pf);
   const suffix = (f: string) => {
     if (f === pf) return t(" (playable)");
     if (aliasConflict(f)) {

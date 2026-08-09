@@ -18,6 +18,10 @@
 //               MEI — validates the friendly-faction clearing override)
 //   --sfs       build the SFS loadout-pack variant (TS_WebSpikeSFS: SFS_US
 //               "US Special Force Squad (Abrashka)" vs USSR — playable alias)
+//   --sfs-enemy build the SFS enemy-side variant (TS_WebSpikeSFSEnemy: vanilla
+//               USSR vs SFS_US — SFS group pools/SL hvt/SF crews on US vehicles)
+//   --sfs-rf-fia build the RF+FIA SFS packs variant (TS_WebSpikeSFSRFFIA:
+//               SFS_USSR playable vs SFS_FIA enemy — both new packs, both sides)
 //   --armenhof  build the modded-terrain variant (TS_WebSpikeArmenhof: vanilla
 //               US vs USSR on Armenhof, exercises terrain dependencies + nav refs)
 //   --chernarus same, on ChernarusMinus (terrain with transitive map-addon deps)
@@ -448,6 +452,100 @@ const SFS_MISSION = {
     world: "3AF8B2C7D1946E5C",
     missionConf: "9E27C4B8A6D1F3E4",
   },
+};
+
+// SFS enemy-side spike: vanilla USSR vs SFS_US — exercises the SFS group
+// pools (defense/sentry/garrison/patrols/QRF), the SL hvt-capable enemy,
+// SFS patrolCrew in inherited US patrol vehicles, and the alias enemy path
+// (every serialized enemy key resolves to "US"; deps = the SFS anchor).
+const SFS_ENEMY_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeSFSEnemy",
+  dirName: "TS_WebSpikeSFSEnemy",
+  addonTitle: "TS Web Spike SFS Enemy Mission",
+  name: "TS_WebSpikeSFSEnemy",
+  displayName: "TS Web Spike SFS Enemy",
+  playableFaction: "USSR",
+  playableSubfaction: "USSR_Army",
+  enemyFaction: "SFS_US",
+  enemyGroupSets: ["SFS"],
+  loadouts: FACTIONS.USSR.loadoutSets.USSR_Army.filter((l) =>
+    ["Стрелок", "Пулеметчик (РПК)", "Стрелок ГП", "Санитар", "Ком. отделения", "Ком. взвода"].includes(l.name)
+  ),
+  guids: {
+    addon: "6A97E1B24C08D5F3",
+    world: "6A97E1B291D6420A",
+    missionConf: "6A97E1B2E73A88C1",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    extra: [
+      {
+        title: "Support",
+        text: ["- 2x UAZ-469", "- 1x Ural-4320 Transport Truck"],
+      },
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    vehicles: [{ type: "UAZ469" }, { type: "UAZ469" }, { type: "Ural4320_transport_covered" }],
+  },
+  zones: [
+    MISSION.zones[0],
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["M1025_armed_M2HB"] },
+      ],
+    },
+  ],
+};
+
+// RF+FIA SFS spike: both new Abrashka packs in one mission — SFS_USSR playable
+// (RF loadouts/arsenal, alias playable block on the USSR member) vs SFS_FIA
+// enemy (SFS-FIA group pools, PL hvt, SF crews in FIA patrol vehicles). Deps =
+// both anchors.
+const SFS_RF_FIA_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeSFSRFFIA",
+  dirName: "TS_WebSpikeSFSRFFIA",
+  addonTitle: "TS Web Spike SFS RF FIA Mission",
+  name: "TS_WebSpikeSFSRFFIA",
+  displayName: "TS Web Spike SFS RF FIA",
+  playableFaction: "SFS_USSR",
+  playableSubfaction: "Special Force Squad",
+  enemyFaction: "SFS_FIA",
+  enemyGroupSets: ["SFS"],
+  loadouts: FACTIONS.SFS_USSR.loadoutSets["Special Force Squad"].filter((l) =>
+    ["Стрелок", "Стрелок ГП", "Пулеметчик", "Санитар", "Ком. отделения", "Снайпер"].includes(l.name)
+  ),
+  guids: {
+    addon: "6A97F5C31D24B860",
+    world: "6A97F5C36B09E144",
+    missionConf: "6A97F5C3A45D7E92",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    extra: [
+      {
+        title: "Support",
+        text: ["- 2x UAZ-469", "- 1x Ural-4320 Transport Truck"],
+      },
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    vehicles: [{ type: "UAZ469" }, { type: "UAZ469" }, { type: "Ural4320_transport_covered" }],
+  },
+  zones: [
+    MISSION.zones[0],
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["BRDM2_FIA"] },
+      ],
+    },
+  ],
 };
 
 // Armenhof spike: vanilla factions on a modded terrain — proves a mission
@@ -971,6 +1069,10 @@ const BUILT = process.argv.includes("--zarichne")
                 ? AFRF_MEI_MISSION
               : process.argv.includes("--mei")
                 ? MEI_MISSION
+                : process.argv.includes("--sfs-rf-fia")
+                  ? SFS_RF_FIA_MISSION
+                : process.argv.includes("--sfs-enemy")
+                  ? SFS_ENEMY_MISSION
                 : process.argv.includes("--sfs")
                   ? SFS_MISSION
                   : MISSION;
