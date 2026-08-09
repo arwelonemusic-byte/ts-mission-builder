@@ -675,13 +675,32 @@ ${farpBlock}`;
       const cat = entry && PROP_CATEGORIES.find((c) => c.key === entry.cat);
       if (!cat?.defense) throw new Error(`Prop ${i + 1} (${p.ref}) is not in a defense-capable category`);
       const group = resolvePropDefenseGroup(mission.enemyFaction, mission.enemyGroupSets ?? mission.enemyGroupSet, p.defense.sizes, i);
+      // Spawn the group 5 m BEHIND the prop's rear footprint edge (local −Z,
+      // rotated with the yaw) — spawning at the prop center tangled AI in
+      // the fortification's own barbed wire (playtest-caught 2026-08-04).
+      // The slot's default defend waypoint (30 m) still covers the prop, so
+      // the group walks up and mans it naturally. Y is terrain-sampled at
+      // the offset point (slot coords are Area-relative).
+      const fp = entry.fp ?? {};
+      const rearLocal = [
+        fp.d ? 0 : (fp.offX ?? 0),
+        (fp.d ? -fp.d / 2 : (fp.offZ ?? 0) - (fp.len ?? 0) / 2) - 5,
+      ];
+      const [sdx, sdz] = rotateLocal(rearLocal[0], rearLocal[1], +((p.rotation ?? 0) % 360));
+      const pPos = propPos(p);
+      let sdy = 0;
+      if (sampleYFn) {
+        const sy = sampleYFn(pPos[0] + sdx, pPos[2] + sdz);
+        if (Number.isFinite(sy)) sdy = sy - pPos[1];
+      }
+      const slotCoords = posStr([sdx, sdy, sdz]);
       return `GenericEntity AreaPropDef${i + 1} : "${K.AREA_PREFAB}" {
  components {
   SCR_ScenarioFrameworkArea "${K.CMP_SF_AREA}" {
    m_bDynamicDespawn 1
   }
  }
- coords ${posStr(propPos(p))}
+ coords ${posStr(pPos)}
  {
   GenericEntity LayerPropDef${i + 1} : "${K.LAYER_PREFAB}" {
    components {
@@ -696,7 +715,7 @@ ${farpBlock}`;
        m_sObjectToSpawn "${group}"
       }
      }
-     coords 0 0 0
+     coords ${slotCoords}
     }
    }
   }
