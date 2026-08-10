@@ -117,8 +117,10 @@ const A2_ARSENAL_CDF = [
   { mode: "AMMUNITION", ref: "{262F0D09C4130826}Prefabs/Weapons/Ammo/Ammo_Grenade_HE_VOG25.et" },
   { mode: "AMMUNITION", ref: "{906F07BD0366E08F}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_VG40OP_White.et" },
   ...A2_COMMON,
-  { mode: "", ref: "{3DE0155EC9767B98}Prefabs/Items/Equipment/Backpacks/Backpack_Veshmeshok.et" },
   { mode: "", ref: "{41A9C55B61F375F0}Prefabs/Items/Equipment/Backpacks/Backpack_Kolobok.et" },
+  { mode: "", ref: "{0D39750E5695B9D8}Prefabs/Items/Equipment/Backpacks/Backpack_RPG_Gunner.et" },
+  { mode: "", ref: "{6A39B5843B3F36DA}Prefabs/Items/Equipment/Backpacks/Backpack_RPG_Assistant.et" },
+  { mode: "", ref: "{7AC107CA7AFC9B59}Prefabs/Items/Equipment/Backpacks/Backpack_Medical_Soviet.et" },
 ];
 
 // ChDKZ: RHS AKM (7.62x39 steel mags) + some 5.45, RPK, PKM, SVD, PM;
@@ -140,8 +142,10 @@ const A2_ARSENAL_CHDKZ = [
   { mode: "AMMUNITION", ref: "{262F0D09C4130826}Prefabs/Weapons/Ammo/Ammo_Grenade_HE_VOG25.et" },
   { mode: "AMMUNITION", ref: "{906F07BD0366E08F}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_VG40OP_White.et" },
   ...A2_COMMON,
-  { mode: "", ref: "{3DE0155EC9767B98}Prefabs/Items/Equipment/Backpacks/Backpack_Veshmeshok.et" },
   { mode: "", ref: "{41A9C55B61F375F0}Prefabs/Items/Equipment/Backpacks/Backpack_Kolobok.et" },
+  { mode: "", ref: "{0D39750E5695B9D8}Prefabs/Items/Equipment/Backpacks/Backpack_RPG_Gunner.et" },
+  { mode: "", ref: "{6A39B5843B3F36DA}Prefabs/Items/Equipment/Backpacks/Backpack_RPG_Assistant.et" },
+  { mode: "", ref: "{79015191C0E77E48}Prefabs/Items/Equipment/Backpacks/Backpack_Medical_Soviet_02.et" },
 ];
 
 // NAPA: Vz.58 + UK-59 (vanilla FIA weapon families) + 5.45/RPK mixes, PKM
@@ -164,7 +168,9 @@ const A2_ARSENAL_NAPA = [
   { mode: "AMMUNITION", ref: "{906F07BD0366E08F}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_VG40OP_White.et" },
   ...A2_COMMON,
   { mode: "", ref: "{FDA7B6630DB87991}Prefabs/Items/Equipment/Backpacks/Backpack_M70_Swiss.et" },
-  { mode: "", ref: "{41A9C55B61F375F0}Prefabs/Items/Equipment/Backpacks/Backpack_Kolobok.et" },
+  { mode: "", ref: "{0D39750E5695B9D8}Prefabs/Items/Equipment/Backpacks/Backpack_RPG_Gunner.et" },
+  { mode: "", ref: "{6A39B5843B3F36DA}Prefabs/Items/Equipment/Backpacks/Backpack_RPG_Assistant.et" },
+  { mode: "", ref: "{AC298BA8A7D27007}Prefabs/Items/Equipment/Backpacks/Backpack_Medical_Soviet_NoCross_01.et" },
 ];
 
 export const ARMA2 = {
