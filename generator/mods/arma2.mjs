@@ -41,13 +41,11 @@
 // Sharpshooter entry points at a prefab that doesn't ship (excluded).
 // Full harvest: input/arma2-harvest.md.
 //
-// Arsenal = the vanilla USSR set (CDF/ChDKZ) / vanilla FIA set (NAPA) copied
-// verbatim — STARTER CUT: the factions carry RHS weapons, so the vanilla AK
-// magazines may not fit their primaries (launcher rounds/medical/utility are
-// universal). Fortifications reuse vanilla USSR pools (Soviet-equipped
-// forces — MEI precedent). Dependency anchor: the mod itself; its .gproj
-// pulls RHS (595F2BF2F44836FB) + TacticalFlava (5D550926D43F1409)
-// transitively.
+// Arsenal = assembled from the roster characters' own inventories (SFS
+// pattern — see the A2_ARSENAL_* blocks below). Fortifications reuse vanilla
+// USSR pools (Soviet-equipped forces — MEI precedent). Dependency anchor:
+// the mod itself; its .gproj pulls RHS (595F2BF2F44836FB) + TacticalFlava
+// (5D550926D43F1409) transitively.
 const P_CDF_C = "Prefabs/Characters/Factions/BLUFOR/CDF_Army";
 const P_CDF_G = "Prefabs/Groups/BLUFOR/Ses_CDF";
 const P_CHD_C = "Prefabs/Characters/Factions/OPFOR/ChDKZ";
@@ -78,21 +76,18 @@ const A2_FORTS = {
   ],
 };
 
-// Vanilla USSR arsenal set (starter cut — see header)
-const A2_ARSENAL_SOVIET = [
-  { mode: "WEAPON", ref: "{722CE6FEC39EE896}Prefabs/Weapons/Launchers/RPG22/Launcher_RPG22.et" },
+// Arsenals assembled from the CHARACTERS' OWN inventories (SFS pattern,
+// re-harvested 2026-08-10): every magazine/rocket below is carried by a
+// roster prefab, so it matches the issued RHS weapons — the earlier
+// vanilla-set starter cut fed vanilla AK mags to RHS rifles. Universal kit
+// (grenades as carried, soviet explosives/detonator/mines, medical,
+// RSP-30 flares) is shared; launchers per faction are the carried ones.
+const A2_FLARES = [
   { mode: "WEAPON", ref: "{327103CB218E7CA1}Prefabs/Weapons/Flares/Flare_RSP30_white.et" },
   { mode: "WEAPON", ref: "{36218D5F0C7095E6}Prefabs/Weapons/Flares/Flare_RSP30_red.et" },
   { mode: "WEAPON", ref: "{FC79F6BDEB7F1BC2}Prefabs/Weapons/Flares/Flare_RSP30_green.et" },
-  { mode: "AMMUNITION", ref: "{0A84AA5A3884176F}Prefabs/Weapons/Magazines/Magazine_545x39_AK_30rnd_Last_5Tracer.et" },
-  { mode: "AMMUNITION", ref: "{BC74DAC891D48540}Prefabs/Weapons/Magazines/Magazine_545x39_RPK_45rnd_Ball.et" },
-  { mode: "AMMUNITION", ref: "{E5E9C5897CF47F44}Prefabs/Weapons/Magazines/Box_762x54_PK_100rnd_4Ball_1Tracer.et" },
-  { mode: "AMMUNITION", ref: "{9CCB46C6EE632C1A}Prefabs/Weapons/Magazines/Magazine_762x54_SVD_10rnd_Sniper.et" },
-  { mode: "AMMUNITION", ref: "{32E12D322E107F1C}Prefabs/Weapons/Ammo/Ammo_Rocket_PG7VM.et" },
-  { mode: "AMMUNITION", ref: "{609E216CBF8D0B68}Prefabs/Weapons/Ammo/Ammo_Rocket_PG7VL.et" },
-  { mode: "AMMUNITION", ref: "{AA658D334766D4EE}Prefabs/Weapons/Ammo/Ammo_Rocket_PG7VR.et" },
-  { mode: "AMMUNITION", ref: "{262F0D09C4130826}Prefabs/Weapons/Ammo/Ammo_Grenade_HE_VOG25.et" },
-  { mode: "AMMUNITION", ref: "{906F07BD0366E08F}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_VG40OP_White.et" },
+];
+const A2_COMMON = [
   { mode: "", ref: "{645C73791ECA1698}Prefabs/Weapons/Grenades/Grenade_RGD5.et" },
   { mode: "", ref: "{77EAE5E07DC4678A}Prefabs/Weapons/Grenades/Smoke_RDG2.et" },
   { mode: "", ref: "{97064F8597F2D7BF}Prefabs/Weapons/Explosives/DemoBlock_TSh400g/DemoBlock_TSh400g.et" },
@@ -103,32 +98,71 @@ const A2_ARSENAL_SOVIET = [
   { mode: "CONSUMABLE", ref: "{0D9A5DCF89AE7AA9}Prefabs/Items/Medicine/MorphineInjection_01/MorphineInjection_01.et" },
   { mode: "CONSUMABLE", ref: "{527D7C5D2E476BDC}Prefabs/Items/Medicine/SalineBag_01/SalineBag_USSR_01.et" },
   { mode: "CONSUMABLE", ref: "{80E75A71C29190DB}Prefabs/Items/Medicine/Tourniquet_01/Tourniquet_USSR_01.et" },
+];
+
+// CDF: RHS AK-74 (plum 5.45 mags), RPK, PKM, SVD, PM sidearm; scoped RHS
+// RPG-7 + RPG-75
+const A2_ARSENAL_CDF = [
+  { mode: "WEAPON", ref: "{E8A55396050E1762}Prefabs/Weapons/Launchers/RPG7/Launcher_RPG7_pgo7.et" },
+  { mode: "WEAPON", ref: "{7C45EC94C698246B}Prefabs/Weapons/Launchers/RPG75/Launcher_RPG75.et" },
+  ...A2_FLARES,
+  { mode: "AMMUNITION", ref: "{BBB50A815A2F916C}Prefabs/Weapons/Magazines/6l23_plum/Magazine_545x39_plum_AK_30rnd_Ball.et" },
+  { mode: "AMMUNITION", ref: "{DFEBDFD73BFD9501}Prefabs/Weapons/Magazines/6l23_plum/Magazine_545x39_plum_AK_30rnd_Last_5Tracer.et" },
+  { mode: "AMMUNITION", ref: "{D78C667F59829717}Prefabs/Weapons/Magazines/Magazine_545x39_RPK_45rnd_4Ball_1Tracer.et" },
+  { mode: "AMMUNITION", ref: "{E5E9C5897CF47F44}Prefabs/Weapons/Magazines/Box_762x54_PK_100rnd_4Ball_1Tracer.et" },
+  { mode: "AMMUNITION", ref: "{9CCB46C6EE632C1A}Prefabs/Weapons/Magazines/Magazine_762x54_SVD_10rnd_Sniper.et" },
+  { mode: "AMMUNITION", ref: "{8B853CDD11BA916E}Prefabs/Weapons/Magazines/Magazine_9x18_PM_8rnd_Ball.et" },
+  { mode: "AMMUNITION", ref: "{32E12D322E107F1C}Prefabs/Weapons/Ammo/Ammo_Rocket_PG7VM.et" },
+  { mode: "AMMUNITION", ref: "{FBBF84E3B447D822}Prefabs/Weapons/Ammo/RPG/RHS_AmmoRocket_PG7VL.et" },
+  { mode: "AMMUNITION", ref: "{262F0D09C4130826}Prefabs/Weapons/Ammo/Ammo_Grenade_HE_VOG25.et" },
+  { mode: "AMMUNITION", ref: "{906F07BD0366E08F}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_VG40OP_White.et" },
+  ...A2_COMMON,
   { mode: "", ref: "{3DE0155EC9767B98}Prefabs/Items/Equipment/Backpacks/Backpack_Veshmeshok.et" },
   { mode: "", ref: "{41A9C55B61F375F0}Prefabs/Items/Equipment/Backpacks/Backpack_Kolobok.et" },
 ];
 
-// Vanilla FIA arsenal set for NAPA (starter cut)
-const A2_ARSENAL_GUERRILLA = [
-  { mode: "WEAPON", ref: "{327103CB218E7CA1}Prefabs/Weapons/Flares/Flare_RSP30_white.et" },
-  { mode: "WEAPON", ref: "{36218D5F0C7095E6}Prefabs/Weapons/Flares/Flare_RSP30_red.et" },
-  { mode: "WEAPON", ref: "{FC79F6BDEB7F1BC2}Prefabs/Weapons/Flares/Flare_RSP30_green.et" },
+// ChDKZ: RHS AKM (7.62x39 steel mags) + some 5.45, RPK, PKM, SVD, PM;
+// plain RHS RPG-7 + RPG-22
+const A2_ARSENAL_CHDKZ = [
+  { mode: "WEAPON", ref: "{7A82FE978603F137}Prefabs/Weapons/Launchers/RPG7/Launcher_RPG7.et" },
+  { mode: "WEAPON", ref: "{722CE6FEC39EE896}Prefabs/Weapons/Launchers/RPG22/Launcher_RPG22.et" },
+  ...A2_FLARES,
+  { mode: "AMMUNITION", ref: "{B9E3B9B143A43A79}Prefabs/Weapons/Magazines/AKM/Magazine_AK_762x39_Steel_30rnd_Ball.et" },
+  { mode: "AMMUNITION", ref: "{C92CFABF80BBCF50}Prefabs/Weapons/Magazines/AKM/Magazine_AK_762x39_Steel_30rnd_Last_5Tracer.et" },
+  { mode: "AMMUNITION", ref: "{BBB50A815A2F916C}Prefabs/Weapons/Magazines/6l23_plum/Magazine_545x39_plum_AK_30rnd_Ball.et" },
+  { mode: "AMMUNITION", ref: "{D78C667F59829717}Prefabs/Weapons/Magazines/Magazine_545x39_RPK_45rnd_4Ball_1Tracer.et" },
+  { mode: "AMMUNITION", ref: "{A6737DA00653A39C}Prefabs/Weapons/Magazines/Box_762x54_PK_100rnd_Ball.et" },
+  { mode: "AMMUNITION", ref: "{E5E9C5897CF47F44}Prefabs/Weapons/Magazines/Box_762x54_PK_100rnd_4Ball_1Tracer.et" },
+  { mode: "AMMUNITION", ref: "{9CCB46C6EE632C1A}Prefabs/Weapons/Magazines/Magazine_762x54_SVD_10rnd_Sniper.et" },
+  { mode: "AMMUNITION", ref: "{8B853CDD11BA916E}Prefabs/Weapons/Magazines/Magazine_9x18_PM_8rnd_Ball.et" },
+  { mode: "AMMUNITION", ref: "{32E12D322E107F1C}Prefabs/Weapons/Ammo/Ammo_Rocket_PG7VM.et" },
+  { mode: "AMMUNITION", ref: "{FBBF84E3B447D822}Prefabs/Weapons/Ammo/RPG/RHS_AmmoRocket_PG7VL.et" },
+  { mode: "AMMUNITION", ref: "{262F0D09C4130826}Prefabs/Weapons/Ammo/Ammo_Grenade_HE_VOG25.et" },
+  { mode: "AMMUNITION", ref: "{906F07BD0366E08F}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_VG40OP_White.et" },
+  ...A2_COMMON,
+  { mode: "", ref: "{3DE0155EC9767B98}Prefabs/Items/Equipment/Backpacks/Backpack_Veshmeshok.et" },
+  { mode: "", ref: "{41A9C55B61F375F0}Prefabs/Items/Equipment/Backpacks/Backpack_Kolobok.et" },
+];
+
+// NAPA: Vz.58 + UK-59 (vanilla FIA weapon families) + 5.45/RPK mixes, PKM
+// boxes up to 250rnd, SVD; all three launchers
+const A2_ARSENAL_NAPA = [
+  { mode: "WEAPON", ref: "{7A82FE978603F137}Prefabs/Weapons/Launchers/RPG7/Launcher_RPG7.et" },
+  { mode: "WEAPON", ref: "{722CE6FEC39EE896}Prefabs/Weapons/Launchers/RPG22/Launcher_RPG22.et" },
+  { mode: "WEAPON", ref: "{7C45EC94C698246B}Prefabs/Weapons/Launchers/RPG75/Launcher_RPG75.et" },
+  ...A2_FLARES,
+  { mode: "AMMUNITION", ref: "{48720FC416263FC1}Prefabs/Weapons/Magazines/Vz58/Magazine_762x39_Vz58_30rnd_Ball.et" },
   { mode: "AMMUNITION", ref: "{A827B610B7CD4158}Prefabs/Weapons/Magazines/Vz58/Magazine_762x39_Vz58_30rnd_Last_5Tracer.et" },
+  { mode: "AMMUNITION", ref: "{BBB50A815A2F916C}Prefabs/Weapons/Magazines/6l23_plum/Magazine_545x39_plum_AK_30rnd_Ball.et" },
+  { mode: "AMMUNITION", ref: "{D78C667F59829717}Prefabs/Weapons/Magazines/Magazine_545x39_RPK_45rnd_4Ball_1Tracer.et" },
   { mode: "AMMUNITION", ref: "{03094E059B554A9C}Prefabs/Weapons/Magazines/UK59/Box_762x54_UK59_50rnd_4Ball_1Tracer.et" },
-  { mode: "AMMUNITION", ref: "{77595CB9F596E6AC}Prefabs/Weapons/Magazines/Magazine_762x54_SVD_10rnd_LPS.et" },
+  { mode: "AMMUNITION", ref: "{A6737DA00653A39C}Prefabs/Weapons/Magazines/Box_762x54_PK_100rnd_Ball.et" },
+  { mode: "AMMUNITION", ref: "{D8421F6E70B2FB4F}Prefabs/Weapons/Magazines/Box_762x54_PK_250rnd_4Ball_1Tracer.et" },
   { mode: "AMMUNITION", ref: "{9CCB46C6EE632C1A}Prefabs/Weapons/Magazines/Magazine_762x54_SVD_10rnd_Sniper.et" },
   { mode: "AMMUNITION", ref: "{32E12D322E107F1C}Prefabs/Weapons/Ammo/Ammo_Rocket_PG7VM.et" },
-  { mode: "AMMUNITION", ref: "{609E216CBF8D0B68}Prefabs/Weapons/Ammo/Ammo_Rocket_PG7VL.et" },
-  { mode: "AMMUNITION", ref: "{AA658D334766D4EE}Prefabs/Weapons/Ammo/Ammo_Rocket_PG7VR.et" },
-  { mode: "", ref: "{645C73791ECA1698}Prefabs/Weapons/Grenades/Grenade_RGD5.et" },
-  { mode: "", ref: "{77EAE5E07DC4678A}Prefabs/Weapons/Grenades/Smoke_RDG2.et" },
-  { mode: "", ref: "{97064F8597F2D7BF}Prefabs/Weapons/Explosives/DemoBlock_TSh400g/DemoBlock_TSh400g.et" },
-  { mode: "", ref: "{90976DC90A223095}Prefabs/Items/Equipment/Detonators/BlastingMachine_KPM_3U1/BlastingMachine_KPM_3U1.et" },
-  { mode: "", ref: "{B05A816C0BF50802}Prefabs/Weapons/Explosives/Mine_PMN4/Mine_PMN4.et" },
-  { mode: "", ref: "{D6EF54367CECE1D9}Prefabs/Weapons/Explosives/Mine_TM62M/Mine_TM62M.et" },
-  { mode: "CONSUMABLE", ref: "{C3F1FA1E2EC2B345}Prefabs/Items/Medicine/FieldDressing_01/FieldDressing_USSR_01.et" },
-  { mode: "CONSUMABLE", ref: "{0D9A5DCF89AE7AA9}Prefabs/Items/Medicine/MorphineInjection_01/MorphineInjection_01.et" },
-  { mode: "CONSUMABLE", ref: "{527D7C5D2E476BDC}Prefabs/Items/Medicine/SalineBag_01/SalineBag_USSR_01.et" },
-  { mode: "CONSUMABLE", ref: "{80E75A71C29190DB}Prefabs/Items/Medicine/Tourniquet_01/Tourniquet_USSR_01.et" },
+  { mode: "AMMUNITION", ref: "{262F0D09C4130826}Prefabs/Weapons/Ammo/Ammo_Grenade_HE_VOG25.et" },
+  { mode: "AMMUNITION", ref: "{906F07BD0366E08F}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_VG40OP_White.et" },
+  ...A2_COMMON,
   { mode: "", ref: "{FDA7B6630DB87991}Prefabs/Items/Equipment/Backpacks/Backpack_M70_Swiss.et" },
   { mode: "", ref: "{41A9C55B61F375F0}Prefabs/Items/Equipment/Backpacks/Backpack_Kolobok.et" },
 ];
@@ -175,7 +209,7 @@ export const ARMA2 = {
           { name: "Heli Crew", prefab: `{6CB62AE5BE36AA18}${P_CDF_C}/Character_CDF_HeliCrew.et` },
         ],
       },
-      arsenalItems: A2_ARSENAL_SOVIET,
+      arsenalItems: A2_ARSENAL_CDF,
       vehicles: {
         UAZ469_CDF: "{A36B7742CB4CC488}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469_Ses_CDF.et",
         UAZ469_uncovered_CDF: "{37DA845E90392CAE}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469_uncovered_Ses_CDF.et",
@@ -301,7 +335,7 @@ export const ARMA2 = {
           { name: "Crew", prefab: `{6AE26CAF6AA0CE1E}${P_CHD_C}/Character_ChDKZ_Crew.et` },
         ],
       },
-      arsenalItems: A2_ARSENAL_SOVIET,
+      arsenalItems: A2_ARSENAL_CHDKZ,
       vehicles: {
         UAZ469_ChDKZ: "{EF3C004C1F1E24C6}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469_Ses_ChDKZ.et",
         UAZ469_uncovered_ChDKZ: "{6CC21EBAB10F2A89}Prefabs/Vehicles/Wheeled/UAZ469/UAZ469_uncovered_Ses_ChDKZ.et",
@@ -407,7 +441,7 @@ export const ARMA2 = {
           { name: "Crew", prefab: `{1CFF4E8E34E4C9D3}${P_NAPA_C}/Character_NAPA_Crew.et` },
         ],
       },
-      arsenalItems: A2_ARSENAL_GUERRILLA,
+      arsenalItems: A2_ARSENAL_NAPA,
       // NAPA reskins where the mod ships them; vanilla Ural/UAZ-452
       // transports fill the gaps (its own catalog points at vanilla refs)
       vehicles: {

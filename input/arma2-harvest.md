@@ -78,10 +78,16 @@ prefab-side GUID on any conflict; ChDKZ/NAPA/vehicles had no conflicts.
 ## Curation calls
 
 - Fortifications: vanilla USSR pools for all three (Soviet-equipped — MEI
-  precedent). Arsenal: vanilla USSR set (CDF/ChDKZ) / vanilla FIA set (NAPA)
-  copied verbatim — STARTER CUT, the factions carry RHS weapons so the
-  vanilla AK/RPK mags may not fit their primaries (launcher rounds, VOG-25,
-  medical, utility are universal). Revisit after playtest.
+  precedent). Arsenal: assembled from the roster characters' OWN inventories
+  (SFS pattern, 2026-08-10 — replaced an initial vanilla-set starter cut
+  whose AK mags didn't fit the RHS rifles): swept every concrete character
+  prefab per faction for carried magazines/rockets/launchers. Weapon
+  families: CDF = RHS AK-74 plum 5.45 + RPK + PKM + SVD + PM, scoped RHS
+  RPG-7 (pgo7) + RPG-75; ChDKZ = RHS AKM steel 7.62x39 (+ some 5.45) + PKM
+  boxes + SVD + PM, plain RHS RPG-7 + RPG-22; NAPA = Vz.58 + UK-59 + 5.45
+  mixes + PKM up to 250rnd + SVD, all three launchers. Universal kit shared
+  (RGD-5/RDG-2 as carried, soviet explosives/detonator/mines, medical,
+  RSP-30 flares, soviet backpacks; NAPA keeps the FIA M70 pack).
 - Vehicles: per-faction reskin fleets taken from Ses_Veh_A2F.conf; CDF camo
   UAZ variants and the empty-pod Mi-8 gunship skipped (don't-overpopulate).
   NAPA's own catalog points at vanilla refs — its registry entry mixes NAPA
