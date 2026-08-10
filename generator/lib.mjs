@@ -899,21 +899,25 @@ ${slotBlocks}
     // Task text supports <br/> markup; literal newlines would break the
     // .layer file. Quotes escape to ' like all other user text we serialize.
     const escObjText = (s) => String(s ?? "").replace(/"/g, "'").replace(/\r?\n/g, "<br/>");
-    // m_eTaskNotificationSettings 2 = ON_FINISH only: the native, faction-
-    // filtered "task finished" popup carrying the task title. Replaced the
-    // custom ShowHint action 2026-08-02 — hints are suppressed entirely for
-    // players who disable Settings > Interface > Show Hints (user report),
-    // while task popups have no such opt-out. Enum quirk: the flags enum is
-    // INDEX-valued (ON_CREATED 0, ON_UPDATED 1, ON_FINISH 2, ON_FAILED 3,
-    // ON_CANCELLED 4) and HasFlag(x,0) is always true, so ON_CREATED can't be
-    // masked off by ANY value — harmless: it fires ~200 ms after task
-    // creation at world init, before anyone has spawned. With value 2 the
-    // ON_FAILED check ((2 & 3) == 3) and all others stay false.
+    // m_eTaskNotificationSettings 6 = the native, faction-filtered
+    // "task finished" popup (carries the task title). Replaced the custom
+    // ShowHint action 2026-08-02 — hints are suppressed entirely for players
+    // who disable Settings > Interface > Show Hints (user report), while
+    // task popups have no such opt-out. Why 6 and not a single flag: BI's
+    // SCR_ETaskNotificationSettings is declared SEQUENTIAL (ON_CREATED 0,
+    // ON_UPDATED 1, ON_FINISH 2...) and the script checks raw member values,
+    // but the Workbench Flags widget (= what BI designers author with)
+    // stores 1<<index (CREATED 1, UPDATED 2, FINISH 4...). Playtest
+    // 2026-08-02: value 2 produced NO finish popup and Workbench displayed
+    // it as "ON UPDATED" — the runtime follows the widget encoding. 6 = 2|4
+    // spells ON_FINISH under BOTH readings; the stray bit is harmless either
+    // way (widget: UPDATED — our task types never emit a progressed state;
+    // sequential: CANCELLED — our tasks are never cancelled).
     const taskFields = (o) => `     m_sFactionKey "${playableKey}"
      m_sTaskTitle "${escObjText(o.taskTitle)}"
      m_sTaskDescription "${escObjText(o.taskDesc)}"
      m_eTaskUIVisibility LIST_ONLY
-     m_eTaskNotificationSettings 2`;
+     m_eTaskNotificationSettings 6`;
     const radiusOf = (o) => {
       const def = OBJECTIVE_TYPES.find((t) => t.type === o.type)?.radius;
       return Math.round(o.radius ?? def?.default ?? 25);
