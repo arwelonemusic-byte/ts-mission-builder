@@ -135,6 +135,38 @@ export default function MissionPanel({
         })}
       </div>
       <Divider />
+      <Field label={t("Terrain")}>
+        <SelectInput
+          value={mission.terrain}
+          onChange={(e) =>
+            update({
+              terrain: e.target.value,
+              spawn: { ...mission.spawn, placed: false },
+              zones: [],
+              markers: [],
+              sectors: [],
+            })
+          }
+        >
+          {TERRAIN_LIST.filter((tn) => !tn.modded).map((tn) => (
+            <option key={tn.key} value={tn.key}>
+              {tn.label}
+            </option>
+          ))}
+          {TERRAIN_LIST.some((tn) => tn.modded) && (
+            <option disabled aria-hidden value="">
+              ──────────
+            </option>
+          )}
+          {TERRAIN_LIST.filter((tn) => tn.modded).map((tn) => (
+            <option key={tn.key} value={tn.key}>
+              {tn.label}
+            </option>
+          ))}
+        </SelectInput>
+      </Field>
+      <Hint>{t("Changing terrain clears placements.")}</Hint>
+      <Divider />
       <Field label={t("Name")}>
         <TextInput
           value={mission.displayName}
@@ -186,38 +218,6 @@ export default function MissionPanel({
       />
       {thumbError && <Hint>{thumbError}</Hint>}
       <Hint>{t("Your image sits under the frame; the mission name is drawn on top. 1920×1200 fits exactly.")}</Hint>
-      <Divider />
-      <Field label={t("Terrain")}>
-        <SelectInput
-          value={mission.terrain}
-          onChange={(e) =>
-            update({
-              terrain: e.target.value,
-              spawn: { ...mission.spawn, placed: false },
-              zones: [],
-              markers: [],
-              sectors: [],
-            })
-          }
-        >
-          {TERRAIN_LIST.filter((tn) => !tn.modded).map((tn) => (
-            <option key={tn.key} value={tn.key}>
-              {tn.label}
-            </option>
-          ))}
-          {TERRAIN_LIST.some((tn) => tn.modded) && (
-            <option disabled aria-hidden value="">
-              ──────────
-            </option>
-          )}
-          {TERRAIN_LIST.filter((tn) => tn.modded).map((tn) => (
-            <option key={tn.key} value={tn.key}>
-              {tn.label}
-            </option>
-          ))}
-        </SelectInput>
-      </Field>
-      <Hint>{t("Changing terrain clears placements.")}</Hint>
       <Divider />
       {/* Mission file: the only export path that works outside Chrome/Edge —
           a Firefox user saves the .json and hands it to someone who can
