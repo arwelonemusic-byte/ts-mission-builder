@@ -112,6 +112,29 @@ export default function MissionPanel({
           </a>
         ))}
       </div>
+      {/* Content mods: gate which factions the builder offers. Disabling a mod
+          resets any faction selections that depend on it (page.tsx setMods).
+          Sits right under the Important callout so enabling a mod visibly
+          extends the required-addons list above it. */}
+      <div className="text-[12px] text-white">{t("Supported mods")}</div>
+      <div className="flex flex-col gap-2">
+        {Object.values(MODS).map((mod: { id: string; label: string; workshopUrl: string }) => {
+          const on = mission.mods.includes(mod.id);
+          return (
+            <div key={mod.id} className="flex flex-col gap-1">
+              <CheckRow
+                checked={on}
+                onChange={(next) =>
+                  onMods(next ? [...mission.mods, mod.id] : mission.mods.filter((x) => x !== mod.id))
+                }
+              >
+                {mod.label}
+              </CheckRow>
+            </div>
+          );
+        })}
+      </div>
+      <Divider />
       <Field label={t("Name")}>
         <TextInput
           value={mission.displayName}
@@ -195,27 +218,6 @@ export default function MissionPanel({
         </SelectInput>
       </Field>
       <Hint>{t("Changing terrain clears placements.")}</Hint>
-      <Divider />
-      {/* Content mods: gate which factions the builder offers. Disabling a mod
-          resets any faction selections that depend on it (page.tsx setMods). */}
-      <div className="text-[12px] text-white">{t("Supported mods")}</div>
-      <div className="flex flex-col gap-2">
-        {Object.values(MODS).map((mod: { id: string; label: string; workshopUrl: string }) => {
-          const on = mission.mods.includes(mod.id);
-          return (
-            <div key={mod.id} className="flex flex-col gap-1">
-              <CheckRow
-                checked={on}
-                onChange={(next) =>
-                  onMods(next ? [...mission.mods, mod.id] : mission.mods.filter((x) => x !== mod.id))
-                }
-              >
-                {mod.label}
-              </CheckRow>
-            </div>
-          );
-        })}
-      </div>
       <Divider />
       {/* Mission file: the only export path that works outside Chrome/Edge —
           a Firefox user saves the .json and hands it to someone who can
