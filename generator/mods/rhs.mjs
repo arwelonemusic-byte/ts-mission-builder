@@ -675,6 +675,10 @@ export const RHS = {
         M1025_armed_M2HB_MDO_ION_D: "{F8510317523D6B46}Prefabs/Vehicles/Wheeled/M998/M1025_armed_M2HB_MDO_ION_D.et",
         M1025_armed_M2HB_ION_Camo: "{855C78199FBCC53A}Prefabs/Vehicles/Wheeled/M998/M1025_armed_M2HB_ION_Camo.et",
         M1025_armed_M2HB_MDO_ION_Camo: "{DB5CE10CC310B826}Prefabs/Vehicles/Wheeled/M998/M1025_armed_M2HB_MDO_ION_Camo.et",
+        // No unarmed ION-skinned vehicles exist — RHS M923A1 trucks (same
+        // refs as the USAF entry) fill the transport role
+        M923A1_transport: "{F1FBD0972FA5FE09}Prefabs/Vehicles/Wheeled/M923A1/M923A1_transport.et",
+        M923A1_transport_covered: "{81FDAD5EB644CC3D}Prefabs/Vehicles/Wheeled/M923A1/M923A1_transport_covered.et",
       },
       vehicleLabels: {
         M1025_armed_M2HB_ION: "M1025 M2HB",
@@ -683,10 +687,11 @@ export const RHS = {
         M1025_armed_M2HB_MDO_ION_D: "M1025 M2HB (MDO, desert)",
         M1025_armed_M2HB_ION_Camo: "M1025 M2HB (camo)",
         M1025_armed_M2HB_MDO_ION_Camo: "M1025 M2HB (MDO, camo)",
+        M923A1_transport: "M923A1 Truck",
+        M923A1_transport_covered: "M923A1 Truck (covered)",
       },
       patrolVehicleKeys: ["M1025_armed_M2HB_ION"],
-      // ION ships armed M1025 variants only — no unarmed transports exist
-      transportVehicleKeys: [],
+      transportVehicleKeys: ["M923A1_transport", "M923A1_transport_covered"],
       // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool).
       // Concrete ION characters, harvested 2026-08-01 from the *_Random
       // wrappers' variant tables (see the riflemen note above)
