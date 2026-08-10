@@ -22,6 +22,8 @@
 //               USSR vs SFS_US — SFS group pools/SL hvt/SF crews on US vehicles)
 //   --sfs-rf-fia build the RF+FIA SFS packs variant (TS_WebSpikeSFSRFFIA:
 //               SFS_USSR playable vs SFS_FIA enemy — both new packs, both sides)
+//   --a2        build the Arma II Factions variant (TS_WebSpikeA2: CDF playable
+//               vs ChDKZ — exercises both new-faction sides + NAPA availability)
 //   --armenhof  build the modded-terrain variant (TS_WebSpikeArmenhof: vanilla
 //               US vs USSR on Armenhof, exercises terrain dependencies + nav refs)
 //   --chernarus same, on ChernarusMinus (terrain with transitive map-addon deps)
@@ -549,6 +551,53 @@ const SFS_RF_FIA_MISSION = {
   ],
 };
 
+// Arma II Factions spike: CDF playable vs ChDKZ enemy — exercises the mod's
+// conf-ref FactionManager members on both sides (playable/callsign block on
+// the CDF member, ChDKZ group pools + PL hvt + Chedaki crews in reskinned
+// vehicles). No friendliness clearing fires (CDF↔ChDKZ are hostile).
+const A2_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeA2",
+  dirName: "TS_WebSpikeA2",
+  addonTitle: "TS Web Spike A2 Mission",
+  name: "TS_WebSpikeA2",
+  displayName: "TS Web Spike A2",
+  playableFaction: "Ses_CDF",
+  playableSubfaction: "CDF Army",
+  enemyFaction: "Ses_ChDKZ",
+  enemyGroupSets: ["ChDKZ"],
+  loadouts: FACTIONS.Ses_CDF.loadoutSets["CDF Army"].filter((l) =>
+    ["Rifleman", "Automatic Rifleman", "Grenadier", "Medic", "SL", "PL"].includes(l.name)
+  ),
+  guids: {
+    addon: "6A98A2F00C4D71B5",
+    world: "6A98A2F059E3B267",
+    missionConf: "6A98A2F0B71D94E8",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    extra: [
+      {
+        title: "Support",
+        text: ["- 2x UAZ-469", "- 1x Ural-4320 Transport Truck"],
+      },
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    vehicles: [{ type: "UAZ469_CDF" }, { type: "UAZ469_CDF" }, { type: "Ural4320_transport_covered_CDF" }],
+  },
+  zones: [
+    MISSION.zones[0],
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["BRDM2_ChDKZ", "Ural4320_transport_covered_ChDKZ"] },
+      ],
+    },
+  ],
+};
+
 // Armenhof spike: vanilla factions on a modded terrain — proves a mission
 // picks up the MAP addon dependency with no faction mods in play. Coords
 // sampled from the ops-planner heightmap (validated against the GM world's
@@ -1070,6 +1119,8 @@ const BUILT = process.argv.includes("--zarichne")
                 ? AFRF_MEI_MISSION
               : process.argv.includes("--mei")
                 ? MEI_MISSION
+                : process.argv.includes("--a2")
+                  ? A2_MISSION
                 : process.argv.includes("--sfs-rf-fia")
                   ? SFS_RF_FIA_MISSION
                 : process.argv.includes("--sfs-enemy")

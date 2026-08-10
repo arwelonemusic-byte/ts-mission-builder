@@ -18,6 +18,7 @@ import { BANDITS } from "./mods/bandits.mjs";
 import { SFS } from "./mods/sfs.mjs";
 import { SFSRF } from "./mods/sfsrf.mjs";
 import { SFSFIA } from "./mods/sfsfia.mjs";
+import { ARMA2 } from "./mods/arma2.mjs";
 
 // Props tab catalogue (placeable prefabs + footprints) lives in its own file.
 export { PROPS, PROP_CATEGORIES, DEFAULT_PROP } from "./props.mjs";
@@ -904,7 +905,7 @@ export const FACTIONS = {
 // (e.g. MEI = USSR + character/voice overrides): the whole vanilla entry is
 // copied underneath the def, and lib.mjs skips it in the FactionManager
 // emission because the vanilla member covers it.
-export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS, [SFS.id]: SFS, [SFSRF.id]: SFSRF, [SFSFIA.id]: SFSFIA };
+export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS, [SFS.id]: SFS, [SFSRF.id]: SFSRF, [SFSFIA.id]: SFSFIA, [ARMA2.id]: ARMA2 };
 for (const mod of Object.values(MODS)) {
   for (const [key, faction] of Object.entries(mod.factions)) {
     const base = faction.aliasOf ? FACTIONS[faction.aliasOf] : undefined;
