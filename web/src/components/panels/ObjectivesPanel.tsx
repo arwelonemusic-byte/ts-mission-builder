@@ -210,16 +210,18 @@ export default function ObjectivesPanel({
                 })()}
                 {o.type === "deliver" && (
                   <div className="flex flex-col gap-2">
-                    <GhostButton
-                      active={deliveryTarget === o.id}
-                      onClick={() => onArmDelivery(o.id)}
-                    >
-                      {deliveryTarget === o.id
-                        ? t("Click the map… (cancel)")
-                        : o.delivery
-                          ? t("Move delivery point (click map)")
+                    {/* Once placed, the point is moved by dragging its map
+                        badge — no button needed */}
+                    {!o.delivery && (
+                      <GhostButton
+                        active={deliveryTarget === o.id}
+                        onClick={() => onArmDelivery(o.id)}
+                      >
+                        {deliveryTarget === o.id
+                          ? t("Click the map… (cancel)")
                           : t("Place delivery point (click map)")}
-                    </GhostButton>
+                      </GhostButton>
+                    )}
                     {!o.delivery && deliveryTarget !== o.id && (
                       <span className="text-[11px] leading-4 text-[#f4db50]">
                         {t("A delivery point is required to generate the mission.")}

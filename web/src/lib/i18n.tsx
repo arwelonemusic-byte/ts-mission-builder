@@ -209,7 +209,6 @@ const RU: Record<string, string> = {
   Vehicle: "Техника",
   "Select vehicle": "Выберите технику",
   "Place delivery point (click map)": "Разместить пункт назначения (клик по карте)",
-  "Move delivery point (click map)": "Передвинуть пункт назначения (клик по карте)",
   "A delivery point is required to generate the mission.":
     "Для генерации миссии необходимо разместить пункт назначения.",
   "Delivery trigger radius": "Радиус зоны доставки",
