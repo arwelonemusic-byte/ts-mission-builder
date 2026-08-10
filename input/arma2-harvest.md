@@ -48,9 +48,22 @@ Factions` (1244 files).
 4. `Ses_Props_A2F.conf` — spawn points.
 
 `Character_CDF_Officer.et` ships but appears in NO conf → no GUID source →
-CDF hvt = PL `{756D4054410A1927}` (SFS-US precedent). `Character_CDF_SL.et`
-appears with TWO GUIDs one digit apart (`{16165F4184929A69}` catalog /
-`{...6A}` elsewhere) — the catalog GUID is used.
+CDF hvt = PL `{756D4054410A1927}` (SFS-US precedent).
+
+**TRUST RULE (Workbench-caught 2026-08-10, applies to ALL mods): prefab-side
+refs beat conf refs.** The engine writes parent-chain and variant-table GUIDs
+into prefabs itself, so they're always current; hand-maintained catalog confs
+go stale. Enfusion resolves refs BY GUID first with path fallback — a stale
+GUID that no longer exists merely logs `Wrong GUID` and falls back to the
+path (works, noisy), but a stale GUID that still exists AS ANOTHER RESOURCE
+silently resolves to the wrong prefab with no error. Both cases live in this
+mod's CDF catalog: MG `{...C99}`→true `{...C9A}`, Medic `{F051151C98DB30CD}`
+→true `{16165F4184929A69}`, SL `{16165F4184929A69}`→true `{16165F4184929A6A}`
+(the catalog's SL GUID IS the Medic prefab — a catalog-sourced SL loadout
+would silently spawn a medic). The catalog's `Character_CDF_Sharpshooter.et`
+prefab doesn't ship at all (dead entry) — excluded from the roster. Audit
+method: grep every {GUID}path pair across Prefabs/ vs Configs/, prefer the
+prefab-side GUID on any conflict; ChDKZ/NAPA/vehicles had no conflicts.
 
 ## Group slot counts (real slots, preview refs excluded)
 

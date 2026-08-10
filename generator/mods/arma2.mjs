@@ -33,7 +33,13 @@
 // GUID sources: FactionManager_Editor.et (entry GUIDs), Ses_Groups_A2F.conf
 // (all groups), Ses_Veh_A2F.conf (vehicles), Ses_Props_A2F.conf (spawn
 // points), per-faction EntityCatalog character confs + Random variant tables
-// (characters). Full harvest: input/arma2-harvest.md.
+// (characters). TRUST RULE (Workbench-caught 2026-08-10): where the mod's
+// confs and its PREFAB-SIDE refs (parent chains / variant tables — written
+// by Workbench itself) disagree, the prefab side wins — the CDF catalog
+// carried stale GUIDs for MG/Medic/SL (the stale SL GUID is the MEDIC's
+// real GUID, so a catalog-sourced SL would silently spawn a medic), and its
+// Sharpshooter entry points at a prefab that doesn't ship (excluded).
+// Full harvest: input/arma2-harvest.md.
 //
 // Arsenal = the vanilla USSR set (CDF/ChDKZ) / vanilla FIA set (NAPA) copied
 // verbatim — STARTER CUT: the factions carry RHS weapons, so the vanilla AK
@@ -151,16 +157,17 @@ export const ARMA2 = {
         "CDF Army": [
           { name: "Rifleman", prefab: `{9DE22FB5586591CC}${P_CDF_C}/Character_CDF_Rifleman.et` },
           { name: "Automatic Rifleman", prefab: `{7B9EAE5EB616387A}${P_CDF_C}/Character_CDF_AR.et` },
-          { name: "Machine Gunner", prefab: `{29897044D8592C99}${P_CDF_C}/Character_CDF_MG.et` },
+          { name: "Machine Gunner", prefab: `{29897044D8592C9A}${P_CDF_C}/Character_CDF_MG.et` },
           { name: "Asst. Machine Gunner", prefab: `{2A4051EDC38853A7}${P_CDF_C}/Character_CDF_AMG.et` },
           { name: "Grenadier", prefab: `{764BD07F41A15150}${P_CDF_C}/Character_CDF_GL.et` },
           { name: "Anti-tank", prefab: `{A336C79FCF9F2626}${P_CDF_C}/Character_CDF_AT.et` },
           { name: "Asst. Anti-tank", prefab: `{A0FFE636D44E5918}${P_CDF_C}/Character_CDF_AAT.et` },
-          { name: "Medic", prefab: `{F051151C98DB30CD}${P_CDF_C}/Character_CDF_Medic.et` },
+          { name: "Medic", prefab: `{16165F4184929A69}${P_CDF_C}/Character_CDF_Medic.et` },
           { name: "RTO", prefab: `{7C646869CFA3B721}${P_CDF_C}/Character_CDF_RTO.et` },
-          { name: "Sharpshooter", prefab: `{BCC61BCFB0FBC6BF}${P_CDF_C}/Character_CDF_Sharpshooter.et` },
+          // Sharpshooter is EXCLUDED: the catalog lists it but the prefab
+          // doesn't ship (dead entry, Workbench-flagged nonexistent GUID)
           { name: "Spotter", prefab: `{0779E285709FDE15}${P_CDF_C}/Character_CDF_Spotter.et` },
-          { name: "SL", prefab: `{16165F4184929A69}${P_CDF_C}/Character_CDF_SL.et` },
+          { name: "SL", prefab: `{16165F4184929A6A}${P_CDF_C}/Character_CDF_SL.et` },
           { name: "PL", prefab: `{756D4054410A1927}${P_CDF_C}/Character_CDF_PL.et` },
           { name: "Crew", prefab: `{930302D9F14EEFC0}${P_CDF_C}/Character_CDF_Crew.et` },
           { name: "Crew Commander", prefab: `{7766953EDCFC5F06}${P_CDF_C}/Character_CDF_CC.et` },
@@ -228,7 +235,7 @@ export const ARMA2 = {
         `{9DE22FB5586591CC}${P_CDF_C}/Character_CDF_Rifleman.et`,
         `{764BD07F41A15150}${P_CDF_C}/Character_CDF_GL.et`,
         `{7B9EAE5EB616387A}${P_CDF_C}/Character_CDF_AR.et`,
-        `{16165F4184929A69}${P_CDF_C}/Character_CDF_SL.et`,
+        `{16165F4184929A6A}${P_CDF_C}/Character_CDF_SL.et`,
       ],
       fortifications: A2_FORTS,
       defaultGroupSet: "CDF_Army",
