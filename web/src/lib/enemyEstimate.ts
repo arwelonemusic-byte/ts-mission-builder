@@ -18,9 +18,13 @@ import type { Mission, Zone } from "./mission";
  *    = ["large"]). QRF modules count toward the estimate even before any
  *    origin is placed — the budget is what will arrive once one exists.
  */
+// Re-calibrated against Reforger 1.8 group sizes (2026-08-16): vanilla small
+// groups are uniformly 2-man, mediums run 3-5 (SF sets reuse their 6-man
+// squad as medium), larges 6-9. Mod factions share these ranges, so keep a
+// little slack rather than exact vanilla counts.
 const CLASS_RANGE: Record<string, [number, number]> = {
-  small: [2, 4],
-  medium: [4, 6],
+  small: [2, 3],
+  medium: [3, 6],
   large: [6, 9],
 };
 const VEHICLE_CREW_RANGE: [number, number] = [3, 8];
