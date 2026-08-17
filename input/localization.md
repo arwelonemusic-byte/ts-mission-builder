@@ -111,6 +111,34 @@ say the word if you want that too.
 | Arsenal crate *(map tooltip)* | Ящик снаряжения |
 | Spawn point *(map tooltip)* | Точка спавна |
 
+## Arsenal Builder modal
+
+Item names are NOT here — they're harvested from the game's own string tables
+(EN + RU) into `generator/arsenal-pool.mjs`. Category labels reuse the
+destroy/props keys where they collide (Weapons, Other).
+
+| EN | RU |
+|---|---|
+| Arsenal Builder | Редактор арсенала |
+| Arsenal contents | Содержимое арсенала |
+| · {n} items | · предметов: {n} |
+| Search items… | Поиск предметов… |
+| All factions | Все фракции |
+| All categories | Все категории |
+| All types | Все типы |
+| Clear filters | Сбросить фильтры |
+| Select all | Выбрать все |
+| Remove item | Убрать предмет |
+| No items match the filters. | Ничего не найдено по фильтрам. |
+| The arsenal must keep at least one item. | В арсенале должен остаться хотя бы один предмет. |
+| Weapon Attachments | Прицелы и обвесы |
+| Ammunition | Боеприпасы |
+| Throwable and Explosives | Гранаты и взрывчатка |
+| Backpacks and Vests | Рюкзаки и разгрузки |
+| Clothing | Одежда |
+| Equipment | Снаряжение |
+| DeployableParts | Развёртываемые части |
+
 ## Zones tab
 
 | EN | RU |

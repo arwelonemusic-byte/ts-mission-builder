@@ -126,6 +126,29 @@ const RU: Record<string, string> = {
   "Arsenal crate": "Ящик снаряжения",
   "Spawn point": "Точка спавна",
 
+  // Arsenal Builder modal (item names come from the harvested nameRu, not
+  // this table; the category labels ARE chrome — closed set from the pool)
+  "Arsenal Builder": "Редактор арсенала",
+  "Arsenal contents": "Содержимое арсенала",
+  "· {n} items": "· предметов: {n}",
+  "Search items…": "Поиск предметов…",
+  "All factions": "Все фракции",
+  "All categories": "Все категории",
+  "All types": "Все типы",
+  "Clear filters": "Сбросить фильтры",
+  "Select all": "Выбрать все",
+  "Remove item": "Убрать предмет",
+  "No items match the filters.": "Ничего не найдено по фильтрам.",
+  "The arsenal must keep at least one item.": "В арсенале должен остаться хотя бы один предмет.",
+  // Pool category labels ("Weapons"/"Other" reuse the destroy/props keys below)
+  "Weapon Attachments": "Прицелы и обвесы",
+  Ammunition: "Боеприпасы",
+  "Throwable and Explosives": "Гранаты и взрывчатка",
+  "Backpacks and Vests": "Рюкзаки и разгрузки",
+  Clothing: "Одежда",
+  Equipment: "Снаряжение",
+  DeployableParts: "Развёртываемые части",
+
   // Zones tab ("+" is an svg icon on the button, not part of the label)
   "Add zone (click map)": "Добавить зону (клик по карте)",
   "No AI zones yet": "Ботозоны не добавлены",

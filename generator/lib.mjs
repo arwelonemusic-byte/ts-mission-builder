@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleSizeClass } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -116,8 +116,25 @@ export function buildMissionFiles(mission, options = {}) {
   // checkbox — a vanilla-only mission must never force players to install a
   // mod that merely happened to be enabled in the builder.
   const usedMods = [...new Set([F.mod, ENEMY.mod].filter(Boolean))];
+  // Arsenal Builder: user-picked mod items pull their mod's deps too (usage-
+  // derived, same philosophy) — but NOT its FactionManager emission (arsenal
+  // usage alone doesn't put the mod's factions in the mission).
+  const arsenalRefSet = new Set(
+    (Array.isArray(mission.arsenal) ? mission.arsenal : []).map((e) => (e && typeof e === "object" ? e.ref : e))
+  );
+  // Mod pools list shared VANILLA prefabs alongside their own (RHS lists the
+  // vanilla PM, UK the ALICE packs…) — only refs the vanilla pool does NOT
+  // own establish a real dependency on the mod.
+  const vanillaRefs = new Set(ARSENAL_POOL.map((i) => i.ref));
+  const arsenalMods = Object.entries(MOD_ARSENAL_POOLS)
+    .filter(([, pool]) => pool.some((i) => arsenalRefSet.has(i.ref) && !vanillaRefs.has(i.ref)))
+    .map(([id]) => id);
   const modDeps = [
-    ...new Set([...usedMods.flatMap((id) => MODS[id].dependencies), ...(TERRAIN.dependencies ?? [])]),
+    ...new Set([
+      ...usedMods.flatMap((id) => MODS[id].dependencies),
+      ...arsenalMods.flatMap((id) => MODS[id].dependencies),
+      ...(TERRAIN.dependencies ?? []),
+    ]),
   ];
   // Alias factions (aliasOf) are vanilla reskins — their vanilla member is
   // already in the FactionManager emission, so they must not appear again.
@@ -213,7 +230,30 @@ ${taskTypes}
   // m_eItemMode comes from the vanilla EntityCatalog (omitted when empty).
   // subfactionArsenalItems (optional) appends subfaction-specific extras (e.g.
   // camo-matched backpacks) for the selected playable subfaction.
-  const arsenalItems = [...F.arsenalItems, ...(F.subfactionArsenalItems?.[mission.playableSubfaction] ?? [])]
+  // mission.arsenal (ordered refs from the Arsenal Builder) overrides the baked
+  // set; modes resolve from ARSENAL_POOL with the baked entries winning (keeps
+  // mod-faction refs + curated modes authoritative). Min 1 item: an empty
+  // override array would leave the base conf's ref-less placeholder member
+  // (conf arrays merge by member GUID).
+  const bakedArsenal = [...F.arsenalItems, ...(F.subfactionArsenalItems?.[mission.playableSubfaction] ?? [])];
+  let arsenalList;
+  if (Array.isArray(mission.arsenal)) {
+    if (!mission.arsenal.length) throw new Error("mission.arsenal must contain at least one item");
+    const modeByRef = new Map();
+    for (const it of ARSENAL_POOL) modeByRef.set(it.ref, it.mode);
+    for (const pool of Object.values(MOD_ARSENAL_POOLS)) for (const it of pool) modeByRef.set(it.ref, it.mode);
+    for (const it of bakedArsenal) modeByRef.set(it.ref, it.mode);
+    arsenalList = mission.arsenal.map((entry) => {
+      // {mode, ref} objects carry an explicit mode (CLI spikes, e.g. --thumbs
+      // forcing WEAPON_VARIANTS flat); the web app always sends bare refs.
+      if (entry && typeof entry === "object") return { mode: entry.mode ?? "", ref: entry.ref };
+      if (!modeByRef.has(entry)) throw new Error(`unknown arsenal item ref: ${entry}`);
+      return { mode: modeByRef.get(entry), ref: entry };
+    });
+  } else {
+    arsenalList = bakedArsenal;
+  }
+  const arsenalItems = arsenalList
     .map((item, i) => {
       const guid = i === 0 ? K.ARSENAL_BASE_ENTRY : `{${mintGuid()}}`;
       const mode = item.mode ? `\n   m_eItemMode ${item.mode}` : "";

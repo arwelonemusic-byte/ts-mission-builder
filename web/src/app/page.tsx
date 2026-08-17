@@ -6,8 +6,10 @@ import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import {
   DEFAULT_DELIVER_VEHICLE,
   DEFAULT_DESTROY_OBJECT,
+  defaultArsenal,
   defaultLoadouts,
   downloadMissionJson,
+  sanitizeArsenal,
   factionMeta,
   freshenGuids,
   loadMission,
@@ -414,6 +416,7 @@ export default function Editor() {
       playableFaction: pf,
       playableSubfaction: sub,
       loadouts: defaultLoadouts(pf, sub),
+      arsenal: defaultArsenal(pf, sub),
       spawn: { ...mission.spawn, vehicles: [] },
     };
     if (pf === mission.enemyFaction || aliasConflict(pf, mission.enemyFaction)) {
@@ -445,6 +448,7 @@ export default function Editor() {
         playableFaction: playable,
         playableSubfaction: sub,
         loadouts: defaultLoadouts(playable, sub),
+        arsenal: defaultArsenal(playable, sub),
         spawn: { ...mission.spawn, vehicles: [] },
       });
     }
@@ -457,6 +461,11 @@ export default function Editor() {
         (f) => allowed(f) && !FACTIONS[f].playableOnly && f !== playable && !aliasConflict(f, playable)
       );
       if (nextEnemy) Object.assign(patch, enemyPatch(nextEnemy, mission.zones));
+    }
+    // Disabling a mod also scrubs its items from the arsenal (unless the
+    // playable cascade above already reset it to the new faction's default).
+    if (!patch.arsenal) {
+      patch.arsenal = sanitizeArsenal(mission.arsenal, mods, playable, mission.playableSubfaction);
     }
     update(patch);
   };
@@ -1032,6 +1041,7 @@ export default function Editor() {
                 mission={mission}
                 placeMode={placeMode}
                 setPlaceMode={armPlaceMode}
+                update={update}
                 updateSpawn={updateSpawn}
                 slope={slope}
               />

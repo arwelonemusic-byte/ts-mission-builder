@@ -1,4 +1,4 @@
-import { FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid } from "mission-gen";
+import { ARSENAL_POOL, MOD_ARSENAL_POOLS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid } from "mission-gen";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
 export type PlaceMode = "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | "prop" | null;
@@ -114,6 +114,11 @@ export type Mission = {
   };
   /** Selected loadout prefab refs (from the playable subfaction's loadout set) */
   loadouts: string[];
+  /** Arsenal-crate item refs, in TS_CustomArsenal.conf (= in-game) order —
+   * kept category-sorted by sortArsenal. Legal members: vanilla ARSENAL_POOL
+   * refs + the faction's baked set (mod factions). Min 1: an empty conf
+   * override would leave the toolkit base conf's ref-less placeholder member. */
+  arsenal: string[];
   /** Player squads (1-8) → playable faction's m_aSquadNames + m_aPredefinedGroups */
   groups: MissionGroup[];
   /** Artillery support → TS_FireSupportManagerComponent on GameModeSF */
@@ -173,6 +178,50 @@ export function defaultLoadouts(faction: string, subfaction: string): string[] {
   return set.slice(0, 1).map((l) => l.prefab);
 }
 
+/** Arsenal pool lookup by {GUID}path ref (name display + sorting) — vanilla +
+ * ALL mod pools; browse-list gating by enabled mods happens in the modal. */
+export const arsenalPoolByRef = new Map(
+  [...ARSENAL_POOL, ...Object.values(MOD_ARSENAL_POOLS).flat()].map((i) => [i.ref, i])
+);
+// Mod pools' categories normalize onto the vanilla set at harvest.
+const ARSENAL_CATEGORY_ORDER = [...new Set(ARSENAL_POOL.map((i) => i.category))];
+
+/** Default arsenal contents: the faction's baked set (+ subfaction extras). */
+export function defaultArsenal(faction: string, subfaction: string): string[] {
+  const F = FACTIONS[faction];
+  return [...(F?.arsenalItems ?? []), ...(F?.subfactionArsenalItems?.[subfaction] ?? [])].map((i) => i.ref);
+}
+
+/** Drop arsenal refs that aren't legal for the mission's enabled mods
+ * (vanilla pool + enabled mods' pools + the faction's own baked set), dedupe,
+ * and backfill the default when nothing survives. Shared by migrate() and the
+ * mod-toggle cascade so disabling a mod scrubs its items immediately. */
+export function sanitizeArsenal(refs: unknown, mods: string[], faction: string, subfaction: string): string[] {
+  const fallback = defaultArsenal(faction, subfaction);
+  if (!Array.isArray(refs)) return fallback;
+  const known = new Set([
+    ...ARSENAL_POOL.map((i) => i.ref),
+    ...mods.flatMap((id) => (MOD_ARSENAL_POOLS[id] ?? []).map((i) => i.ref)),
+    ...fallback,
+  ]);
+  const kept = [...new Set(refs.map(String))].filter((r) => known.has(r));
+  return kept.length ? kept : fallback;
+}
+
+/** Category-sort arsenal refs (stable): pool category order, then name.
+ * Refs outside the pool (mod-faction baked items) keep their baked relative
+ * order at the front. Applied on every Arsenal Builder commit so the stored
+ * order — which IS the in-game arsenal order — stays predictable. */
+export function sortArsenal(refs: string[]): string[] {
+  return [...refs].sort((a, b) => {
+    const ea = arsenalPoolByRef.get(a);
+    const eb = arsenalPoolByRef.get(b);
+    const ca = ea ? ARSENAL_CATEGORY_ORDER.indexOf(ea.category) : -1;
+    const cb = eb ? ARSENAL_CATEGORY_ORDER.indexOf(eb.category) : -1;
+    return ca - cb || (ea?.name ?? "").localeCompare(eb?.name ?? "");
+  });
+}
+
 /** The Mod Defaults standard squad set: 1'1-1'4 + 1'6 @ 9/9/9/9/3. */
 export function defaultGroups(): MissionGroup[] {
   return [
@@ -209,6 +258,7 @@ export function newMission(): Mission {
     mods: [],
     briefing: { situation: "", objectives: "", threats: "", extra: [] },
     loadouts: defaultLoadouts("US", "US_Army"),
+    arsenal: defaultArsenal("US", "US_Army"),
     groups: defaultGroups(),
     arty: defaultArty(),
     thumbnail: null,
@@ -288,6 +338,10 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     const mod = factionMeta(fk).mod;
     if (mod && !m.mods.includes(mod)) m.mods.push(mod);
   }
+  // Arsenal Builder arrived after the first saves: default old saves to the
+  // baked set; sanitize hand-edited refs against the legal pools (after the
+  // mods normalization above — mod items are only legal with the mod enabled).
+  m.arsenal = sanitizeArsenal(m.arsenal, m.mods, m.playableFaction, m.playableSubfaction);
   // Old saves lack guidsName: "" never matches a sanitized name, so the
   // next export re-mints — also cures duplicates minted before this field
   // existed (rename-without-reset reused the stored guids verbatim)

@@ -152,6 +152,7 @@ export const UK = {
         { mode: "AMMUNITION", ref: "{1E7D876C06089E21}Prefabs/Weapons/Magazines/Magazine_9x19_HiPower_13rnd_Ball.et" },
         { mode: "AMMUNITION", ref: "{F2E474689BD7C2E1}Prefabs/Weapons/Ammo/Ammo_Rocket_HEAT_L40.et" },
         { mode: "", ref: "{CE179546A16382BA}Prefabs/Weapons/Grenades/Grenade_L2A2.et" },
+        { mode: "", ref: "{96FFE213B19D1D57}Prefabs/Weapons/Grenades/Smoke_No80_WP.et" },
         { mode: "", ref: "{77A25EFFE26D8A7E}Prefabs/Weapons/Grenades/Smoke_No83_Green.et" },
         { mode: "", ref: "{4C075BF50FD8C069}Prefabs/Weapons/Grenades/Smoke_No83_Red.et" },
         { mode: "", ref: "{1F9E536AD45F48C7}Prefabs/Weapons/Explosives/DemoBlock_PE4/DemoBlock_PE4.et" },

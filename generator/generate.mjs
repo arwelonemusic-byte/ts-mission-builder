@@ -24,6 +24,17 @@
 //               SFS_USSR playable vs SFS_FIA enemy — both new packs, both sides)
 //   --a2        build the Arma II Factions variant (TS_WebSpikeA2: CDF playable
 //               vs ChDKZ — exercises both new-faction sides + NAPA availability)
+//   --arsenal   build the Arsenal Builder variant (TS_WebSpikeArsenal: US vs
+//               USSR with a mission.arsenal override — pool-resolved modes)
+//   --thumbs    build the thumbnail-harvest mock (TS_WebSpikeThumbs: ALL
+//               vanilla pool items in the crate, pool order, variants forced
+//               flat — screenshot the crate pages for the thumbnail slicer)
+//   --thumbs-uk same for the British Forces pool (TS_WebSpikeThumbsUK)
+//   --thumbs-rhs-afrf  same for the RHS AFRF pool slice (TS_WebSpikeThumbsAFRF)
+//   --thumbs-rhs-ion   same for the RHS ION pool slice + 5 vanilla 1.8 additions (TS_WebSpikeThumbsION)
+//   --thumbs-rhs-usaf  same for the RHS USAF pool slice (TS_WebSpikeThumbsUSAF)
+//   --thumbs-sfs-us    SFS US pack: baked refs outside every pool (TS_WebSpikeThumbsSFSUS)
+//   --thumbs-sfs-rf    SFS RF+FIA packs: same, both factions (TS_WebSpikeThumbsSFSRF)
 //   --armenhof  build the modded-terrain variant (TS_WebSpikeArmenhof: vanilla
 //               US vs USSR on Armenhof, exercises terrain dependencies + nav refs)
 //   --chernarus same, on ChernarusMinus (terrain with transitive map-addon deps)
@@ -38,7 +49,7 @@
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { buildMissionFiles, FACTIONS } from "./lib.mjs";
+import { buildMissionFiles, FACTIONS, ARSENAL_POOL, MOD_ARSENAL_POOLS } from "./lib.mjs";
 
 const ADDONS_ROOT = String.raw`C:\Users\djdav\Documents\My Games\ArmaReforgerWorkbench\addons`;
 
@@ -306,6 +317,114 @@ const UK_MISSION = {
   },
 };
 
+// UK thumbnail-harvest mock: every ARSENAL_POOL_UK item in the crate, pool
+// order, variants forced flat (see THUMBS_MISSION). US playable is fine — the
+// crate contents are what matters; the UK deps arrive via the arsenal refs.
+const THUMBS_UK_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeThumbsUK",
+  dirName: "TS_WebSpikeThumbsUK",
+  addonTitle: "TS Web Spike Thumbs UK Mission",
+  name: "TS_WebSpikeThumbsUK",
+  displayName: "TS Web Spike Thumbs UK",
+  guids: {
+    addon: "6A9D72E14B08C356",
+    world: "6A9D72E1D93A7F82",
+    missionConf: "6A9D72E1682E90B4",
+  },
+  arsenal: MOD_ARSENAL_POOLS.uk.map((i) => ({ ref: i.ref, mode: i.mode === "WEAPON_VARIANTS" ? "WEAPON" : i.mode })),
+};
+
+// RHS AFRF thumbnail-harvest mock (see THUMBS_MISSION): the whole AFRF pool
+// slice in the crate; the faction filter keeps this stable when USAF/ION are
+// appended to MOD_ARSENAL_POOLS.rhs later.
+const THUMBS_RHS_AFRF_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeThumbsAFRF",
+  dirName: "TS_WebSpikeThumbsAFRF",
+  addonTitle: "TS Web Spike Thumbs AFRF Mission",
+  name: "TS_WebSpikeThumbsAFRF",
+  displayName: "TS Web Spike Thumbs AFRF",
+  guids: {
+    addon: "6A9E83F25C19D467",
+    world: "6A9E83F2EA4B8093",
+    missionConf: "6A9E83F2793FA1C5",
+  },
+  // Optional category slice (--cats=Clothing or --cats="Equipment,Other"):
+  // chunked captures are small enough to audit reliably — the full-pool
+  // capture drifted invisibly (2026-08-13). Category names = pool categories.
+  arsenal: MOD_ARSENAL_POOLS.rhs
+    .filter((i) => {
+      if (!i.factions.includes("RHS_AFRF")) return false;
+      const catsArg = process.argv.find((a) => a.startsWith("--cats="));
+      if (!catsArg) return true;
+      return catsArg.slice(7).split(",").map((s) => s.trim()).includes(i.category);
+    })
+    .map((i) => ({ ref: i.ref, mode: i.mode === "WEAPON_VARIANTS" ? "WEAPON" : i.mode })),
+};
+
+// RHS USAF thumbnail-harvest mock (see THUMBS_MISSION): the whole USAF pool
+// slice, --cats slicing supported like AFRF/ION.
+const THUMBS_RHS_USAF_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeThumbsUSAF",
+  dirName: "TS_WebSpikeThumbsUSAF",
+  addonTitle: "TS Web Spike Thumbs USAF Mission",
+  name: "TS_WebSpikeThumbsUSAF",
+  displayName: "TS Web Spike Thumbs USAF",
+  guids: {
+    addon: "6AA2C59E1F74B8D2",
+    world: "6AA2C59E83D06A47",
+    missionConf: "6AA2C59E47B92E15",
+  },
+  arsenal: MOD_ARSENAL_POOLS.rhs
+    .filter((i) => {
+      if (!i.factions.includes("RHS_USAF")) return false;
+      const catsArg = process.argv.find((a) => a.startsWith("--cats="));
+      if (!catsArg) return true;
+      return catsArg.slice(7).split(",").map((s) => s.trim()).includes(i.category);
+    })
+    .map((i) => ({ ref: i.ref, mode: i.mode === "WEAPON_VARIANTS" ? "WEAPON" : i.mode })),
+};
+
+// RHS ION thumbnail-harvest mock (see THUMBS_MISSION): the whole ION pool
+// slice (--cats slicing supported like AFRF) + 5 vanilla items appended at
+// the END (clean ION ordinals for mapping): the 3 UGL smokes + 2 razor-wire
+// parts that 1.8 added to the vanilla catalogs after the vanilla capture.
+const THUMBS_ION_VANILLA_EXTRAS = [
+  "Ammo_Grenade_Smoke_M713_Red",
+  "Ammo_Grenade_Smoke_M715_Green",
+  "Ammo_Grenade_Smoke_M716_Yellow",
+  "BarbedTape_Stake",
+  "Barbed_Tape",
+];
+const THUMBS_RHS_ION_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeThumbsION",
+  dirName: "TS_WebSpikeThumbsION",
+  addonTitle: "TS Web Spike Thumbs ION Mission",
+  name: "TS_WebSpikeThumbsION",
+  displayName: "TS Web Spike Thumbs ION",
+  guids: {
+    addon: "6AA10B47D2E85F19",
+    world: "6AA10B473C96A2D5",
+    missionConf: "6AA10B478E51C7B3",
+  },
+  arsenal: [
+    ...MOD_ARSENAL_POOLS.rhs
+      .filter((i) => {
+        if (!i.factions.includes("RHS_ION")) return false;
+        const catsArg = process.argv.find((a) => a.startsWith("--cats="));
+        if (!catsArg) return true;
+        return catsArg.slice(7).split(",").map((s) => s.trim()).includes(i.category);
+      })
+      .map((i) => ({ ref: i.ref, mode: i.mode === "WEAPON_VARIANTS" ? "WEAPON" : i.mode })),
+    ...ARSENAL_POOL
+      .filter((i) => THUMBS_ION_VANILLA_EXTRAS.includes(i.ref.split("/").pop().replace(".et", "")))
+      .map((i) => ({ ref: i.ref, mode: i.mode === "WEAPON_VARIANTS" ? "WEAPON" : i.mode })),
+  ],
+};
+
 // British Forces enemy-side spike: vanilla US vs UK — exercises UK group
 // pools (defense/sentry/garrison/patrols), UK fortification compositions and
 // Land Rover mounted patrols.
@@ -362,6 +481,50 @@ const MEI_MISSION = {
       ],
     },
   ],
+};
+
+// Arsenal Builder spike: exercises the mission.arsenal override path — baked US
+// set minus its last entry, plus two ARSENAL_POOL-resolved additions (one with
+// a mode token, one mode-less). NOT on the base MISSION: mod spikes spread
+// ...MISSION and would inherit US refs into non-US missions.
+const ARSENAL_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeArsenal",
+  dirName: "TS_WebSpikeArsenal",
+  addonTitle: "TS Web Spike Arsenal Mission",
+  name: "TS_WebSpikeArsenal",
+  displayName: "TS Web Spike Arsenal",
+  guids: {
+    addon: "6A9B3E1C7D42A051",
+    world: "6A9B3E1C58F09B37",
+    missionConf: "6A9B3E1C91C6E4D8",
+  },
+  arsenal: [
+    ...FACTIONS.US.arsenalItems.slice(0, -1).map((i) => i.ref),
+    "{3E413771E1834D2F}Prefabs/Weapons/Rifles/M16/Rifle_M16A2.et", // pool mode WEAPON
+    "{C7861F11D5334C0E}Prefabs/Characters/Uniforms/Jacket_US_BDU.et", // pool mode "" (omitted)
+  ],
+};
+
+// Thumbnail-harvest mock mission: EVERY vanilla pool item in the arsenal crate,
+// in exact ARSENAL_POOL order (= arsenal-pool.mjs line order — the slicing
+// manifest). WEAPON_VARIANTS is forced to WEAPON so each prefab gets its OWN
+// tile (variants otherwise fold into the base weapon's variant selector and
+// never tile). Open the crate in-game, screenshot every page, feed the shots
+// to the thumbnail slicer.
+const THUMBS_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeThumbs",
+  dirName: "TS_WebSpikeThumbs",
+  addonTitle: "TS Web Spike Thumbs Mission",
+  name: "TS_WebSpikeThumbs",
+  displayName: "TS Web Spike Thumbs",
+  guids: {
+    addon: "6A9C51D08E2B7F43",
+    world: "6A9C51D0A75C0E91",
+    missionConf: "6A9C51D0C39F6A28",
+  },
+  arsenal: ARSENAL_POOL.map((i) => ({ ref: i.ref, mode: i.mode === "WEAPON_VARIANTS" ? "WEAPON" : i.mode })),
 };
 
 // RHS-vs-MEI spike: playable RHS_AFRF vs the MEI alias faction — validates the
@@ -504,6 +667,27 @@ const SFS_ENEMY_MISSION = {
   ],
 };
 
+// SFS thumbnail-harvest mocks (2026-08-17): crate = ONLY the baked refs that
+// live outside every harvested pool (Abrashka dep-mod items — GRS, PKP-B,
+// SFSLoadoutBOX...; pool-covered refs already have thumbnails). Two spikes
+// because the dep closures come from the mission factions: the US pack rides
+// SFS_MISSION's factions, RF+FIA ride SFS_RF_FIA_MISSION's (both anchors).
+const SFS_POOL_REFS = new Set(
+  [...ARSENAL_POOL, ...MOD_ARSENAL_POOLS.uk, ...MOD_ARSENAL_POOLS.rhs].map((i) => i.ref)
+);
+const sfsOutsidePool = (...keys) => {
+  const seen = new Set();
+  const out = [];
+  for (const k of keys) {
+    for (const it of FACTIONS[k].arsenalItems) {
+      if (SFS_POOL_REFS.has(it.ref) || seen.has(it.ref)) continue;
+      seen.add(it.ref);
+      out.push({ ref: it.ref, mode: it.mode === "WEAPON_VARIANTS" ? "WEAPON" : it.mode });
+    }
+  }
+  return out;
+};
+
 // RF+FIA SFS spike: both new Abrashka packs in one mission — SFS_USSR playable
 // (RF loadouts/arsenal, alias playable block on the USSR member) vs SFS_FIA
 // enemy (SFS-FIA group pools, PL hvt, SF crews in FIA patrol vehicles). Deps =
@@ -549,6 +733,36 @@ const SFS_RF_FIA_MISSION = {
       ],
     },
   ],
+};
+
+const THUMBS_SFS_US_MISSION = {
+  ...SFS_MISSION,
+  addonId: "TSWebSpikeThumbsSFSUS",
+  dirName: "TS_WebSpikeThumbsSFSUS",
+  addonTitle: "TS Web Spike Thumbs SFS US Mission",
+  name: "TS_WebSpikeThumbsSFSUS",
+  displayName: "TS Web Spike Thumbs SFS US",
+  guids: {
+    addon: "6AA3D07C4E92B1F5",
+    world: "6AA3D07CA1568D23",
+    missionConf: "6AA3D07C79E4C6B8",
+  },
+  arsenal: sfsOutsidePool("SFS_US"),
+};
+
+const THUMBS_SFS_RF_FIA_MISSION = {
+  ...SFS_RF_FIA_MISSION,
+  addonId: "TSWebSpikeThumbsSFSRF",
+  dirName: "TS_WebSpikeThumbsSFSRF",
+  addonTitle: "TS Web Spike Thumbs SFS RF FIA Mission",
+  name: "TS_WebSpikeThumbsSFSRF",
+  displayName: "TS Web Spike Thumbs SFS RF FIA",
+  guids: {
+    addon: "6AA3D142B7605E89",
+    world: "6AA3D1423AF8C217",
+    missionConf: "6AA3D1428D19F4A6",
+  },
+  arsenal: sfsOutsidePool("SFS_USSR", "SFS_FIA"),
 };
 
 // Arma II Factions spike: CDF playable vs ChDKZ enemy — exercises the mod's
@@ -1127,6 +1341,22 @@ const BUILT = process.argv.includes("--zarichne")
                   ? SFS_ENEMY_MISSION
                 : process.argv.includes("--sfs")
                   ? SFS_MISSION
+                : process.argv.includes("--arsenal")
+                  ? ARSENAL_MISSION
+                : process.argv.includes("--thumbs-sfs-us")
+                  ? THUMBS_SFS_US_MISSION
+                : process.argv.includes("--thumbs-sfs-rf")
+                  ? THUMBS_SFS_RF_FIA_MISSION
+                : process.argv.includes("--thumbs-rhs-usaf")
+                  ? THUMBS_RHS_USAF_MISSION
+                : process.argv.includes("--thumbs-rhs-ion")
+                  ? THUMBS_RHS_ION_MISSION
+                : process.argv.includes("--thumbs-rhs-afrf")
+                  ? THUMBS_RHS_AFRF_MISSION
+                : process.argv.includes("--thumbs-uk")
+                  ? THUMBS_UK_MISSION
+                : process.argv.includes("--thumbs")
+                  ? THUMBS_MISSION
                   : MISSION;
 // CLI heightmap sampler (same .bin/.json pair the web app ships) so spikes
 // get terrain-accurate bundle Y and prop tilt like a browser export. Falls

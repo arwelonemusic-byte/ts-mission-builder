@@ -142,6 +142,9 @@ export async function toGeneratorMission(m: Mission) {
     enemyFaction: m.enemyFaction,
     enemyGroupSets: m.enemyGroupSets,
     loadouts,
+    // Ordered refs (= in-game arsenal order); migrate() sanitized them and
+    // lib.mjs resolves modes from ARSENAL_POOL / the baked set.
+    arsenal: m.arsenal,
     groups: m.groups,
     guids: m.guids,
     // Flag only — the generator emits the ref + .edds.meta, the binaries are

@@ -412,7 +412,11 @@ export const RHS = {
         { mode: "AMMUNITION", ref: "{D8421F6E70B2FB4F}Prefabs/Weapons/Magazines/Box_762x54_PK_250rnd_4Ball_1Tracer.et" },
         { mode: "AMMUNITION", ref: "{77595CB9F596E6AC}Prefabs/Weapons/Magazines/Magazine_762x54_SVD_10rnd_LPS.et" },
         { mode: "AMMUNITION", ref: "{262F0D09C4130826}Prefabs/Weapons/Ammo/Ammo_Grenade_HE_VOG25.et" },
-        { mode: "AMMUNITION", ref: "{97A0A70B9BEE99E2}Prefabs/Weapons/Ammo/Ammo_Flare_26x45_White.et" },
+        // 40mm GP-25 flare (pairs with the VOG-25s above). The 26x45 SPSh
+        // flare this replaced (2026-08-17) is m_bEnabled 0 in RHS's own MSV
+        // catalog (all 26x45 variants are) — not in the harvested pool, no
+        // launcher for it in this set, glyph thumb.
+        { mode: "AMMUNITION", ref: "{906F07BD0366E08F}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_VG40OP_White.et" },
         { mode: "", ref: "{645C73791ECA1698}Prefabs/Weapons/Grenades/Grenade_RGD5.et" },
         { mode: "", ref: "{77EAE5E07DC4678A}Prefabs/Weapons/Grenades/Smoke_RDG2.et" },
         { mode: "", ref: "{97064F8597F2D7BF}Prefabs/Weapons/Explosives/DemoBlock_TSh400g/DemoBlock_TSh400g.et" },

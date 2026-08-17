@@ -5,3 +5,6 @@ node_modules/
 *.tsbuildinfo
 .mission-data/
 generated-missions/
+.claude/handoffs/
+input/thumb-shots/
+__pycache__/

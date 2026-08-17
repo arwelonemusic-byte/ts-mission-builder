@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { FACTIONS } from "mission-gen";
 import {
+  defaultArsenal,
   defaultGroups,
   defaultLoadouts,
   factionMeta,
@@ -117,6 +118,7 @@ export default function PlayersPanel({
             update({
               playableSubfaction: e.target.value,
               loadouts: defaultLoadouts(mission.playableFaction, e.target.value),
+              arsenal: defaultArsenal(mission.playableFaction, e.target.value),
             })
           }
         >

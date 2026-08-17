@@ -4,18 +4,21 @@ import { useState } from "react";
 import { FACTIONS, vehicleSizeClass } from "mission-gen";
 import type { Mission, PlaceMode } from "@/lib/mission";
 import { useT } from "@/lib/i18n";
-import { Divider, GhostButton, SectionLabel, SelectInput, Slider, Toggle } from "../ui";
+import ArsenalBuilderModal from "../ArsenalBuilderModal";
+import { Divider, GhostButton, PrimaryButton, SectionLabel, SelectInput, Slider, Toggle } from "../ui";
 
 export default function SpawnPanel({
   mission,
   placeMode,
   setPlaceMode,
+  update,
   updateSpawn,
   slope,
 }: {
   mission: Mission;
   placeMode: PlaceMode;
   setPlaceMode: (m: PlaceMode) => void;
+  update: (patch: Partial<Mission>) => void;
   updateSpawn: (patch: Partial<Mission["spawn"]>) => void;
   slope: number | null;
 }) {
@@ -24,6 +27,7 @@ export default function SpawnPanel({
   const playable = FACTIONS[mission.playableFaction];
   const placing = placeMode === "spawn";
   const togglePlace = () => setPlaceMode(placing ? null : "spawn");
+  const [arsenalOpen, setArsenalOpen] = useState(false);
 
   // Ground vehicles and helicopters are separate lists (the bundle lays them
   // out in separate rows) — reordering is confined to the item's own group.
@@ -129,9 +133,25 @@ export default function SpawnPanel({
 
   return (
     <>
+      {/* Move-spawn stays even with the drag affordance on the map: 2D spawn
+          dragging is mouse-only by design, so on touch this button is the ONLY
+          way to move a placed spawn (see makeBundleDraggable in MissionMap). */}
+      <PrimaryButton onClick={() => setArsenalOpen(true)} className="!shadow-none">
+        {t("Arsenal Builder")}
+      </PrimaryButton>
       <GhostButton active={placing} onClick={togglePlace}>
         {placing ? t("Click the map… (cancel)") : t("Move spawn (click map)")}
       </GhostButton>
+      {arsenalOpen && (
+        <ArsenalBuilderModal
+          faction={mission.playableFaction}
+          subfaction={mission.playableSubfaction}
+          mods={mission.mods}
+          arsenal={mission.arsenal}
+          onChange={(refs) => update({ arsenal: refs })}
+          onClose={() => setArsenalOpen(false)}
+        />
+      )}
 
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
