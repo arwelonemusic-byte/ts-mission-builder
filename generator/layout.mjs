@@ -168,21 +168,27 @@ export function rectsOverlap(a, b) {
 }
 
 /**
- * Next free spot near the anchor for a new element. kind = "crate" or a
+ * Next free spot near the SPAWN POINT for a new element. kind = "crate" or a
  * vehicle size class ("light" | "heavy" | "heli"). Candidates walk the classic
- * auto-layout pattern (crates cluster east of the anchor, ground vehicles in
- * parking rows south, helis in rows north), each tested with 1.5 m clearance
- * against every existing element. Never throws — exhausted candidates fall
- * back to a spot south of everything.
+ * auto-layout pattern around a virtual origin derived from the spawn point's
+ * CURRENT position (it sits at local (14, -6) in the classic layout, so
+ * origin = spawnPoint - (14, -6)) — the user may have dragged the whole base
+ * away from the immutable anchor, and new elements must appear near the live
+ * elements, not at the ghost anchor. For an untouched bundle this equals the
+ * anchor, i.e. identical placement to the original behavior. Each candidate
+ * is tested with 1.5 m clearance against every existing element. Never
+ * throws — exhausted candidates fall back to a spot south of the origin.
  */
 export function autoPlaceSpawnElement(spawn, kind) {
   const size = kind === "crate" ? ELEMENT_SIZES.crate : SLOT[kind];
   const rotation = kind === "light" || kind === "heavy" ? 180 : 0;
   const existing = spawnElements(spawn);
+  const ox = spawn.spawnPoint ? spawn.spawnPoint.x - 14 : spawn.x;
+  const oz = spawn.spawnPoint ? spawn.spawnPoint.z + 6 : spawn.z;
   const free = (lx, lz) => {
     const cand = {
-      x: spawn.x + lx,
-      z: spawn.z + lz,
+      x: ox + lx,
+      z: oz + lz,
       w: size.w + 3,
       len: size.len + 3,
       rotation,
@@ -210,10 +216,10 @@ export function autoPlaceSpawnElement(spawn, kind) {
     }
   }
   for (const [lx, lz] of candidates) {
-    if (free(lx, lz)) return { x: +(spawn.x + lx).toFixed(1), z: +(spawn.z + lz).toFixed(1), rotation };
+    if (free(lx, lz)) return { x: +(ox + lx).toFixed(1), z: +(oz + lz).toFixed(1), rotation };
   }
   const count = existing.length;
-  return { x: +spawn.x.toFixed(1), z: +(spawn.z - 60 - 5 * count).toFixed(1), rotation };
+  return { x: +ox.toFixed(1), z: +(oz - 60 - 5 * count).toFixed(1), rotation };
 }
 
 /**
