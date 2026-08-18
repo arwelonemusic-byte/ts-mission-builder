@@ -197,8 +197,12 @@ export function autoPlaceSpawnElement(spawn, kind) {
   };
   const candidates = [];
   if (kind === "crate") {
+    // Rows start at local z 8 — the spawn point sits at (14, -6) and renders
+    // as a 10 m circle drawn above the tiny crates, so a crate inside the
+    // circle can't be grabbed (hotfix 2026-08-18: crates cluster NE of the
+    // spawn point, clear of its ring).
     for (let row = 0; row < 4; row++) {
-      for (let lx = 14; lx <= 30; lx += 3) candidates.push([lx, -3 * row]);
+      for (let lx = 14; lx <= 30; lx += 3) candidates.push([lx, 8 + 3 * row]);
     }
   } else if (kind === "heli") {
     const hz = spawn.farp ? 26 : 14;

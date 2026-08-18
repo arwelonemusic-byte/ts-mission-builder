@@ -280,7 +280,6 @@ export function materializeSpawnAt(x: number, z: number, prev?: Pick<MissionSpaw
   const farp = prev?.farp ?? true;
   const prevVehicles = prev?.vehicles ?? [];
   const { items } = layoutSpawnBundle({ farp, vehicles: prevVehicles });
-  const crate = items.find((i) => i.kind === "crate")!;
   const sp = items.find((i) => i.kind === "spawnPoint")!;
   return {
     placed: true,
@@ -289,7 +288,10 @@ export function materializeSpawnAt(x: number, z: number, prev?: Pick<MissionSpaw
     farp,
     farpPos: { x, z, rotation: 0 },
     spawnPoint: { x: +(x + sp.x).toFixed(1), z: +(z + sp.z).toFixed(1) },
-    crates: [{ id: freshSpawnElemId(), x: +(x + crate.x).toFixed(1), z: +(z + crate.z).toFixed(1), rotation: 0 }],
+    // Crate at local (14, 8) — NOT the classic layout's (14, 0), which sits
+    // inside the spawn point's 10 m display circle and can't be grabbed
+    // (matches the first autoPlaceSpawnElement crate candidate).
+    crates: [{ id: freshSpawnElemId(), x: +(x + 14).toFixed(1), z: +(z + 8).toFixed(1), rotation: 0 }],
     vehicles: items
       .filter((i) => i.kind === "vehicle")
       .map((i) => ({
@@ -350,7 +352,7 @@ function migrateSpawn(raw: unknown): MissionSpawn {
       z: num(c.z, oz),
       rotation: normRotation(c.rotation),
     }));
-  if (!crates.length) crates.push({ id: freshSpawnElemId(), x: +(ox + 14).toFixed(1), z: oz, rotation: 0 });
+  if (!crates.length) crates.push({ id: freshSpawnElemId(), x: +(ox + 14).toFixed(1), z: +(oz + 8).toFixed(1), rotation: 0 });
   return {
     placed: !!sp.placed,
     x: ox,
