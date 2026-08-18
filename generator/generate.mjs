@@ -506,6 +506,39 @@ const ARSENAL_MISSION = {
   ],
 };
 
+// Positioned-spawn spike (individual spawn element placement, 2026-08-18):
+// exercises the web's per-element input shape — 2 crates (one rotated), a
+// rotated FARP off the anchor (own sampled Y), a moved+rotated vehicle, and
+// the spawn point without angles.
+const SPAWN_POS_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeSpawnPos",
+  dirName: "TS_WebSpikeSpawnPos",
+  addonTitle: "TS Web Spike SpawnPos Mission",
+  name: "TS_WebSpikeSpawnPos",
+  displayName: "TS Web Spike SpawnPos",
+  guids: {
+    addon: "6AA35D0E4B71C293",
+    world: "6AA35D0E19E8A6F4",
+    missionConf: "6AA35D0E7C30D815",
+  },
+  spawn: {
+    pos: [1351.9, 37.189, 2399.1],
+    farp: true,
+    farpPos: [1339.5, 2410.5],
+    farpRotation: 51,
+    spawnPoint: [1365.9, 2393.1],
+    crates: [
+      { pos: [1365.9, 2399.1], rotation: 0 },
+      { pos: [1368.9, 2399.1], rotation: 45 },
+    ],
+    vehicles: [
+      { type: "M151A2_transport", pos: [1341.9, 2386.1], rotation: 180 },
+      { type: "M923A1_transport_covered", pos: [1330.4, 2380.2], rotation: 135 },
+    ],
+  },
+};
+
 // Thumbnail-harvest mock mission: EVERY vanilla pool item in the arsenal crate,
 // in exact ARSENAL_POOL order (= arsenal-pool.mjs line order — the slicing
 // manifest). WEAPON_VARIANTS is forced to WEAPON so each prefab gets its OWN
@@ -1343,6 +1376,8 @@ const BUILT = process.argv.includes("--zarichne")
                   ? SFS_MISSION
                 : process.argv.includes("--arsenal")
                   ? ARSENAL_MISSION
+                : process.argv.includes("--spawn-pos")
+                  ? SPAWN_POS_MISSION
                 : process.argv.includes("--thumbs-sfs-us")
                   ? THUMBS_SFS_US_MISSION
                 : process.argv.includes("--thumbs-sfs-rf")

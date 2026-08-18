@@ -5,9 +5,9 @@
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
 import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
-import { layoutSpawnBundle, rotateLocal } from "./layout.mjs";
+import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
 export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
-export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleSizeClass } from "./layout.mjs";
+export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
 
 let guidCounter = 0;
 export function mintGuid() {
@@ -448,12 +448,17 @@ SCR_LoadoutManager : "{AA4E7419A1FF65B0}Prefabs/MP/Managers/Loadouts/LoadoutMana
 `;
 
   // --- Spawn.layer ---
-  // All positions come from the shared bundle layout engine (layout.mjs) so the
-  // web preview and the generated mission are guaranteed to match. The whole
-  // bundle rotates around the spawn origin by mission.spawn.yaw. If
-  // options.sampleY(x,z) is provided (web heightmap), each element gets a
-  // terrain-accurate Y; otherwise everything uses the origin's Y.
-  const bundleYaw = +((mission.spawn.yaw ?? 0) % 360).toFixed(1);
+  // Two input shapes:
+  //  - POSITIONED (web since 2026-08-18, detected by spawn.crates being an
+  //    array): per-element absolute world coords + compass rotation
+  //    { pos, farp, farpPos, farpRotation, spawnPoint, crates: [{pos,rotation}],
+  //    vehicles: [{type,pos,rotation}] }. Every element (FARP included)
+  //    samples its own terrain Y.
+  //  - LEGACY (CLI spikes): { pos, yaw, farp, vehicles: [{type}] } — positions
+  //    come from the shared bundle layout engine (layout.mjs) and the whole
+  //    bundle rotates around the spawn origin by spawn.yaw. Output is
+  //    byte-identical to the pre-free-placement generator.
+  // With no options.sampleY (heightmap), Ys fall back to the origin's Y.
   const originY = base[1];
   const sampleYFn = options.sampleY;
   const yAt = (wx, wz) => {
@@ -461,17 +466,32 @@ SCR_LoadoutManager : "{AA4E7419A1FF65B0}Prefabs/MP/Managers/Loadouts/LoadoutMana
     const y = sampleYFn(wx, wz);
     return Number.isFinite(y) ? y : originY;
   };
-  const layout = layoutSpawnBundle(mission.spawn);
-  const localToWorld = (lx, lz) => {
-    const [dx, dz] = rotateLocal(lx, lz, bundleYaw);
-    return [base[0] + dx, base[2] + dz, dx, dz];
+
+  // Terrain tilt, shared by positioned spawn elements and props (the sign
+  // convention was ground-truthed in the props section — see the comment
+  // there): pitch = +atan(slope along local +Z), roll = −atan(slope along
+  // local +X), lever arms = footprint half-extents (min 2 m), clamped ±30°.
+  // Slot-spawned objects inherit the slot's FULL orientation
+  // (SCR_ScenarioFrameworkSlotBase.SpawnAsset copies the owner's world
+  // transform through a MatrixToAngles round-trip), so slot pitch/roll
+  // reaches the spawned crate/vehicle.
+  const terrainTilt = (wx, wz, yawDeg, dR, dF) => {
+    if (!sampleYFn) return [0, 0];
+    const th = (yawDeg * Math.PI) / 180;
+    const fwd = [Math.sin(th), Math.cos(th)];
+    const right = [Math.cos(th), -Math.sin(th)];
+    const at = (v, k) => {
+      const y = sampleYFn(wx + v[0] * k, wz + v[1] * k);
+      return Number.isFinite(y) ? y : null;
+    };
+    const f1 = at(fwd, dF), f0 = at(fwd, -dF), r1 = at(right, dR), r0 = at(right, -dR);
+    if (f1 === null || f0 === null || r1 === null || r0 === null) return [0, 0];
+    const clamp = (v) => Math.max(-30, Math.min(30, +v.toFixed(1)));
+    return [clamp((Math.atan2(f1 - f0, 2 * dF) * 180) / Math.PI), clamp((-Math.atan2(r1 - r0, 2 * dR) * 180) / Math.PI)];
   };
 
-  function slotBlock(name, objectRef, item) {
-    const [wx, wz, dx, dz] = localToWorld(item.x, item.z);
-    const relY = +(yAt(wx, wz) - originY).toFixed(3);
-    const slotYaw = +(((bundleYaw + (item.yaw ?? 0)) % 360).toFixed(1));
-    const angles = slotYaw ? `\n     angles 0 ${slotYaw} 0` : "";
+  const slotBlockRel = (name, objectRef, dx, relY, dz, slotYaw, pitch = 0, roll = 0) => {
+    const angles = pitch || slotYaw || roll ? `\n     angles ${pitch} ${slotYaw} ${roll}` : "";
     return `    GenericEntity ${name} : "${K.SLOT_PREFAB}" {
      components {
       SCR_ScenarioFrameworkSlotBase "${K.CMP_SF_SLOT}" {
@@ -480,35 +500,99 @@ SCR_LoadoutManager : "{AA4E7419A1FF65B0}Prefabs/MP/Managers/Loadouts/LoadoutMana
      }
      coords ${+dx.toFixed(3)} ${relY} ${+dz.toFixed(3)}${angles}
     }`;
+  };
+
+  let crateSlots;
+  let vehicleSlots;
+  let farpBlock;
+  let spawnPointBlock;
+
+  if (Array.isArray(mission.spawn.crates)) {
+    // Positioned shape
+    const sp = mission.spawn;
+    const rot = (r) => +(((((r ?? 0) % 360) + 360) % 360).toFixed(1));
+    // Crates/vehicles/FARP tilt to the terrain like props do; the spawn
+    // point stays plumb (invisible marker).
+    const slotAbs = (name, objectRef, pos, rotation, size, yLift = 0) => {
+      const relY = +(yAt(pos[0], pos[1]) - originY + yLift).toFixed(3);
+      const yaw = rot(rotation);
+      const [pitch, roll] = terrainTilt(pos[0], pos[1], yaw, Math.max(2, size.w / 2), Math.max(2, size.len / 2));
+      return slotBlockRel(name, objectRef, pos[0] - base[0], relY, pos[1] - base[2], yaw, pitch, roll);
+    };
+    if (!sp.crates.length) {
+      // Min 1 crate — the loadout/arsenal systems live on the crate (UI enforces
+      // this; reaching here means a hand-built input).
+      throw new Error("spawn.crates must contain at least 1 crate");
+    }
+    crateSlots = sp.crates
+      .map((c, i) => slotAbs(`SlotCrate${i + 1}`, `{${K.CRATE_GUID}}${K.CRATE_PATH}`, c.pos, c.rotation, ELEMENT_SIZES.crate))
+      .join("\n");
+    vehicleSlots = (sp.vehicles ?? [])
+      .map((v, i) => {
+        const ref = F.vehicles[v.type];
+        if (!ref) throw new Error(`No vehicle GUID for ${mission.playableFaction}/${v.type}`);
+        // +20 cm so physics settles the vehicle down instead of it clipping
+        // into a terrain undulation between tilt sample points
+        return slotAbs(`SlotVehicle${i + 1}`, ref, v.pos, v.rotation, SLOT[vehicleSizeClass(v.type)], 0.2);
+      })
+      .join("\n");
+    // The FARP composition is authored 90° CW of our map footprint — the
+    // emitted yaw carries the offset (map UI stays as-is); the tilt frame
+    // follows it, so the lever arms swap (local Z spans the map rect's w).
+    const farpYaw = rot((sp.farpRotation ?? 0) + 90);
+    const [farpPitch, farpRoll] = sp.farp
+      ? terrainTilt(sp.farpPos[0], sp.farpPos[1], farpYaw, ELEMENT_SIZES.farp.len / 2, ELEMENT_SIZES.farp.w / 2)
+      : [0, 0];
+    const farpAngles = farpPitch || farpYaw || farpRoll ? ` angles ${farpPitch} ${farpYaw} ${farpRoll}\n` : "";
+    farpBlock = sp.farp
+      ? `GenericEntity : "${K.FARP_COMP}" {\n coords ${+sp.farpPos[0].toFixed(3)} ${+yAt(sp.farpPos[0], sp.farpPos[1]).toFixed(3)} ${+sp.farpPos[1].toFixed(3)}\n${farpAngles}}\n`
+      : "";
+    // Spawn point is move-only by design — no angles, ever.
+    spawnPointBlock = `SCR_SpawnPoint : "${F.spawnPoint}" {
+ coords ${+sp.spawnPoint[0].toFixed(3)} ${+yAt(sp.spawnPoint[0], sp.spawnPoint[1]).toFixed(3)} ${+sp.spawnPoint[1].toFixed(3)}
+}`;
+  } else {
+    // Legacy shape
+    const bundleYaw = +((mission.spawn.yaw ?? 0) % 360).toFixed(1);
+    const layout = layoutSpawnBundle(mission.spawn);
+    const localToWorld = (lx, lz) => {
+      const [dx, dz] = rotateLocal(lx, lz, bundleYaw);
+      return [base[0] + dx, base[2] + dz, dx, dz];
+    };
+    const slotBlock = (name, objectRef, item) => {
+      const [wx, wz, dx, dz] = localToWorld(item.x, item.z);
+      const relY = +(yAt(wx, wz) - originY).toFixed(3);
+      const slotYaw = +(((bundleYaw + (item.yaw ?? 0)) % 360).toFixed(1));
+      return slotBlockRel(name, objectRef, dx, relY, dz, slotYaw);
+    };
+    const crateItem = layout.items.find((it) => it.kind === "crate");
+    const spawnPointItem = layout.items.find((it) => it.kind === "spawnPoint");
+    crateSlots = slotBlock("SlotCrate", `{${K.CRATE_GUID}}${K.CRATE_PATH}`, crateItem);
+    vehicleSlots = layout.items
+      .filter((it) => it.kind === "vehicle")
+      .map((it, i) => {
+        const ref = F.vehicles[it.type];
+        if (!ref) throw new Error(`No vehicle GUID for ${mission.playableFaction}/${it.type}`);
+        return slotBlock(`SlotVehicle${i + 1}`, ref, it);
+      })
+      .join("\n");
+    farpBlock = mission.spawn.farp
+      ? `GenericEntity : "${K.FARP_COMP}" {\n coords ${+base[0].toFixed(3)} ${+originY.toFixed(3)} ${+base[2].toFixed(3)}\n angles 0 ${bundleYaw} 0\n}\n`
+      : "";
+    const [spX, spZ] = localToWorld(spawnPointItem.x, spawnPointItem.z);
+    spawnPointBlock = `SCR_SpawnPoint : "${F.spawnPoint}" {
+ coords ${+spX.toFixed(3)} ${+yAt(spX, spZ).toFixed(3)} ${+spZ.toFixed(3)}
+}`;
   }
 
-  const crateItem = layout.items.find((it) => it.kind === "crate");
-  const spawnPointItem = layout.items.find((it) => it.kind === "spawnPoint");
-  const vehicleItems = layout.items.filter((it) => it.kind === "vehicle");
-
-  const vehicleSlots = vehicleItems
-    .map((it, i) => {
-      const ref = F.vehicles[it.type];
-      if (!ref) throw new Error(`No vehicle GUID for ${mission.playableFaction}/${it.type}`);
-      return slotBlock(`SlotVehicle${i + 1}`, ref, it);
-    })
-    .join("\n");
-
-  const farpBlock = mission.spawn.farp
-    ? `GenericEntity : "${K.FARP_COMP}" {\n coords ${+base[0].toFixed(3)} ${+originY.toFixed(3)} ${+base[2].toFixed(3)}\n angles 0 ${bundleYaw} 0\n}\n`
-    : "";
-
-  const [spX, spZ] = localToWorld(spawnPointItem.x, spawnPointItem.z);
-  const spawnLayer = `SCR_SpawnPoint : "${F.spawnPoint}" {
- coords ${+spX.toFixed(3)} ${+yAt(spX, spZ).toFixed(3)} ${+spZ.toFixed(3)}
-}
+  const spawnLayer = `${spawnPointBlock}
 GenericEntity AreaSpawn : "${K.AREA_PREFAB}" {
  coords ${+base[0].toFixed(3)} ${+originY.toFixed(3)} ${+base[2].toFixed(3)}
  {
   GenericEntity LayerCrates : "${K.LAYER_PREFAB}" {
    coords 0 0 0
    {
-${slotBlock("SlotCrate", `{${K.CRATE_GUID}}${K.CRATE_PATH}`, crateItem)}
+${crateSlots}
    }
   }
   GenericEntity LayerVehicles : "${K.LAYER_PREFAB}" {
@@ -686,25 +770,13 @@ ${farpBlock}`;
     return Number.isFinite(y) ? [p.pos[0], +y.toFixed(3), p.pos[2]] : p.pos;
   };
   const propTilt = (p, yaw) => {
-    if (!sampleYFn) return [0, 0];
     const entry = PROPS.find((e) => e.ref === p.ref);
     // minefields = logical areas; tilt: false = vertical structures
     // (antenna masts) that are built plumb regardless of ground slope
     if (!entry || entry.cat === "minefield" || entry.tilt === false) return [0, 0];
     const fp = entry.fp ?? {};
-    const dR = Math.max(2, (fp.d ?? fp.w ?? 0) / 2);
-    const dF = Math.max(2, (fp.d ?? fp.len ?? 0) / 2);
-    const th = (yaw * Math.PI) / 180;
-    const fwd = [Math.sin(th), Math.cos(th)];
-    const right = [Math.cos(th), -Math.sin(th)];
-    const at = (v, k) => {
-      const y = sampleYFn(p.pos[0] + v[0] * k, p.pos[2] + v[1] * k);
-      return Number.isFinite(y) ? y : null;
-    };
-    const f1 = at(fwd, dF), f0 = at(fwd, -dF), r1 = at(right, dR), r0 = at(right, -dR);
-    if (f1 === null || f0 === null || r1 === null || r0 === null) return [0, 0];
-    const clamp = (v) => Math.max(-30, Math.min(30, +v.toFixed(1)));
-    return [clamp((Math.atan2(f1 - f0, 2 * dF) * 180) / Math.PI), clamp((-Math.atan2(r1 - r0, 2 * dR) * 180) / Math.PI)];
+    // shared math lives in terrainTilt (spawn section)
+    return terrainTilt(p.pos[0], p.pos[2], yaw, Math.max(2, (fp.d ?? fp.w ?? 0) / 2), Math.max(2, (fp.d ?? fp.len ?? 0) / 2));
   };
   const propsLayer = props
     .map((p, i) => {

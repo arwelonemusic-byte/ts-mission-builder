@@ -1,4 +1,4 @@
-import { buildMissionFiles, FACTIONS, itemWorldCorners, layoutSpawnBundle } from "mission-gen";
+import { buildMissionFiles, FACTIONS, itemWorldCorners } from "mission-gen";
 import type { Mission, MissionProp } from "./mission";
 import { missionIds } from "./mission";
 import { propCanDefend, propEntry, propRect } from "./props";
@@ -156,11 +156,16 @@ export async function toGeneratorMission(m: Mission) {
       threats: m.briefing.threats.split("\n"),
       extra: m.briefing.extra.map((e) => ({ title: e.title, text: e.text.split("\n") })),
     },
+    // Positioned spawn shape (per-element world coords + rotation); lib.mjs
+    // samples each element's Y itself via options.sampleY.
     spawn: {
       pos: [y(m.spawn.x), y(spawnY), y(m.spawn.z)],
-      yaw: m.spawn.yaw,
       farp: m.spawn.farp,
-      vehicles: m.spawn.vehicles.map((v) => ({ type: v.type })),
+      farpPos: [y(m.spawn.farpPos.x), y(m.spawn.farpPos.z)],
+      farpRotation: m.spawn.farpPos.rotation,
+      spawnPoint: [y(m.spawn.spawnPoint.x), y(m.spawn.spawnPoint.z)],
+      crates: m.spawn.crates.map((c) => ({ pos: [y(c.x), y(c.z)], rotation: c.rotation })),
+      vehicles: m.spawn.vehicles.map((v) => ({ type: v.type, pos: [y(v.x), y(v.z)], rotation: v.rotation })),
     },
     // Artillery: unchecked shell types flatten to 0 rounds (removes the round
     // type in-game — the component has no per-type enable flags)
@@ -180,35 +185,9 @@ export async function toGeneratorMission(m: Mission) {
 }
 
 /**
- * Max elevation difference (m) across the spawn bundle footprint — corners,
- * edge midpoints and center of the rotated bounding box.
- */
-export async function spawnSlopeDelta(m: Mission): Promise<number> {
-  const s = await getSampler(m.terrain);
-  const { bounds } = layoutSpawnBundle(m.spawn);
-  const box = {
-    x: (bounds.minX + bounds.maxX) / 2,
-    z: (bounds.minZ + bounds.maxZ) / 2,
-    w: bounds.maxX - bounds.minX,
-    len: bounds.maxZ - bounds.minZ,
-    yaw: 0,
-  };
-  const corners = itemWorldCorners(box, m.spawn.x, m.spawn.z, m.spawn.yaw);
-  const pts: [number, number][] = [...(corners as [number, number][]), [m.spawn.x, m.spawn.z]];
-  for (let i = 0; i < corners.length; i++) {
-    const [ax, az] = corners[i];
-    const [bx, bz] = corners[(i + 1) % corners.length];
-    pts.push([(ax + bx) / 2, (az + bz) / 2]);
-  }
-  const ys = pts.map(([px, pz]) => s.sample(px, pz)).filter((v) => Number.isFinite(v));
-  if (ys.length < 2) return 0;
-  return Math.max(...ys) - Math.min(...ys);
-}
-
-/**
- * Max elevation difference (m) across a prop's footprint — same 9-point
- * sampling as spawnSlopeDelta (corners + edge midpoints + center of the
- * rotated box). Disc footprints use their bounding square.
+ * Max elevation difference (m) across a prop's footprint — 9-point sampling
+ * (corners + edge midpoints + center of the rotated box). Disc footprints
+ * use their bounding square.
  */
 export async function propSlopeDelta(m: Mission, p: MissionProp): Promise<number> {
   const entry = propEntry(p.ref);

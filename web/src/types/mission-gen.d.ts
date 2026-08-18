@@ -184,4 +184,53 @@ declare module "mission-gen" {
     yawDeg: number
   ): [number, number][];
   export function vehicleSizeClass(key: string): "light" | "heavy" | "heli";
+  /** Pointed-nose vehicle footprint outline (5 points, apex = facing along
+   * local +Z). Same signature as itemWorldCorners. */
+  export function vehicleWorldOutline(
+    item: { x?: number; z?: number; w: number; len: number },
+    originX: number,
+    originZ: number,
+    yawDeg: number
+  ): [number, number][];
+
+  // --- Free-placement layer (positioned spawn shape) ---
+  export type PositionedSpawn = {
+    x: number;
+    z: number;
+    farp: boolean;
+    farpPos?: { x: number; z: number; rotation: number };
+    spawnPoint?: { x: number; z: number };
+    crates?: { id: string; x: number; z: number; rotation: number }[];
+    vehicles?: { id: string; type: string; x: number; z: number; rotation: number }[];
+  };
+  export type SpawnElement = {
+    kind: "farp" | "crate" | "spawnPoint" | "vehicle";
+    key: string;
+    id?: string;
+    index?: number;
+    type?: string;
+    cls?: "light" | "heavy" | "heli";
+    x: number;
+    z: number;
+    rotation: number;
+    w: number;
+    len: number;
+  };
+  export const ELEMENT_SIZES: Record<"farp" | "crate" | "spawnPoint", { w: number; len: number }>;
+  /** FARP interior schematic (map-local meters): cone positions + crate
+   * cluster rects — see layout.mjs for the frame convention. */
+  export const FARP_DETAIL: {
+    cones: [number, number][];
+    boxes: { x: number; z: number; w: number; len: number }[];
+  };
+  export function spawnElements(spawn: PositionedSpawn): SpawnElement[];
+  export function spawnElementsBounds(spawn: PositionedSpawn): { minX: number; maxX: number; minZ: number; maxZ: number };
+  export function rectsOverlap(
+    a: { x: number; z: number; w: number; len: number; rotation?: number },
+    b: { x: number; z: number; w: number; len: number; rotation?: number }
+  ): boolean;
+  export function autoPlaceSpawnElement(
+    spawn: PositionedSpawn,
+    kind: "crate" | "light" | "heavy" | "heli"
+  ): { x: number; z: number; rotation: number };
 }

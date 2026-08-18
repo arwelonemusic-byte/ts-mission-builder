@@ -1,4 +1,4 @@
-import { ARSENAL_POOL, MOD_ARSENAL_POOLS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid } from "mission-gen";
+import { ARSENAL_POOL, MOD_ARSENAL_POOLS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
 export type PlaceMode = "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | "prop" | null;
@@ -18,7 +18,28 @@ export type ZoneModule = {
 export type ArtyShell = { on: boolean; count: number };
 export type ArtySupport = { enabled: boolean; he: ArtyShell; smoke: ArtyShell; illum: ArtyShell };
 export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[] };
-export type SpawnVehicle = { type: string };
+
+/** Spawn elements are individually placed (world coords) since 2026-08-18;
+ * rotation is a compass bearing like MissionProp.rotation (0 = north). The
+ * old derived-layout shape { yaw, vehicles: [{type}] } is baked into element
+ * positions by migrate(). spawn.x/z stays as the bundle ANCHOR: Move-spawn
+ * target, map-focus point, auto-place reference and generator Area origin. */
+export type SpawnCrate = { id: string; x: number; z: number; rotation: number };
+export type SpawnVehicle = { id: string; type: string; x: number; z: number; rotation: number };
+export type MissionSpawn = {
+  placed: boolean;
+  x: number;
+  z: number;
+  farp: boolean;
+  /** Persists across farp off/on so re-enabling restores the placement. */
+  farpPos: { x: number; z: number; rotation: number };
+  /** Move-only — never rotated (the generator emits no angles for it). */
+  spawnPoint: { x: number; z: number };
+  /** Min 1 (UI-enforced; lib.mjs throws as backstop — loadouts/arsenal live
+   * on the crate). All crates spawn the same LoadoutCrates_Conf override. */
+  crates: SpawnCrate[];
+  vehicles: SpawnVehicle[];
+};
 /** Player squad: callsign (m_sCallsign) + max players (m_iGroupSize 1-9) */
 export type MissionGroup = { name: string; size: number };
 
@@ -48,7 +69,7 @@ export type MissionSector = {
   z: number;
   length: number;
   width: number;
-  /** yaw deg 0..359, compass convention (same as spawn.yaw) */
+  /** yaw deg 0..359, compass convention (same as MissionProp.rotation) */
   rotation: number;
 };
 
@@ -128,7 +149,7 @@ export type Mission = {
    * composited under the TS template with the mission name drawn on top; null
    * falls back to the toolkit's stock icon. */
   thumbnail: string | null;
-  spawn: { placed: boolean; x: number; z: number; yaw: number; farp: boolean; vehicles: SpawnVehicle[] };
+  spawn: MissionSpawn;
   zones: Zone[];
   markers: MissionMarker[];
   sectors: MissionSector[];
@@ -245,6 +266,114 @@ export function defaultArty(): ArtySupport {
   };
 }
 
+export function freshSpawnElemId(): string {
+  return `sc${Math.random().toString(36).slice(2)}`;
+}
+
+const normRotation = (r: unknown): number => ((Math.round(+(r as number)) % 360) + 360) % 360 || 0;
+
+/** First placement: materialize the classic default bundle at the clicked
+ * anchor. `prev` (the un-placed spawn) carries the FARP toggle and vehicle
+ * list through — e.g. a terrain change un-places the spawn but must not lose
+ * the picked vehicles; they re-layout into the classic rows at the new spot. */
+export function materializeSpawnAt(x: number, z: number, prev?: Pick<MissionSpawn, "farp" | "vehicles">): MissionSpawn {
+  const farp = prev?.farp ?? true;
+  const prevVehicles = prev?.vehicles ?? [];
+  const { items } = layoutSpawnBundle({ farp, vehicles: prevVehicles });
+  const crate = items.find((i) => i.kind === "crate")!;
+  const sp = items.find((i) => i.kind === "spawnPoint")!;
+  return {
+    placed: true,
+    x,
+    z,
+    farp,
+    farpPos: { x, z, rotation: 0 },
+    spawnPoint: { x: +(x + sp.x).toFixed(1), z: +(z + sp.z).toFixed(1) },
+    crates: [{ id: freshSpawnElemId(), x: +(x + crate.x).toFixed(1), z: +(z + crate.z).toFixed(1), rotation: 0 }],
+    vehicles: items
+      .filter((i) => i.kind === "vehicle")
+      .map((i) => ({
+        id: prevVehicles[i.index!]?.id ?? freshSpawnElemId(),
+        type: i.type!,
+        x: +(x + i.x).toFixed(1),
+        z: +(z + i.z).toFixed(1),
+        rotation: i.yaw ?? 0,
+      })),
+  };
+}
+
+/** Bring a save's spawn up to the positioned shape. Legacy saves (derived
+ * layout + bundle yaw) are baked: element world pos = anchor +
+ * rotateLocal(local, oldYaw), element rotation = oldYaw + layout yaw — the
+ * exact transform the old rendering applied, so elements land where the user
+ * last saw them. Defensive on every field; never throws (see migrate()). */
+function migrateSpawn(raw: unknown): MissionSpawn {
+  const sp = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const num = (v: unknown, fb: number) => (Number.isFinite(+(v as number)) ? +(v as number) : fb);
+  const ox = num(sp.x, 0);
+  const oz = num(sp.z, 0);
+  if (!Array.isArray(sp.crates)) {
+    // Legacy shape { placed, x, z, yaw, farp, vehicles: [{type}] }
+    const yaw = normRotation(sp.yaw);
+    const legacyVeh = (Array.isArray(sp.vehicles) ? sp.vehicles : []).filter(
+      (v): v is { type: string } => !!v && typeof (v as { type?: unknown }).type === "string"
+    );
+    const { items } = layoutSpawnBundle({ farp: !!sp.farp, vehicles: legacyVeh });
+    const world = (it: { x: number; z: number; yaw: number }) => {
+      const [dx, dz] = rotateLocal(it.x, it.z, yaw);
+      return { x: +(ox + dx).toFixed(1), z: +(oz + dz).toFixed(1), rotation: (yaw + (it.yaw ?? 0)) % 360 };
+    };
+    const crateIt = items.find((i) => i.kind === "crate")!;
+    const spIt = items.find((i) => i.kind === "spawnPoint")!;
+    const spw = world(spIt);
+    return {
+      placed: !!sp.placed,
+      x: ox,
+      z: oz,
+      farp: !!sp.farp,
+      farpPos: { x: ox, z: oz, rotation: yaw },
+      spawnPoint: { x: spw.x, z: spw.z },
+      crates: [{ id: freshSpawnElemId(), ...world(crateIt) }],
+      vehicles: items
+        .filter((i) => i.kind === "vehicle")
+        .map((i) => ({ id: freshSpawnElemId(), type: i.type!, ...world(i) })),
+    };
+  }
+  // Modern shape: sanitize coords/rotations, backfill ids and missing objects.
+  const fp = (sp.farpPos && typeof sp.farpPos === "object" ? sp.farpPos : {}) as Record<string, unknown>;
+  const spt = (sp.spawnPoint && typeof sp.spawnPoint === "object" ? sp.spawnPoint : {}) as Record<string, unknown>;
+  const crates = (sp.crates as unknown[])
+    .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
+    .map((c) => ({
+      id: String(c.id ?? freshSpawnElemId()),
+      x: num(c.x, ox),
+      z: num(c.z, oz),
+      rotation: normRotation(c.rotation),
+    }));
+  if (!crates.length) crates.push({ id: freshSpawnElemId(), x: +(ox + 14).toFixed(1), z: oz, rotation: 0 });
+  return {
+    placed: !!sp.placed,
+    x: ox,
+    z: oz,
+    farp: !!sp.farp,
+    farpPos: { x: num(fp.x, ox), z: num(fp.z, oz), rotation: normRotation(fp.rotation) },
+    spawnPoint: { x: num(spt.x, ox), z: num(spt.z, oz) },
+    crates,
+    vehicles: (Array.isArray(sp.vehicles) ? sp.vehicles : [])
+      .filter(
+        (v): v is Record<string, unknown> =>
+          !!v && typeof v === "object" && typeof (v as { type?: unknown }).type === "string"
+      )
+      .map((v) => ({
+        id: String(v.id ?? freshSpawnElemId()),
+        type: String(v.type),
+        x: num(v.x, ox),
+        z: num(v.z, oz),
+        rotation: normRotation(v.rotation),
+      })),
+  };
+}
+
 export function newMission(): Mission {
   const m: Mission = {
     version: 1,
@@ -262,7 +391,16 @@ export function newMission(): Mission {
     groups: defaultGroups(),
     arty: defaultArty(),
     thumbnail: null,
-    spawn: { placed: false, x: 0, z: 0, yaw: 0, farp: true, vehicles: [] },
+    spawn: {
+      placed: false,
+      x: 0,
+      z: 0,
+      farp: true,
+      farpPos: { x: 0, z: 0, rotation: 0 },
+      spawnPoint: { x: 0, z: 0 },
+      crates: [],
+      vehicles: [],
+    },
     zones: [],
     markers: [],
     sectors: [],
@@ -431,7 +569,9 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
   ) {
     m.arty = defaultArty();
   }
-  if (typeof m.spawn.yaw !== "number") m.spawn.yaw = 0;
+  // Individual spawn element placement (2026-08-18): legacy derived-layout
+  // saves get their bundle yaw baked into per-element positions/rotations.
+  m.spawn = migrateSpawn(m.spawn);
   // Mounted-patrol/QRF-mounted modules gained per-zone vehicle selection;
   // default old saves. QRF modules: sanitize origins (array, max 3).
   for (const zn of m.zones) {

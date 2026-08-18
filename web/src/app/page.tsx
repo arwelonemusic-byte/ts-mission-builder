@@ -13,6 +13,7 @@ import {
   factionMeta,
   freshenGuids,
   loadMission,
+  materializeSpawnAt,
   missionFileName,
   newMission,
   objectiveRadius,
@@ -28,7 +29,7 @@ import {
   type Zone,
 } from "@/lib/mission";
 import { rangeLabel, totalEnemyRange } from "@/lib/enemyEstimate";
-import { exportMission, spawnSlopeDelta } from "@/lib/export";
+import { exportMission } from "@/lib/export";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
 import { OBJECTIVE_COLOR, PROP_COLOR } from "@/lib/overlayHtml";
@@ -102,6 +103,9 @@ export default function Editor() {
   const [pendingObjectiveType, setPendingObjectiveType] = useState<ObjectiveType | null>(null);
   const [selectedObjectiveId, setSelectedObjectiveId] = useState<string | null>(null);
   const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
+  // Selected spawn element (map footprint click) — shows the 2D rotate handle.
+  // Keys: "farp" | "spawnPoint" | "crate:<id>" | "veh:<id>".
+  const [selectedSpawnEl, setSelectedSpawnEl] = useState<string | null>(null);
   // Which prefab an armed "prop" placement creates (picked in the modal first)
   const [pendingPropRef, setPendingPropRef] = useState<string | null>(null);
   // Which deliver objective an armed "delivery" placement feeds
@@ -123,7 +127,6 @@ export default function Editor() {
   const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [sectorDraw, setSectorDraw] = useState<"ao" | "objective" | null>(null);
   const [status, setStatus] = useState<Status>(null);
-  const [slope, setSlope] = useState<number | null>(null);
   const [focus, setFocus] = useState<{ x: number; z: number; radius: number; seq: number } | null>(null);
   const [gen, setGen] = useState<GenState>(null);
   const [ghost, setGhost] = useState<Ghost>(null);
@@ -232,22 +235,6 @@ export default function Editor() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Slope check across the bundle footprint whenever spawn placement changes
-  useEffect(() => {
-    if (!mission?.spawn.placed) {
-      setSlope(null);
-      return;
-    }
-    let cancelled = false;
-    spawnSlopeDelta(mission)
-      .then((d) => {
-        if (!cancelled) setSlope(d);
-      })
-      .catch(() => setSlope(null));
-    return () => {
-      cancelled = true;
-    };
-  }, [mission?.spawn, mission?.terrain]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Factions offered by the UI: vanilla + factions of enabled mods. Factions
   // without riflemen (e.g. RHS ION — player-character GUIDs unrecoverable)
@@ -518,12 +505,40 @@ export default function Editor() {
       setSelectedOrigin(null);
       setSelectedObjectiveId(null);
       setSelectedPropId(null);
+      setSelectedSpawnEl(null);
       return;
     }
     const xi = +x.toFixed(1);
     const zi = +z.toFixed(1);
     if (placeMode === "spawn") {
-      updateSpawn({ placed: true, x: xi, z: zi });
+      if (!mission.spawn.placed) {
+        // First placement: materialize the default bundle around the click
+        // (carrying the FARP toggle + vehicle list of an un-placed spawn,
+        // e.g. after a terrain change)
+        update({ spawn: materializeSpawnAt(xi, zi, mission.spawn) });
+      } else {
+        // Move spawn: rigid translation of the whole arrangement — every
+        // element keeps its offset from the anchor and its rotation
+        const sp = mission.spawn;
+        const dx = xi - sp.x;
+        const dz = zi - sp.z;
+        const mv = <T extends { x: number; z: number }>(o: T): T => ({
+          ...o,
+          x: +(o.x + dx).toFixed(1),
+          z: +(o.z + dz).toFixed(1),
+        });
+        update({
+          spawn: {
+            ...sp,
+            x: xi,
+            z: zi,
+            farpPos: mv(sp.farpPos),
+            spawnPoint: mv(sp.spawnPoint),
+            crates: sp.crates.map(mv),
+            vehicles: sp.vehicles.map(mv),
+          },
+        });
+      }
       mapApi()?.addPing(xi, zi, "#3fa9f5");
       markFresh("spawn");
       setPlaceMode(null);
@@ -643,6 +658,33 @@ export default function Editor() {
     const p = mission?.props.find((pr) => pr.id === id);
     if (p) focusOn(p.x, p.z, 150);
   };
+
+  /* ----- spawn element selection / move / rotate (map-side) ----- */
+  const [spawnRevealSeq, setSpawnRevealSeq] = useState(0);
+  const onSpawnElementClick = (key: string) => {
+    setSelectedSpawnEl(key);
+    setSpawnRevealSeq((s) => s + 1);
+    setStep("spawn");
+  };
+  const patchSpawnElement = (key: string, patch: { x?: number; z?: number; rotation?: number }) =>
+    setMission((m) => {
+      if (!m) return m;
+      const sp = m.spawn;
+      if (key === "farp") return { ...m, spawn: { ...sp, farpPos: { ...sp.farpPos, ...patch } } };
+      if (key === "spawnPoint" && patch.x !== undefined && patch.z !== undefined)
+        return { ...m, spawn: { ...sp, spawnPoint: { x: patch.x, z: patch.z } } };
+      if (key.startsWith("crate:")) {
+        const id = key.slice("crate:".length);
+        return { ...m, spawn: { ...sp, crates: sp.crates.map((c) => (c.id === id ? { ...c, ...patch } : c)) } };
+      }
+      if (key.startsWith("veh:")) {
+        const id = key.slice("veh:".length);
+        return { ...m, spawn: { ...sp, vehicles: sp.vehicles.map((v) => (v.id === id ? { ...v, ...patch } : v)) } };
+      }
+      return m;
+    });
+  const onSpawnElementMoved = (key: string, x: number, z: number) => patchSpawnElement(key, { x, z });
+  const onSpawnElementRotated = (key: string, rotation: number) => patchSpawnElement(key, { rotation });
 
   /* ----- QRF origin selection (panel row ↔ map badge, two-way) ----- */
   const selectOriginFromPanel = (zoneId: string, moduleType: string, index: number) => {
@@ -911,7 +953,10 @@ export default function Editor() {
                     }
                   : m
               ),
-            onSpawnMoved: (x: number, z: number) => updateSpawn({ x, z }),
+            selectedSpawnEl,
+            onSpawnElementClick,
+            onSpawnElementMoved,
+            onSpawnElementRotated,
             onMarkerClick,
             onMarkerMoved: (id: string, x: number, z: number) => updateMarker(id, { x, z }),
             onSectorDrawn,
@@ -1043,7 +1088,8 @@ export default function Editor() {
                 setPlaceMode={armPlaceMode}
                 update={update}
                 updateSpawn={updateSpawn}
-                slope={slope}
+                selectedSpawnEl={selectedSpawnEl}
+                revealSeq={spawnRevealSeq}
               />
             )}
             {step === "zones" && (

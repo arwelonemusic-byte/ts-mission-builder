@@ -3,9 +3,9 @@
 import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { layoutSpawnBundle, itemWorldCorners, rotateLocal, FACTIONS } from "mission-gen";
+import { spawnElements, itemWorldCorners, rotateLocal, vehicleWorldOutline, FACTIONS, FARP_DETAIL } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
-import type { MissionMarker, MissionObjective, MissionProp, MissionSector, PlaceMode, Zone } from "@/lib/mission";
+import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, Zone } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
 import {
   distanceLabel,
@@ -31,14 +31,7 @@ import MapViewControls from "@/components/MapViewControls";
 // moving pixel space into the positive quadrant (tile paths can't be negative).
 // TileLayer zoomOffset bridges pyramid-z (0 = whole map) to Leaflet zoom.
 
-export type MapSpawn = {
-  placed: boolean;
-  x: number;
-  z: number;
-  yaw: number;
-  farp: boolean;
-  vehicles: { type: string }[];
-};
+export type MapSpawn = MissionSpawn;
 
 /** Pan/zoom request: fit a square of `radius` meters around (x, z). Bump
  * `seq` to trigger — same coords twice still re-centers. */
@@ -84,7 +77,12 @@ export type MapProps = {
   selectedOrigin: { zoneId: string; moduleType: string; index: number } | null;
   /** Origin badge clicked on the map → page selects its panel row */
   onOriginClick: (zoneId: string, moduleType: string, index: number) => void;
-  onSpawnMoved: (x: number, z: number) => void;
+  /** Selected spawn element key ("farp" | "spawnPoint" | "crate:<id>" |
+   * "veh:<id>") — shows the rotate handle (2D, non-spawnPoint only) */
+  selectedSpawnEl: string | null;
+  onSpawnElementClick: (key: string) => void;
+  onSpawnElementMoved: (key: string, x: number, z: number) => void;
+  onSpawnElementRotated: (key: string, rotation: number) => void;
   onMarkerClick: (id: string) => void;
   onMarkerMoved: (id: string, x: number, z: number) => void;
   onObjectiveClick: (id: string) => void;
@@ -427,7 +425,7 @@ export default function MissionMap(props: MapProps) {
     }
 
     if (props.spawn.placed) {
-      drawSpawnBundle(
+      drawSpawnElements(
         map,
         overlay,
         props.spawn,
@@ -435,7 +433,10 @@ export default function MissionMap(props: MapProps) {
         props.lang,
         !!props.fresh["spawn"],
         suppressClickRef,
-        (x, z) => propsRef.current.onSpawnMoved(x, z)
+        props.selectedSpawnEl,
+        (key) => propsRef.current.onSpawnElementClick(key),
+        (key, x, z) => propsRef.current.onSpawnElementMoved(key, x, z),
+        (key, rotation) => propsRef.current.onSpawnElementRotated(key, rotation)
       );
     }
 
@@ -746,6 +747,7 @@ export default function MissionMap(props: MapProps) {
     }
   }, [
     props.spawn,
+    props.selectedSpawnEl,
     props.zones,
     props.selectedZoneId,
     props.selectedOrigin,
@@ -1199,9 +1201,13 @@ function sectorRotateIcon(coarse: boolean) {
   });
 }
 
-/** True-scale spawn bundle footprint: bounding box + per-item glyphs.
- * The whole footprint is draggable — grab any part of it to move the spawn. */
-function drawSpawnBundle(
+/** True-scale spawn element footprints (per-element interaction since
+ * 2026-08-18): every element — FARP, crates, spawn point, vehicles — is its
+ * own rotated polygon. Click selects (rotate handle appears on everything but
+ * the spawn point), pointer-drag moves the one element (touch-capable, same
+ * hitEl pattern as drawSector). Whole-bundle moves go through the panel's
+ * "Move spawn" button. */
+function drawSpawnElements(
   map: L.Map,
   overlay: L.LayerGroup,
   spawn: MapSpawn,
@@ -1209,170 +1215,222 @@ function drawSpawnBundle(
   lang: Lang,
   freshPlace: boolean,
   suppressClickRef: { current: boolean },
-  onSpawnMoved: (x: number, z: number) => void
+  selectedKey: string | null,
+  onElementClick: (key: string) => void,
+  onElementMoved: (key: string, x: number, z: number) => void,
+  onElementRotated: (key: string, rotation: number) => void
 ) {
-  const { items, bounds } = layoutSpawnBundle(spawn);
+  const items = spawnElements(spawn);
   const labels = FACTIONS[faction]?.vehicleLabels ?? {};
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   const grab = freshPlace ? "cursor-move mb-fresh-path" : "cursor-move";
   const toLatLngs = (corners: [number, number][]) =>
     corners.map(([x, z]) => [z, x] as [number, number]);
 
-  const dragLayers: (L.Polygon | L.Circle)[] = [];
-
-  // Bounding box (dashed). Transparent fill keeps the interior grabbable.
-  const box = {
-    x: (bounds.minX + bounds.maxX) / 2,
-    z: (bounds.minZ + bounds.maxZ) / 2,
-    w: bounds.maxX - bounds.minX,
-    len: bounds.maxZ - bounds.minZ,
-  };
-  dragLayers.push(
-    L.polygon(toLatLngs(itemWorldCorners(box, spawn.x, spawn.z, spawn.yaw)), {
-      color: "#3fa9f5",
-      weight: 1.5,
-      dashArray: "6 4",
-      fillColor: "#3fa9f5",
-      fillOpacity: 0.02,
-      className: grab,
-    }).addTo(overlay)
-  );
-
   for (const it of items) {
-    const corners = toLatLngs(itemWorldCorners(it, spawn.x, spawn.z, spawn.yaw));
+    const selected = it.key === selectedKey;
+    const style =
+      it.kind === "farp"
+        ? { color: "#3fa9f5", weight: 1, fillColor: "#3fa9f5", fillOpacity: 0.15 }
+        : it.kind === "crate"
+          ? { color: "#50c878", weight: 1.5, fillColor: "#50c878", fillOpacity: 0.6 }
+          : it.kind === "spawnPoint"
+            ? { color: "#ffffff", weight: 1.5, fillColor: "#ffffff", fillOpacity: 0.2 }
+            : it.cls === "heli"
+              ? { color: "#c792ea", weight: 1.5, fillColor: "#c792ea", fillOpacity: 0.15 }
+              : { color: "#f5c542", weight: 1.5, fillColor: "#f5c542", fillOpacity: 0.45 };
+    if (selected) Object.assign(style, { color: "#ffcc00", weight: 2 });
+
+    let temp = { x: it.x, z: it.z, rotation: it.rotation };
+    // Vehicles draw as a pointed-nose pentagon (apex = facing); the rest as rects
+    const cornersOf = () =>
+      (it.kind === "vehicle"
+        ? vehicleWorldOutline({ x: 0, z: 0, w: it.w, len: it.len }, temp.x, temp.z, temp.rotation)
+        : itemWorldCorners({ x: 0, z: 0, w: it.w, len: it.len }, temp.x, temp.z, temp.rotation)) as [
+        number,
+        number,
+      ][];
+
+    // Spawn point renders as its in-game 10 m radius circle; everything else
+    // is a rotated footprint polygon.
+    const poly: L.Polygon | L.Circle =
+      it.kind === "spawnPoint"
+        ? L.circle([it.z, it.x], { radius: 10, ...style, className: grab }).addTo(overlay)
+        : L.polygon(toLatLngs(cornersOf()), { ...style, className: grab }).addTo(overlay);
+    const tooltip =
+      it.kind === "crate"
+        ? `${tr(lang, "Arsenal crate")} ${(it.index ?? 0) + 1}`
+        : it.kind === "spawnPoint"
+          ? tr(lang, "Spawn point")
+          : it.kind === "vehicle"
+            ? `${(it.index ?? 0) + 1}. ${labels[it.type ?? ""] ?? it.type}`
+            : null;
+    if (tooltip) poly.bindTooltip(tooltip, { direction: "top" });
+
+    // FARP: vehicle maintenance trigger radius + interior schematic (cone
+    // rows mark the drive-through lane, rects = the crate/barrel clusters)
+    // so the needed rotation is readable at a glance
+    let ring: L.Circle | null = null;
+    let coneDots: L.Circle[] = [];
+    let boxPolys: L.Polygon[] = [];
     if (it.kind === "farp") {
-      dragLayers.push(
-        L.polygon(corners, {
-          color: "#3fa9f5",
+      ring = L.circle([it.z, it.x], {
+        radius: 10,
+        color: "#3fa9f5",
+        weight: 1,
+        dashArray: "2 4",
+        fill: false,
+        interactive: false,
+      }).addTo(overlay);
+      coneDots = FARP_DETAIL.cones.map(() =>
+        L.circle([it.z, it.x], {
+          radius: 0.4,
+          color: "#ff6a3d",
           weight: 1,
-          fillColor: "#3fa9f5",
-          fillOpacity: 0.15,
-          className: grab,
-        }).addTo(overlay)
-      );
-      // vehicle maintenance trigger radius
-      dragLayers.push(
-        L.circle([spawn.z, spawn.x], {
-          radius: 10,
-          color: "#3fa9f5",
-          weight: 1,
-          dashArray: "2 4",
-          fill: false,
+          fillColor: "#ff6a3d",
+          fillOpacity: 0.9,
           interactive: false,
         }).addTo(overlay)
       );
-    } else if (it.kind === "crate") {
-      dragLayers.push(
-        L.polygon(corners, {
-          color: "#50c878",
-          weight: 1.5,
-          fillColor: "#50c878",
-          fillOpacity: 0.6,
-          className: grab,
-        })
-          .bindTooltip(tr(lang, "Arsenal crate"), { direction: "top" })
-          .addTo(overlay)
-      );
-    } else if (it.kind === "spawnPoint") {
-      dragLayers.push(
-        L.polygon(corners, {
-          color: "#ffffff",
-          weight: 1.5,
-          fillColor: "#ffffff",
-          fillOpacity: 0.6,
-          className: grab,
-        })
-          .bindTooltip(tr(lang, "Spawn point"), { direction: "top" })
-          .addTo(overlay)
-      );
-    } else {
-      const isHeli = it.cls === "heli";
-      const color = isHeli ? "#c792ea" : "#f5c542";
-      dragLayers.push(
-        L.polygon(corners, {
-          color,
-          weight: 1.5,
-          fillColor: color,
-          fillOpacity: isHeli ? 0.15 : 0.45,
-          className: grab,
-        })
-          .bindTooltip(`${(it.index ?? 0) + 1}. ${labels[it.type ?? ""] ?? it.type}`, {
-            direction: "top",
-          })
-          .addTo(overlay)
+      boxPolys = FARP_DETAIL.boxes.map(() =>
+        L.polygon([], {
+          color: "#3fa9f5",
+          weight: 1,
+          fillColor: "#3fa9f5",
+          fillOpacity: 0.35,
+          interactive: false,
+        }).addTo(overlay)
       );
     }
-  }
 
-  makeBundleDraggable(map, dragLayers, spawn, suppressClickRef, onSpawnMoved);
-}
+    let rotHandle: L.Marker | null = null;
+    let rotStem: L.Polyline | null = null;
+    let rotDragging = false;
+    const rotOffset = it.len / 2 + Math.max(6, it.len * 0.25);
+    const topMid = (): [number, number] => {
+      const [dx, dz] = rotateLocal(0, it.len / 2, temp.rotation);
+      return [temp.x + dx, temp.z + dz];
+    };
+    const handleWorld = (): [number, number] => {
+      const [dx, dz] = rotateLocal(0, rotOffset, temp.rotation);
+      return [temp.x + dx, temp.z + dz];
+    };
 
-/** Manual drag for the bundle's vector layers (Leaflet paths aren't natively
- * draggable). Mousedown on any layer pauses map panning, mousemove shifts
- * every layer live, mouseup commits the delta via onSpawnMoved.
- * Intentionally mouse-only: on touch devices the spawn is moved via the
- * SpawnPanel "Move spawn (click map)" button + tap (Leaflet's synthesized
- * click). Marker/zone drags use native Leaflet draggables (touch-safe). */
-function makeBundleDraggable(
-  map: L.Map,
-  layers: (L.Polygon | L.Circle)[],
-  spawn: MapSpawn,
-  suppressClickRef: { current: boolean },
-  onSpawnMoved: (x: number, z: number) => void
-) {
-  let start: L.LatLng | null = null;
-  let snapshots: { poly?: L.LatLng[][]; center?: L.LatLng }[] = [];
-
-  const shift = (dLat: number, dLng: number) => {
-    layers.forEach((ly, i) => {
-      const snap = snapshots[i];
-      if (ly instanceof L.Circle && snap.center) {
-        ly.setLatLng(L.latLng(snap.center.lat + dLat, snap.center.lng + dLng));
-      } else if (ly instanceof L.Polygon && snap.poly) {
-        ly.setLatLngs(
-          snap.poly.map((ring) => ring.map((p) => L.latLng(p.lat + dLat, p.lng + dLng)))
+    const update = () => {
+      if (poly instanceof L.Circle) poly.setLatLng([temp.z, temp.x]);
+      else poly.setLatLngs(toLatLngs(cornersOf()));
+      ring?.setLatLng([temp.z, temp.x]);
+      coneDots.forEach((c, i) => {
+        const [lx, lz] = FARP_DETAIL.cones[i];
+        const [dx, dz] = rotateLocal(lx, lz, temp.rotation);
+        c.setLatLng([temp.z + dz, temp.x + dx]);
+      });
+      boxPolys.forEach((bp, i) => {
+        const b = FARP_DETAIL.boxes[i];
+        bp.setLatLngs(
+          toLatLngs(itemWorldCorners(b, temp.x, temp.z, temp.rotation) as [number, number][])
         );
+      });
+      if (rotStem) {
+        const [tx, tz] = topMid();
+        const [rx, rz] = handleWorld();
+        rotStem.setLatLngs([
+          [tz, tx],
+          [rz, rx],
+        ]);
+        if (rotHandle && !rotDragging) rotHandle.setLatLng([rz, rx]);
       }
-    });
-  };
+    };
+    update(); // position the FARP schematic (created at placeholder coords)
 
-  const onMove = (e: L.LeafletMouseEvent) => {
-    if (!start) return;
-    shift(e.latlng.lat - start.lat, e.latlng.lng - start.lng);
-  };
-
-  const onUp = (e: L.LeafletMouseEvent) => {
-    map.off("mousemove", onMove);
-    map.off("mouseup", onUp);
-    map.dragging.enable();
-    if (!start) return;
-    const dLat = e.latlng.lat - start.lat;
-    const dLng = e.latlng.lng - start.lng;
-    start = null;
-    if (Math.abs(dLat) > 0.5 || Math.abs(dLng) > 0.5) {
-      // A real drag — swallow the trailing map click (it fires synchronously
-      // after mouseup, if the browser emits one at all; expire the flag so a
-      // missing click can't eat the next genuine one).
-      suppressClickRef.current = true;
-      window.setTimeout(() => {
-        suppressClickRef.current = false;
-      }, 100);
-      onSpawnMoved(+(spawn.x + dLng).toFixed(1), +(spawn.z + dLat).toFixed(1));
-    }
-  };
-
-  for (const ly of layers) {
-    if (ly.options.interactive === false) continue;
-    ly.on("mousedown", (e: L.LeafletMouseEvent) => {
+    /* ----- click to select, pointer-drag to move (same as drawSector) ----- */
+    let dragMoved = false;
+    poly.on("click", (e) => {
       L.DomEvent.stopPropagation(e);
-      map.dragging.disable();
-      start = e.latlng;
-      snapshots = layers.map((l) =>
-        l instanceof L.Circle
-          ? { center: l.getLatLng() }
-          : { poly: (l.getLatLngs() as L.LatLng[][]).map((ring) => ring.map((p) => L.latLng(p.lat, p.lng))) }
-      );
-      map.on("mousemove", onMove);
-      map.on("mouseup", onUp);
+      if (dragMoved) {
+        dragMoved = false;
+        return;
+      }
+      onElementClick(it.key);
     });
+
+    const el = poly.getElement() as SVGElement | null;
+    if (el) {
+      let start: L.LatLng | null = null;
+      const onDown = (e: PointerEvent) => {
+        if (!e.isPrimary || (e.pointerType === "mouse" && e.button !== 0)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        el.setPointerCapture(e.pointerId);
+        map.dragging.disable();
+        start = map.mouseEventToLatLng(e);
+        dragMoved = false;
+      };
+      const onMove = (e: PointerEvent) => {
+        if (!start || !e.isPrimary) return;
+        const cur = map.mouseEventToLatLng(e);
+        const dLng = cur.lng - start.lng;
+        const dLat = cur.lat - start.lat;
+        if (Math.abs(dLng) > 0.5 || Math.abs(dLat) > 0.5) dragMoved = true;
+        temp = { ...temp, x: it.x + dLng, z: it.z + dLat };
+        update();
+      };
+      const onUp = (e: PointerEvent) => {
+        if (!start || !e.isPrimary) return;
+        const cur = map.mouseEventToLatLng(e);
+        const dLng = cur.lng - start.lng;
+        const dLat = cur.lat - start.lat;
+        start = null;
+        map.dragging.enable();
+        if (Math.abs(dLng) > 0.5 || Math.abs(dLat) > 0.5) {
+          // Swallow the trailing map click (expire the flag so a missing
+          // click can't eat the next genuine one)
+          suppressClickRef.current = true;
+          window.setTimeout(() => {
+            suppressClickRef.current = false;
+          }, 100);
+          onElementMoved(it.key, +(it.x + dLng).toFixed(1), +(it.z + dLat).toFixed(1));
+        }
+      };
+      const onCancel = () => {
+        if (!start) return;
+        start = null;
+        map.dragging.enable();
+        temp = { x: it.x, z: it.z, rotation: it.rotation };
+        update();
+      };
+      el.addEventListener("pointerdown", onDown);
+      el.addEventListener("pointermove", onMove);
+      el.addEventListener("pointerup", onUp);
+      el.addEventListener("pointercancel", onCancel);
+    }
+
+    /* ----- rotation handle (selected; spawn point is move-only) ----- */
+    if (selected && it.kind !== "spawnPoint") {
+      const [tx, tz] = topMid();
+      const [rx, rz] = handleWorld();
+      rotStem = L.polyline(
+        [
+          [tz, tx],
+          [rz, rx],
+        ],
+        { color: "#ffcc00", weight: 1.5, dashArray: "3 3", interactive: false }
+      ).addTo(overlay);
+      rotHandle = L.marker([rz, rx], { icon: sectorRotateIcon(coarse), draggable: true }).addTo(overlay);
+      rotHandle.on("dragstart", () => (rotDragging = true));
+      rotHandle.on("drag", () => {
+        const ll = rotHandle!.getLatLng();
+        // Compass yaw of the cursor around the element center (same math as
+        // the sector rotate handle)
+        const yaw =
+          (Math.round((Math.atan2(ll.lng - temp.x, ll.lat - temp.z) * 180) / Math.PI) + 360) % 360;
+        temp = { ...temp, rotation: yaw };
+        update();
+      });
+      rotHandle.on("dragend", () => {
+        rotDragging = false;
+        onElementRotated(it.key, temp.rotation);
+      });
+    }
   }
 }

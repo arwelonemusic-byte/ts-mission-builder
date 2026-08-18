@@ -112,18 +112,20 @@ const RU: Record<string, string> = {
   "Click the map… (cancel)": "Кликните по карте… (отмена)",
   "Show on map": "Показать на карте",
   "No spawn point yet": "Точка спавна не размещена",
-  "Hit the button above, then click anywhere on the map. The base bundle — spawn point, arsenal crate and vehicles — is laid out around it.":
-    "Нажмите кнопку выше и кликните в любом месте карты. Вокруг точки будет размещена база — спавн, ящик снаряжения и техника.",
+  "Hit the button above, then click anywhere on the map. The base bundle — spawn point, arsenal crate and vehicles — is laid out around it. Drag any element on the map to rearrange your base.":
+    "Нажмите кнопку выше и кликните в любом месте карты. Вокруг точки будет размещена база — спавн, ящик снаряжения и техника. Затем перетаскивайте элементы на карте, чтобы обустроить базу.",
   Rotation: "Поворот",
-  "⚠ Uneven ground: {n} m elevation change across the bundle footprint. Consider moving or rotating the spawn.":
-    "⚠ Неровная поверхность: перепад высот {n} м в границах базы. Попробуйте передвинуть или повернуть спавн.",
+  "Drag elements on the map to move them; select one to rotate it.":
+    "Перетаскивайте элементы базы на карте; выберите элемент, чтобы повернуть его.",
   "FARP composition": "FARP",
   Vehicles: "Техника",
   "+ add vehicle…": "+ добавить технику…",
   "No vehicle catalogue for this faction yet.": "Для этой фракции пока нет каталога техники.",
-  "Drag to reorder": "Перетащите, чтобы изменить порядок",
   "Remove vehicle": "Убрать технику",
   "Arsenal crate": "Ящик снаряжения",
+  "Arsenal crates": "Ящики снаряжения",
+  "+ add crate": "+ добавить ящик",
+  "Remove crate": "Убрать ящик",
   "Spawn point": "Точка спавна",
 
   // Arsenal Builder modal (item names come from the harvested nameRu, not

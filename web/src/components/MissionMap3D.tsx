@@ -35,7 +35,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
-import { layoutSpawnBundle, itemWorldCorners, rotateLocal } from "mission-gen";
+import { spawnElements, itemWorldCorners, rotateLocal, vehicleWorldOutline, FARP_DETAIL } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
 import { getSampler } from "@/lib/terrainSampler";
 import { compositeTerrainTexture } from "@/lib/tileComposite";
@@ -145,10 +145,12 @@ type World = {
   terrain: THREE.Mesh | null;
   /** All overlay content (WebGL + CSS2D). Cleared+rebuilt by syncOverlays. */
   overlay: THREE.Group;
-  /** Bundle fill meshes — raycast targets for the spawn-bundle drag. */
+  /** Spawn element fill meshes — raycast targets for per-element drags.
+   * Each carries its element key in userData.spawnKey. */
   spawnPick: THREE.Mesh[];
-  /** Live re-drape of the spawn bundle at (x, z) during a drag. */
-  bundleSet: ((x: number, z: number) => void) | null;
+  /** Per-element live re-drape at (x, z) during a drag, keyed like
+   * selectedSpawnEl ("farp" | "spawnPoint" | "crate:<id>" | "veh:<id>"). */
+  spawnSetters: Map<string, (x: number, z: number) => void>;
   target: THREE.Vector3;
   minDistance: number;
   maxDistance: number;
@@ -324,13 +326,14 @@ function fillMaterial(color: number, opacity: number): THREE.MeshBasicMaterial {
   });
 }
 
-/** Perimeter walker for a 4-corner polygon, `per` interpolated points per edge. */
+/** Perimeter walker for an n-corner polygon, `per` interpolated points per edge. */
 function perimeter(corners: [number, number][], per: number): PointFn {
+  const n = corners.length;
   return (i: number) => {
-    const e = Math.floor(i / per) % 4;
+    const e = Math.floor(i / per) % n;
     const f = (i % per) / per;
     const [ax, az] = corners[e];
-    const [bx, bz] = corners[(e + 1) % 4];
+    const [bx, bz] = corners[(e + 1) % n];
     return [ax + (bx - ax) * f, az + (bz - az) * f];
   };
 }
@@ -445,7 +448,7 @@ function clearOverlays(world: World): void {
   // Removing dispatches 'removed' → CSS2DObjects detach their DOM elements.
   world.overlay.clear();
   world.spawnPick = [];
-  world.bundleSet = null;
+  world.spawnSetters = new Map();
 }
 
 /* ---------------------------------------------------------------------------
@@ -542,7 +545,7 @@ export default function MissionMap3D(props: Map3DProps) {
       terrain: null,
       overlay,
       spawnPick: [],
-      bundleSet: null,
+      spawnSetters: new Map(),
       target,
       minDistance: MIN_DISTANCE,
       maxDistance,
@@ -702,37 +705,10 @@ export default function MissionMap3D(props: Map3DProps) {
         });
       }
 
-      /* -- spawn bundle: draped footprint, whole-bundle drag via canvas -- */
+      /* -- spawn elements: draped footprints, per-element drag via canvas
+         (rotation is 2D-only, like sector rotate) -- */
       if (p.spawn.placed) {
-        const spawn = p.spawn;
-        const { items, bounds } = layoutSpawnBundle(spawn);
-        const setters: ((x: number, z: number) => void)[] = [];
-
-        const box = {
-          x: (bounds.minX + bounds.maxX) / 2,
-          z: (bounds.minZ + bounds.maxZ) / 2,
-          w: bounds.maxX - bounds.minX,
-          len: bounds.maxZ - bounds.minZ,
-        };
-        const boxPer = Math.min(32, Math.max(4, Math.ceil(Math.max(box.w, box.len) / 10)));
-        const boxLine = drapedLine(
-          grid,
-          boxPer * 4,
-          new THREE.LineDashedMaterial({ color: SPAWN_BLUE, dashSize: 6, gapSize: 4 }),
-          true
-        );
-        overlay.add(boxLine.obj);
-        // Near-invisible fill = the grab surface for the bounding box.
-        const boxFill = drapedGridMesh(grid, 4, 4, fillMaterial(SPAWN_BLUE, 0.02));
-        overlay.add(boxFill.obj);
-        world.spawnPick.push(boxFill.obj);
-        setters.push((x, z) => {
-          const corners = itemWorldCorners(box, x, z, spawn.yaw);
-          boxLine.fill(perimeter(corners, boxPer), LINE_LIFT);
-          boxFill.fill(quadUV(corners), FILL_LIFT);
-        });
-
-        for (const it of items) {
+        for (const it of spawnElements(p.spawn)) {
           let color = VEHICLE_YELLOW;
           let opacity = 0.45;
           if (it.kind === "farp") {
@@ -748,37 +724,116 @@ export default function MissionMap3D(props: Map3DProps) {
             color = HELI_PURPLE;
             opacity = 0.15;
           }
+          const selected = it.key === p.selectedSpawnEl;
+          const edgeColor = selected ? SELECT_COLOR : color;
+          // Spawn point renders as its in-game 10 m radius circle
+          if (it.kind === "spawnPoint") {
+            const disc = drapedGridMesh(grid, 32, 4, fillMaterial(0xffffff, 0.2));
+            overlay.add(disc.obj);
+            disc.obj.userData.spawnKey = it.key;
+            world.spawnPick.push(disc.obj);
+            const circleLine = drapedLine(grid, 48, new THREE.LineBasicMaterial({ color: edgeColor }), true);
+            overlay.add(circleLine.obj);
+            const setSp = (x: number, z: number) => {
+              disc.fill((u, v) => {
+                const a = u * Math.PI * 2;
+                const rr = v * 10;
+                return [x + rr * Math.cos(a), z + rr * Math.sin(a)];
+              }, LINE_LIFT);
+              circleLine.fill((i) => {
+                const a = (i / 48) * Math.PI * 2;
+                return [x + 10 * Math.cos(a), z + 10 * Math.sin(a)];
+              }, LINE_LIFT);
+            };
+            setSp(it.x, it.z);
+            world.spawnSetters.set(it.key, setSp);
+            continue;
+          }
+          const isVehicle = it.kind === "vehicle";
           const sub = Math.min(8, Math.max(1, Math.ceil(Math.max(it.w, it.len) / 8)));
+          const per = Math.max(2, sub);
           const fill = drapedGridMesh(grid, sub, sub, fillMaterial(color, opacity));
           overlay.add(fill.obj);
+          fill.obj.userData.spawnKey = it.key;
           world.spawnPick.push(fill.obj);
-          const edge = drapedLine(grid, Math.max(8, sub * 4), new THREE.LineBasicMaterial({ color }), true);
+          // Vehicles: pointed-nose pentagon (apex = facing) — body quad above
+          // plus this nose triangle (degenerate quad), 5-edge outline.
+          let noseFill: ReturnType<typeof drapedGridMesh> | null = null;
+          if (isVehicle) {
+            noseFill = drapedGridMesh(grid, sub, sub, fillMaterial(color, opacity));
+            overlay.add(noseFill.obj);
+            noseFill.obj.userData.spawnKey = it.key;
+            world.spawnPick.push(noseFill.obj);
+          }
+          const edge = drapedLine(grid, per * (isVehicle ? 5 : 4), new THREE.LineBasicMaterial({ color: edgeColor }), true);
           overlay.add(edge.obj);
-          setters.push((x, z) => {
-            const corners = itemWorldCorners(it, x, z, spawn.yaw);
-            fill.fill(quadUV(corners), FILL_LIFT);
-            edge.fill(perimeter(corners, Math.max(2, sub)), LINE_LIFT);
-          });
+          let ring: ReturnType<typeof drapedLine> | null = null;
+          let coneLoops: ReturnType<typeof drapedLine>[] = [];
+          let boxFills: ReturnType<typeof drapedGridMesh>[] = [];
+          let boxEdges: ReturnType<typeof drapedLine>[] = [];
           if (it.kind === "farp") {
             // vehicle maintenance trigger radius
-            const ring = drapedLine(
+            ring = drapedLine(
               grid,
               40,
               new THREE.LineDashedMaterial({ color: SPAWN_BLUE, dashSize: 1.5, gapSize: 3 }),
               true
             );
             overlay.add(ring.obj);
-            setters.push((x, z) => {
-              ring.fill((i) => {
-                const a = (i / 40) * Math.PI * 2;
-                return [x + 10 * Math.cos(a), z + 10 * Math.sin(a)];
-              }, LINE_LIFT);
+            // interior schematic: cone rows (drive-through lane) + crate clusters
+            coneLoops = FARP_DETAIL.cones.map(() => {
+              const c = drapedLine(grid, 8, new THREE.LineBasicMaterial({ color: 0xff6a3d }), true);
+              overlay.add(c.obj);
+              return c;
+            });
+            boxFills = FARP_DETAIL.boxes.map(() => {
+              const b = drapedGridMesh(grid, 2, 2, fillMaterial(SPAWN_BLUE, 0.35));
+              overlay.add(b.obj);
+              return b;
+            });
+            boxEdges = FARP_DETAIL.boxes.map(() => {
+              const b = drapedLine(grid, 8, new THREE.LineBasicMaterial({ color: SPAWN_BLUE }), true);
+              overlay.add(b.obj);
+              return b;
             });
           }
+          const setEl = (x: number, z: number) => {
+            if (isVehicle && noseFill) {
+              const o = vehicleWorldOutline({ x: 0, z: 0, w: it.w, len: it.len }, x, z, it.rotation);
+              // o = [rearL, rearR, shoulderR, apex, shoulderL]
+              // Fill at the SAME lift as the outline: on these small shapes
+              // the standard 0.75 m line/fill split reads as a visible offset
+              // at oblique camera angles (fill renders first + polygonOffset,
+              // so the coplanar outline still draws on top).
+              fill.fill(quadUV([o[0], o[1], o[2], o[4]]), LINE_LIFT);
+              noseFill.fill(quadUV([o[4], o[2], o[3], o[3]]), LINE_LIFT);
+              edge.fill(perimeter(o, per), LINE_LIFT);
+            } else {
+              const corners = itemWorldCorners({ x: 0, z: 0, w: it.w, len: it.len }, x, z, it.rotation);
+              fill.fill(quadUV(corners), LINE_LIFT);
+              edge.fill(perimeter(corners, per), LINE_LIFT);
+            }
+            ring?.fill((i) => {
+              const a = (i / 40) * Math.PI * 2;
+              return [x + 10 * Math.cos(a), z + 10 * Math.sin(a)];
+            }, LINE_LIFT);
+            coneLoops.forEach((c, ci) => {
+              const [lx, lz] = FARP_DETAIL.cones[ci];
+              const [dx, dz] = rotateLocal(lx, lz, it.rotation);
+              c.fill((i) => {
+                const a = (i / 8) * Math.PI * 2;
+                return [x + dx + 0.4 * Math.cos(a), z + dz + 0.4 * Math.sin(a)];
+              }, LINE_LIFT);
+            });
+            boxFills.forEach((b, bi) => {
+              const corners = itemWorldCorners(FARP_DETAIL.boxes[bi], x, z, it.rotation);
+              b.fill(quadUV(corners), LINE_LIFT);
+              boxEdges[bi].fill(perimeter(corners, 2), LINE_LIFT);
+            });
+          };
+          setEl(it.x, it.z);
+          world.spawnSetters.set(it.key, setEl);
         }
-        const setAll = (x: number, z: number) => setters.forEach((fn) => fn(x, z));
-        setAll(spawn.x, spawn.z);
-        world.bundleSet = setAll;
       }
 
       /* -- zones: draped ring + disc, dot handle, QRF origin lines/badges -- */
@@ -1124,13 +1179,30 @@ export default function MissionMap3D(props: Map3DProps) {
     let lastX = 0;
     let lastY = 0;
     let moveAccum = 0;
-    let bundleDrag: {
+    let elemDrag: {
+      key: string;
       startX: number;
       startZ: number;
       sx: number;
       sz: number;
       last: { x: number; z: number } | null;
     } | null = null;
+
+    /** Stored world position of a spawn element by its key. */
+    const spawnElPos = (key: string): { x: number; z: number } | null => {
+      const sp = propsRef.current.spawn;
+      if (key === "farp") return { x: sp.farpPos.x, z: sp.farpPos.z };
+      if (key === "spawnPoint") return { x: sp.spawnPoint.x, z: sp.spawnPoint.z };
+      if (key.startsWith("crate:")) {
+        const c = sp.crates.find((cc) => cc.id === key.slice("crate:".length));
+        return c ? { x: c.x, z: c.z } : null;
+      }
+      if (key.startsWith("veh:")) {
+        const v = sp.vehicles.find((vv) => vv.id === key.slice("veh:".length));
+        return v ? { x: v.x, z: v.z } : null;
+      }
+      return null;
+    };
 
     const mmbPivot = new THREE.Vector3();
 
@@ -1147,18 +1219,19 @@ export default function MissionMap3D(props: Map3DProps) {
     const onMouseDown = (e: MouseEvent) => {
       if (e.button !== 0 && e.button !== 1) return;
       if (e.button === 0 && world.spawnPick.length) {
-        // Spawn-bundle grab? (few small quads — Raycaster is fine here)
+        // Spawn-element grab? (few small quads — Raycaster is fine here)
         const rect = dom.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0) {
           pickNdc.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
           pickNdc.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
           pickRaycaster.setFromCamera(pickNdc, camera);
           const hits = pickRaycaster.intersectObjects(world.spawnPick, false);
-          if (hits.length > 0) {
+          const key = hits.length > 0 ? (hits[0].object.userData.spawnKey as string | undefined) : undefined;
+          if (key) {
             const start = pickTerrain(world, e.clientX, e.clientY);
-            if (start) {
-              const sp = propsRef.current.spawn;
-              bundleDrag = { startX: start.x, startZ: start.z, sx: sp.x, sz: sp.z, last: null };
+            const pos = spawnElPos(key);
+            if (start && pos) {
+              elemDrag = { key, startX: start.x, startZ: start.z, sx: pos.x, sz: pos.z, last: null };
               dom.style.cursor = "move";
               e.preventDefault();
               return;
@@ -1177,14 +1250,14 @@ export default function MissionMap3D(props: Map3DProps) {
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      if (bundleDrag) {
+      if (elemDrag) {
         const hit = pickTerrain(world, e.clientX, e.clientY);
         if (hit) {
           const g = world.grid;
-          const nx = clampTo(bundleDrag.sx + (hit.x - bundleDrag.startX), g.w);
-          const nz = clampTo(bundleDrag.sz + (hit.z - bundleDrag.startZ), g.h);
-          bundleDrag.last = { x: nx, z: nz };
-          world.bundleSet?.(nx, nz);
+          const nx = clampTo(elemDrag.sx + (hit.x - elemDrag.startX), g.w);
+          const nz = clampTo(elemDrag.sz + (hit.z - elemDrag.startZ), g.h);
+          elemDrag.last = { x: nx, z: nz };
+          world.spawnSetters.get(elemDrag.key)?.(nx, nz);
           world.render();
         }
         return;
@@ -1248,15 +1321,19 @@ export default function MissionMap3D(props: Map3DProps) {
     };
 
     const onMouseUp = (e: MouseEvent) => {
-      if (bundleDrag) {
-        const bd = bundleDrag;
-        bundleDrag = null;
+      if (elemDrag) {
+        const bd = elemDrag;
+        elemDrag = null;
         restoreCursor();
         if (bd.last && (Math.abs(bd.last.x - bd.sx) > 0.5 || Math.abs(bd.last.z - bd.sz) > 0.5)) {
-          propsRef.current.onSpawnMoved(+bd.last.x.toFixed(1), +bd.last.z.toFixed(1));
-        } else if (bd.last) {
-          world.bundleSet?.(bd.sx, bd.sz); // snap back — too small to commit
-          world.render();
+          propsRef.current.onSpawnElementMoved(bd.key, +bd.last.x.toFixed(1), +bd.last.z.toFixed(1));
+        } else {
+          if (bd.last) {
+            world.spawnSetters.get(bd.key)?.(bd.sx, bd.sz); // snap back — too small to commit
+            world.render();
+          }
+          // A clean click on the element selects it (parity with 2D)
+          propsRef.current.onSpawnElementClick(bd.key);
         }
         return;
       }
@@ -1509,6 +1586,7 @@ export default function MissionMap3D(props: Map3DProps) {
     worldRef.current?.syncOverlays();
   }, [
     props.spawn,
+    props.selectedSpawnEl,
     props.zones,
     props.selectedZoneId,
     props.selectedOrigin,
