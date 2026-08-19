@@ -159,6 +159,28 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/61732D4F7D980E9A-Zarichne",
   },
+  {
+    key: "merak",
+    label: "Merak",
+    worldSize: [10240, 10240],
+    heightmapBin: "/heightmaps/merak.bin",
+    heightmapMeta: "/heightmaps/merak.json",
+    tilePattern: "/tiles/merak/{z}/{x}/{y}.jpg",
+    tileMaxZoom: 6,
+    modded: true,
+    workshopUrl: "https://reforger.armaplatform.com/workshop/6047000574D60BF9-MerakIsland",
+  },
+  {
+    key: "mogadishu",
+    label: "Mogadishu",
+    worldSize: [6000, 6000],
+    heightmapBin: "/heightmaps/mogadishu.bin",
+    heightmapMeta: "/heightmaps/mogadishu.json",
+    tilePattern: "/tiles/mogadishu/{z}/{x}/{y}.jpg",
+    tileMaxZoom: 5,
+    modded: true,
+    workshopUrl: "https://reforger.armaplatform.com/workshop/5F1D02080409E128-Mogadishu",
+  },
 ];
 
 export const terrainByKey = (key: string): TerrainConfig =>

@@ -46,6 +46,8 @@
 //   --takistan  same, on Takistan
 //   --zargabad  same, on Zargabad
 //   --zarichne  same, on Zarichne
+//   --merak     same, on Merak Island
+//   --mogadishu same, on Mogadishu
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -1345,7 +1347,114 @@ const ZARICHNE_MISSION = {
   ],
 };
 
-const BUILT = process.argv.includes("--zarichne")
+// Merak spike: island interior — AIWorld cross-check matched (32.72 sampled
+// vs 32.687 placed).
+const MERAK_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeMerak",
+  dirName: "TS_WebSpikeMerak",
+  addonTitle: "TS Web Spike Merak Mission",
+  name: "TS_WebSpikeMerak",
+  displayName: "TS Web Spike Merak",
+  terrain: "merak",
+  guids: {
+    addon: "6A900BEAF5D2F3EC",
+    world: "6A900BEA40C405A8",
+    missionConf: "6A900BEA71E512BD",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces have taken the central highlands of Merak Island.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "4200 52.16 5800",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "5200 29.53 4900",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "5000 32.06 4800",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [5200, 29.5, 4900], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [4250, 52.6, 5750], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [5000, 32.1, 4800], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [5100, 27.8, 4850], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [5200, 29.5, 4900], length: 300, width: 200, rotation: 30 },
+  ],
+  // Terrain spike: base MISSION's props/objectives carry Arland coords
+  // (Merak: props would land in the sea) — not part of terrain validation.
+  objectives: [],
+  props: [],
+};
+
+// Mogadishu spike: coastal city — heightmap validated against terrain-fitted
+// buildings (2.00 sampled vs 2.001 placed); spike sits on the inland rise.
+const MOGADISHU_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeMogadishu",
+  dirName: "TS_WebSpikeMogadishu",
+  addonTitle: "TS Web Spike Mogadishu Mission",
+  name: "TS_WebSpikeMogadishu",
+  displayName: "TS Web Spike Mogadishu",
+  terrain: "mogadishu",
+  guids: {
+    addon: "6A911CFB06E304FD",
+    world: "6A911CFB51D516B9",
+    missionConf: "6A911CFB82F623CE",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Militia forces control the districts on the rise north-west of the Mogadishu waterfront.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "1500 31.38 4800",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "2500 17.31 4200",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "2300 17.75 4100",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [2500, 17.3, 4200], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [1550, 31.2, 4750], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [2300, 17.8, 4100], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [2400, 17.5, 4150], length: 1000, width: 800, rotation: 0 },
+    { kind: "objective", pos: [2500, 17.3, 4200], length: 300, width: 200, rotation: 30 },
+  ],
+  // Terrain spike: drop the base MISSION's Arland-coord props/objectives.
+  objectives: [],
+  props: [],
+};
+
+const BUILT = process.argv.includes("--mogadishu")
+  ? MOGADISHU_MISSION
+  : process.argv.includes("--merak")
+  ? MERAK_MISSION
+  : process.argv.includes("--zarichne")
   ? ZARICHNE_MISSION
   : process.argv.includes("--zargabad")
   ? ZARGABAD_MISSION

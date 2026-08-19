@@ -197,6 +197,29 @@ export const TERRAINS = {
     ],
     dependencies: ["61732D4F7D980E9A"],
   },
+  // Merak Island (no external deps). The bare world file is literally named
+  // "NEW MAP 22.ent" — space in the resource path is verbatim from the addon.
+  merak: {
+    label: "Merak",
+    parent: "{F526773E59780A60}worlds/MerakIsland/NEW MAP 22.ent",
+    nav: [
+      "{E9D4D61376F15235}worlds/MerakIsland/Navmeshes/Soldier.nmn",
+      "{9C321749FB3AC1EC}worlds/MerakIsland/Navmeshes/BTR.nmn",
+      "{D74F912176060F10}worlds/MerakIsland/Navmeshes/lowres.nmn",
+    ],
+    dependencies: ["6047000574D60BF9"],
+  },
+  // Mogadishu (dep ArmaTerrainCore resolves transitively).
+  mogadishu: {
+    label: "Mogadishu",
+    parent: "{BCD52EA0F63F6EB3}Worlds/Mogadishu/mogadishu.ent",
+    nav: [
+      "{B49885F50E06FA8C}NavMesh/MOG_Soldiers.nmn",
+      "{C4F3AA231F9BF206}NavMesh/MOG_BTR.nmn",
+      "{B02C7F48FD500C2B}NavMesh/MOG_LowRes.nmn",
+    ],
+    dependencies: ["5F1D02080409E128"],
+  },
 };
 
 const P_OPFOR = "Prefabs/Groups/OPFOR";
