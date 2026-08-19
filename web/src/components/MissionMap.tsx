@@ -205,14 +205,15 @@ export default function MissionMap(props: MapProps) {
       const lbl = scaleLabelRef.current;
       if (!bar || !lbl) return;
       const pxPerMeter = map.getZoomScale(map.getZoom(), 0); // CRS.Simple: 1 unit = 1 m at z0
-      const candidates = [25, 50, 100, 200, 500, 1000, 2000, 5000];
-      let c = candidates[candidates.length - 1];
+      // Largest round distance that fits in 150px. Monotonic pick — no
+      // "nothing in window" failure mode: the old [46,150] window check fell
+      // through to 5000 m one zoom step past 25 m (a several-thousand-px
+      // bracket). 5 m covers max zoom (2^4 = 16 px/m -> 80 px).
+      const candidates = [5, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000];
+      let c = candidates[0];
       for (const cand of candidates) {
-        const px = cand * pxPerMeter;
-        if (px >= 46 && px <= 150) {
-          c = cand;
-          break;
-        }
+        if (cand * pxPerMeter <= 150) c = cand;
+        else break;
       }
       bar.style.width = `${Math.round(c * pxPerMeter)}px`;
       lbl.textContent = scaleLabel(propsRef.current.lang, c);
