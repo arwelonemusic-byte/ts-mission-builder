@@ -60,9 +60,13 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     key: "chernarus",
     label: "Chernarus",
     worldSize: [15360, 15360],
-    heightmapBin: "/heightmaps/chernarus.bin",
+    // ?v=2: cache-buster for the 2026-08-19 terrain-update re-capture — the
+    // tile/heightmap URLs are otherwise stable and browsers cache the old
+    // bytes with heuristic freshness (Caddy sends no Cache-Control). Bump on
+    // every future asset refresh.
+    heightmapBin: "/heightmaps/chernarus.bin?v=2",
     heightmapMeta: "/heightmaps/chernarus.json",
-    tilePattern: "/tiles/chernarus/{z}/{x}/{y}.jpg",
+    tilePattern: "/tiles/chernarus/{z}/{x}/{y}.jpg?v=2",
     tileMaxZoom: 6,
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/665D1AA55B5D8076-ChernarusMinus",
