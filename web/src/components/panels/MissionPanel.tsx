@@ -158,11 +158,13 @@ export default function MissionPanel({
               ──────────
             </option>
           )}
-          {TERRAIN_LIST.filter((tn) => tn.modded).map((tn) => (
-            <option key={tn.key} value={tn.key}>
-              {tn.label}
-            </option>
-          ))}
+          {TERRAIN_LIST.filter((tn) => tn.modded)
+            .sort((a, b) => a.label.localeCompare(b.label))
+            .map((tn) => (
+              <option key={tn.key} value={tn.key}>
+                {tn.label}
+              </option>
+            ))}
         </SelectInput>
       </Field>
       <Hint>{t("Changing terrain clears placements.")}</Hint>

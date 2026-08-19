@@ -220,6 +220,20 @@ export const TERRAINS = {
     ],
     dependencies: ["5F1D02080409E128"],
   },
+  // Al Hadra (deps MES-MiddleEastStructures 1+2 + ArmaTerrainCore resolve
+  // transitively). Nav refs from the GM world's default.layer — the addon's
+  // custom SCR_AIworld_AL_Hadra.et prefab carries STALE paths (files don't
+  // ship); the layer overrides them with the real Map_data/new/Navmesh files.
+  alhadra: {
+    label: "Al Hadra",
+    parent: "{0DF4A7D59D520189}Worlds/AL_Hadra/AL_Hadra_terrain.ent",
+    nav: [
+      "{1479CAC4F3B803FC}Map_data/new/Navmesh/Soldier_navmesh1.nmn",
+      "{63F07B2817A33101}Map_data/new/Navmesh/BTRlike_navmesh1.nmn",
+      "{99B5FDCC8F6AADBB}Map_data/new/Navmesh/LowRes_navmesh1.nmn",
+    ],
+    dependencies: ["68957914EA45BA6C"],
+  },
 };
 
 const P_OPFOR = "Prefabs/Groups/OPFOR";

@@ -181,6 +181,17 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/5F1D02080409E128-Mogadishu",
   },
+  {
+    key: "alhadra",
+    label: "Al Hadra",
+    worldSize: [8192, 8192],
+    heightmapBin: "/heightmaps/alhadra.bin",
+    heightmapMeta: "/heightmaps/alhadra.json",
+    tilePattern: "/tiles/alhadra/{z}/{x}/{y}.jpg",
+    tileMaxZoom: 5,
+    modded: true,
+    workshopUrl: "https://reforger.armaplatform.com/workshop/68957914EA45BA6C-ALHadra",
+  },
 ];
 
 export const terrainByKey = (key: string): TerrainConfig =>

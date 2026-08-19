@@ -48,6 +48,7 @@
 //   --zarichne  same, on Zarichne
 //   --merak     same, on Merak Island
 //   --mogadishu same, on Mogadishu
+//   --alhadra   same, on Al Hadra
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -1450,7 +1451,60 @@ const MOGADISHU_MISSION = {
   props: [],
 };
 
-const BUILT = process.argv.includes("--mogadishu")
+// Al Hadra spike: desert flats — AIWorld cross-check matched (36.22 sampled
+// vs 36.075 placed).
+const ALHADRA_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeAlHadra",
+  dirName: "TS_WebSpikeAlHadra",
+  addonTitle: "TS Web Spike Al Hadra Mission",
+  name: "TS_WebSpikeAlHadra",
+  displayName: "TS Web Spike Al Hadra",
+  terrain: "alhadra",
+  guids: {
+    addon: "6A922D0C17F415DE",
+    world: "6A922D0C62E6270A",
+    missionConf: "6A922D0C93072F1F",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet-backed forces hold the compounds on the Al Hadra flats.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "2700 24.13 5900",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "3600 17.84 5000",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "3400 17.84 4900",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [3600, 17.8, 5000], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [2750, 20.0, 5850], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [3400, 17.8, 4900], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [3500, 17.8, 4950], length: 1200, width: 900, rotation: 0 },
+    { kind: "objective", pos: [3600, 17.8, 5000], length: 300, width: 200, rotation: 30 },
+  ],
+  // Terrain spike: drop the base MISSION's Arland-coord props/objectives.
+  objectives: [],
+  props: [],
+};
+
+const BUILT = process.argv.includes("--alhadra")
+  ? ALHADRA_MISSION
+  : process.argv.includes("--mogadishu")
   ? MOGADISHU_MISSION
   : process.argv.includes("--merak")
   ? MERAK_MISSION
