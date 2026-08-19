@@ -718,7 +718,7 @@ export default function MissionMap3D(props: Map3DProps) {
             color = CRATE_GREEN;
             opacity = 0.6;
           } else if (it.kind === "spawnPoint") {
-            color = 0xffffff;
+            color = 0x50c878;
             opacity = 0.6;
           } else if (it.cls === "heli") {
             color = HELI_PURPLE;
@@ -728,7 +728,7 @@ export default function MissionMap3D(props: Map3DProps) {
           const edgeColor = selected ? SELECT_COLOR : color;
           // Spawn point renders as its in-game 10 m radius circle
           if (it.kind === "spawnPoint") {
-            const disc = drapedGridMesh(grid, 32, 4, fillMaterial(0xffffff, 0.2));
+            const disc = drapedGridMesh(grid, 32, 4, fillMaterial(0x50c878, 0.2));
             overlay.add(disc.obj);
             disc.obj.userData.spawnKey = it.key;
             world.spawnPick.push(disc.obj);

@@ -533,7 +533,7 @@ export default function Editor() {
           : m
       );
       setSelectedSpawnEl(`sp:${id}`);
-      mapApi()?.addPing(xi, zi, "#ffffff");
+      mapApi()?.addPing(xi, zi, "#50c878");
       setPlaceMode(null);
     } else if (placeMode === "spawn-crate") {
       const id = freshSpawnElemId();

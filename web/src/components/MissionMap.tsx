@@ -1235,7 +1235,7 @@ function drawSpawnElements(
         : it.kind === "crate"
           ? { color: "#50c878", weight: 1.5, fillColor: "#50c878", fillOpacity: 0.6 }
           : it.kind === "spawnPoint"
-            ? { color: "#ffffff", weight: 1.5, fillColor: "#ffffff", fillOpacity: 0.2 }
+            ? { color: "#50c878", weight: 1.5, fillColor: "#50c878", fillOpacity: 0.2 }
             : it.cls === "heli"
               ? { color: "#c792ea", weight: 1.5, fillColor: "#c792ea", fillOpacity: 0.15 }
               : { color: "#f5c542", weight: 1.5, fillColor: "#f5c542", fillOpacity: 0.45 };
