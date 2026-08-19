@@ -12,6 +12,7 @@ import {
   sanitizeArsenal,
   factionMeta,
   freshenGuids,
+  freshSpawnElemId,
   loadMission,
   materializeSpawnAt,
   missionFileName,
@@ -104,10 +105,12 @@ export default function Editor() {
   const [selectedObjectiveId, setSelectedObjectiveId] = useState<string | null>(null);
   const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
   // Selected spawn element (map footprint click) — shows the 2D rotate handle.
-  // Keys: "farp" | "spawnPoint" | "crate:<id>" | "veh:<id>".
+  // Keys: "farp" | "sp:<id>" | "crate:<id>" | "veh:<id>".
   const [selectedSpawnEl, setSelectedSpawnEl] = useState<string | null>(null);
   // Which prefab an armed "prop" placement creates (picked in the modal first)
   const [pendingPropRef, setPendingPropRef] = useState<string | null>(null);
+  // Which vehicle type an armed "spawn-vehicle" placement creates (dropdown)
+  const [pendingVehicleType, setPendingVehicleType] = useState<string | null>(null);
   // Which deliver objective an armed "delivery" placement feeds
   const [deliveryTarget, setDeliveryTarget] = useState<string | null>(null);
   // Which zone+module an armed "qrf-origin" placement feeds (QRF reinforcements)
@@ -228,6 +231,7 @@ export default function Editor() {
         setSectorDraw(null);
         setPendingObjectiveType(null);
         setPendingPropRef(null);
+        setPendingVehicleType(null);
         setDeliveryTarget(null);
       }
     };
@@ -326,6 +330,7 @@ export default function Editor() {
     if (m !== "qrf-origin") setOriginTarget(null);
     if (m !== "objective") setPendingObjectiveType(null);
     if (m !== "prop") setPendingPropRef(null);
+    if (m !== "spawn-vehicle") setPendingVehicleType(null);
     setPlaceMode(m);
   };
   /** Arm objective placement for a type from the panel picker (null = cancel). */
@@ -463,6 +468,7 @@ export default function Editor() {
     setSectorDraw(null);
     setPendingObjectiveType(null);
     setPendingPropRef(null);
+    setPendingVehicleType(null);
     setDeliveryTarget(null);
     setStep(s);
   };
@@ -511,36 +517,56 @@ export default function Editor() {
     const xi = +x.toFixed(1);
     const zi = +z.toFixed(1);
     if (placeMode === "spawn") {
-      if (!mission.spawn.placed) {
-        // First placement: materialize the default bundle around the click
-        // (carrying the FARP toggle + vehicle list of an un-placed spawn,
-        // e.g. after a terrain change)
-        update({ spawn: materializeSpawnAt(xi, zi, mission.spawn) });
-      } else {
-        // Move spawn: rigid translation of the whole arrangement — every
-        // element keeps its offset from the anchor and its rotation
-        const sp = mission.spawn;
-        const dx = xi - sp.x;
-        const dz = zi - sp.z;
-        const mv = <T extends { x: number; z: number }>(o: T): T => ({
-          ...o,
-          x: +(o.x + dx).toFixed(1),
-          z: +(o.z + dz).toFixed(1),
-        });
-        update({
-          spawn: {
-            ...sp,
-            x: xi,
-            z: zi,
-            farpPos: mv(sp.farpPos),
-            spawnPoint: mv(sp.spawnPoint),
-            crates: sp.crates.map(mv),
-            vehicles: sp.vehicles.map(mv),
-          },
-        });
-      }
+      // First placement: spawn point at the click + one crate. Everything
+      // else is added via per-element map-click placement ("spawn" mode is
+      // only reachable from the un-placed state — Move spawn was removed
+      // 2026-08-19; relocating means Remove spawn + rebuild).
+      update({ spawn: materializeSpawnAt(xi, zi) });
       mapApi()?.addPing(xi, zi, "#3fa9f5");
       markFresh("spawn");
+      setPlaceMode(null);
+    } else if (placeMode === "spawn-point") {
+      const id = freshSpawnElemId();
+      setMission((m) =>
+        m && m.spawn.spawnPoints.length < 8
+          ? { ...m, spawn: { ...m.spawn, spawnPoints: [...m.spawn.spawnPoints, { id, x: xi, z: zi, denied: [] }] } }
+          : m
+      );
+      setSelectedSpawnEl(`sp:${id}`);
+      mapApi()?.addPing(xi, zi, "#ffffff");
+      setPlaceMode(null);
+    } else if (placeMode === "spawn-crate") {
+      const id = freshSpawnElemId();
+      setMission((m) =>
+        m && m.spawn.crates.length < 8
+          ? { ...m, spawn: { ...m.spawn, crates: [...m.spawn.crates, { id, x: xi, z: zi, rotation: 0 }] } }
+          : m
+      );
+      setSelectedSpawnEl(`crate:${id}`);
+      mapApi()?.addPing(xi, zi, "#50c878");
+      setPlaceMode(null);
+    } else if (placeMode === "spawn-vehicle" && pendingVehicleType) {
+      const id = freshSpawnElemId();
+      const type = pendingVehicleType;
+      // Faction switched while armed → the type no longer resolves; disarm.
+      if (!FACTIONS[mission.playableFaction]?.vehicles?.[type]) {
+        setPlaceMode(null);
+        setPendingVehicleType(null);
+        return;
+      }
+      setMission((m) =>
+        m
+          ? { ...m, spawn: { ...m.spawn, vehicles: [...m.spawn.vehicles, { id, type, x: xi, z: zi, rotation: 0 }] } }
+          : m
+      );
+      setSelectedSpawnEl(`veh:${id}`);
+      mapApi()?.addPing(xi, zi, "#f5c542");
+      setPlaceMode(null);
+      setPendingVehicleType(null);
+    } else if (placeMode === "spawn-farp") {
+      updateSpawn({ farp: true, farpPos: { x: xi, z: zi, rotation: 0 } });
+      setSelectedSpawnEl("farp");
+      mapApi()?.addPing(xi, zi, "#3fa9f5");
       setPlaceMode(null);
     } else if (placeMode === "zone") {
       const zone: Zone = {
@@ -666,13 +692,33 @@ export default function Editor() {
     setSpawnRevealSeq((s) => s + 1);
     setStep("spawn");
   };
+  /** Panel row click → select the element on the map and fly to it. */
+  const selectAndFocusSpawnEl = (key: string) => {
+    setSelectedSpawnEl(key);
+    const sp = mission?.spawn;
+    if (!sp) return;
+    let pos: { x: number; z: number } | undefined;
+    if (key === "farp") pos = sp.farpPos;
+    else if (key.startsWith("sp:")) pos = sp.spawnPoints.find((p) => p.id === key.slice(3));
+    else if (key.startsWith("crate:")) pos = sp.crates.find((c) => c.id === key.slice(6));
+    else if (key.startsWith("veh:")) pos = sp.vehicles.find((v) => v.id === key.slice(4));
+    if (pos) focusOn(pos.x, pos.z, 150);
+  };
   const patchSpawnElement = (key: string, patch: { x?: number; z?: number; rotation?: number }) =>
     setMission((m) => {
       if (!m) return m;
       const sp = m.spawn;
       if (key === "farp") return { ...m, spawn: { ...sp, farpPos: { ...sp.farpPos, ...patch } } };
-      if (key === "spawnPoint" && patch.x !== undefined && patch.z !== undefined)
-        return { ...m, spawn: { ...sp, spawnPoint: { x: patch.x, z: patch.z } } };
+      if (key.startsWith("sp:") && patch.x !== undefined && patch.z !== undefined) {
+        const id = key.slice("sp:".length);
+        return {
+          ...m,
+          spawn: {
+            ...sp,
+            spawnPoints: sp.spawnPoints.map((p) => (p.id === id ? { ...p, x: patch.x!, z: patch.z! } : p)),
+          },
+        };
+      }
       if (key.startsWith("crate:")) {
         const id = key.slice("crate:".length);
         return { ...m, spawn: { ...sp, crates: sp.crates.map((c) => (c.id === id ? { ...c, ...patch } : c)) } };
@@ -838,6 +884,7 @@ export default function Editor() {
     setSectorDraw(null);
     setPendingObjectiveType(null);
     setPendingPropRef(null);
+    setPendingVehicleType(null);
     setDeliveryTarget(null);
     setPlaceMode(null);
     setStatus(null);
@@ -881,6 +928,14 @@ export default function Editor() {
   const placeNoun =
     placeMode === "spawn"
       ? t("the spawn point")
+      : placeMode === "spawn-point"
+        ? t("a spawn point")
+        : placeMode === "spawn-crate"
+          ? t("an arsenal crate")
+          : placeMode === "spawn-vehicle"
+            ? t("the vehicle")
+            : placeMode === "spawn-farp"
+              ? t("the FARP")
       : placeMode === "qrf-origin"
         ? t("a reinforcement origin")
         : placeMode === "objective"
@@ -1037,10 +1092,25 @@ export default function Editor() {
             {step === "spawn" && mission.spawn.placed && (
               <button
                 type="button"
-                onClick={() => focusOn(mission.spawn.x, mission.spawn.z, 150)}
-                className="text-[12px] text-[#f4db50] hover:text-[#f9e278] transition-colors"
+                onClick={() => {
+                  if (!confirm(t("Delete all spawn elements? You'll need to build the spawn from scratch."))) return;
+                  setSelectedSpawnEl(null);
+                  setPendingVehicleType(null);
+                  setPlaceMode(null);
+                  updateSpawn({
+                    placed: false,
+                    x: 0,
+                    z: 0,
+                    farp: false,
+                    farpPos: { x: 0, z: 0, rotation: 0 },
+                    spawnPoints: [{ id: freshSpawnElemId(), x: 0, z: 0, denied: [] }],
+                    crates: [],
+                    vehicles: [],
+                  });
+                }}
+                className="text-[12px] text-[#e8593c] hover:text-[#f07a62] transition-colors"
               >
-                {t("Show on map")}
+                {t("Remove spawn")}
               </button>
             )}
             {step === "zones" && mission.zones.length > 0 && (
@@ -1090,6 +1160,11 @@ export default function Editor() {
                 updateSpawn={updateSpawn}
                 selectedSpawnEl={selectedSpawnEl}
                 revealSeq={spawnRevealSeq}
+                selectSpawnEl={selectAndFocusSpawnEl}
+                onAddVehicle={(type) => {
+                  setPendingVehicleType(type);
+                  armPlaceMode("spawn-vehicle");
+                }}
               />
             )}
             {step === "zones" && (

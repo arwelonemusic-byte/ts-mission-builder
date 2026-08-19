@@ -108,21 +108,36 @@ const RU: Record<string, string> = {
 
   // Spawn tab
   "Place spawn (click map)": "Разместить спавн (клик по карте)",
-  "Move spawn (click map)": "Передвинуть спавн (клик по карте)",
+  "Remove spawn": "Удалить спавн",
+  "Delete all spawn elements? You'll need to build the spawn from scratch.":
+    "Удалить все элементы спавна? Базу придётся построить заново.",
   "Click the map… (cancel)": "Кликните по карте… (отмена)",
-  "Show on map": "Показать на карте",
   "No spawn point yet": "Точка спавна не размещена",
-  "Hit the button above, then click anywhere on the map. The base bundle — spawn point, arsenal crate and vehicles — is laid out around it. Drag any element on the map to rearrange your base.":
-    "Нажмите кнопку выше и кликните в любом месте карты. Вокруг точки будет размещена база — спавн, ящик снаряжения и техника. Затем перетаскивайте элементы на карте, чтобы обустроить базу.",
+  "Hit the button above, then click anywhere on the map to drop the spawn point and an arsenal crate. Add vehicles, crates, spawn points and a FARP from this panel — each is placed with its own map click.":
+    "Нажмите кнопку выше и кликните в любом месте карты — там появятся точка спавна и ящик снаряжения. Технику, ящики, точки спавна и FARP добавляйте из этой панели — каждый элемент размещается отдельным кликом по карте.",
   Rotation: "Поворот",
   "Drag elements on the map to move them; select one to rotate it.":
     "Перетаскивайте элементы базы на карте; выберите элемент, чтобы повернуть его.",
   "FARP composition": "FARP",
+  "Add FARP (click map)": "Добавить FARP (клик по карте)",
+  "Delete FARP": "Удалить FARP",
+  "a spawn point": "точку спавна",
+  "an arsenal crate": "ящик снаряжения",
+  "the vehicle": "технику",
+  "the FARP": "FARP",
   Vehicles: "Техника",
   "+ add vehicle…": "+ добавить технику…",
   "No vehicle catalogue for this faction yet.": "Для этой фракции пока нет каталога техники.",
   "Remove vehicle": "Убрать технику",
   "Arsenal crate": "Ящик снаряжения",
+  "Spawn points": "Точки спавна",
+  "+ add spawn point": "+ добавить точку спавна",
+  "Remove spawn point": "Убрать точку спавна",
+  "Untick squads that must not deploy at a point.":
+    "Снимите галочки с отрядов, которым запрещён спавн в точке.",
+  "Only spawn point — all squads deploy here.":
+    "Единственная точка спавна — здесь спавнятся все отряды.",
+  "This squad's last spawn point.": "Последняя точка спавна этого отряда.",
   "Arsenal crates": "Ящики снаряжения",
   "+ add crate": "+ добавить ящик",
   "Remove crate": "Убрать ящик",

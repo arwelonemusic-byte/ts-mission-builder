@@ -7,6 +7,7 @@ import {
   defaultGroups,
   defaultLoadouts,
   factionMeta,
+  freshGroupId,
   type ArtySupport,
   type Mission,
   type MissionGroup,
@@ -176,7 +177,7 @@ export default function PlayersPanel({
         {mission.groups.length < MAX_GROUPS && (
           <GhostButton
             onClick={() =>
-              setGroups([...mission.groups, { name: nextCallsign(mission.groups), size: 9 }])
+              setGroups([...mission.groups, { id: freshGroupId(), name: nextCallsign(mission.groups), size: 9 }])
             }
           >
             <PlusIcon />

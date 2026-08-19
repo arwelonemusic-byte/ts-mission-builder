@@ -74,8 +74,9 @@ export function layoutSpawnBundle(spawn) {
 
 // --- Free-placement layer (positioned spawn shape, 2026-08-18) ---
 // A positioned spawn stores absolute world coords + a compass rotation per
-// element: { x, z, farp, farpPos: {x,z,rotation}, spawnPoint: {x,z},
-// crates: [{id,x,z,rotation}], vehicles: [{id,type,x,z,rotation}] }.
+// element: { x, z, farp, farpPos: {x,z,rotation}, spawnPoints:
+// [{id,x,z,denied}], crates: [{id,x,z,rotation}], vehicles:
+// [{id,type,x,z,rotation}] }.
 // layoutSpawnBundle above stays untouched — it seeds first placement, bakes
 // legacy saves and serves the generator's legacy input path.
 
@@ -106,7 +107,7 @@ export const FARP_DETAIL = {
  * Positioned spawn → flat world-frame element list. The one derivation both
  * map views, the slope check and auto-placement consume.
  * Every item: { kind, key, x, z, rotation, w, len } plus id/index/type/cls
- * for crates/vehicles. key = "farp" | "spawnPoint" | "crate:<id>" | "veh:<id>".
+ * for crates/vehicles. key = "farp" | "sp:<id>" | "crate:<id>" | "veh:<id>".
  */
 export function spawnElements(spawn) {
   const items = [];
@@ -117,8 +118,10 @@ export function spawnElements(spawn) {
   (spawn.crates ?? []).forEach((c, i) => {
     items.push({ kind: "crate", key: `crate:${c.id}`, id: c.id, index: i, x: c.x, z: c.z, rotation: c.rotation ?? 0, ...ELEMENT_SIZES.crate });
   });
-  const sp = spawn.spawnPoint ?? { x: spawn.x, z: spawn.z };
-  items.push({ kind: "spawnPoint", key: "spawnPoint", x: sp.x, z: sp.z, rotation: 0, ...ELEMENT_SIZES.spawnPoint });
+  const pts = spawn.spawnPoints ?? (spawn.spawnPoint ? [{ id: "0", ...spawn.spawnPoint }] : []);
+  pts.forEach((p, i) => {
+    items.push({ kind: "spawnPoint", key: `sp:${p.id}`, id: p.id, index: i, x: p.x, z: p.z, rotation: 0, ...ELEMENT_SIZES.spawnPoint });
+  });
   (spawn.vehicles ?? []).forEach((v, i) => {
     const cls = vehicleSizeClass(v.type);
     items.push({ kind: "vehicle", key: `veh:${v.id}`, id: v.id, index: i, type: v.type, cls, x: v.x, z: v.z, rotation: v.rotation ?? 0, ...SLOT[cls] });
@@ -180,11 +183,16 @@ export function rectsOverlap(a, b) {
  * throws — exhausted candidates fall back to a spot south of the origin.
  */
 export function autoPlaceSpawnElement(spawn, kind) {
-  const size = kind === "crate" ? ELEMENT_SIZES.crate : SLOT[kind];
+  const size = kind === "crate" ? ELEMENT_SIZES.crate : kind === "spawnPoint" ? { w: 20, len: 20 } : SLOT[kind];
   const rotation = kind === "light" || kind === "heavy" ? 180 : 0;
-  const existing = spawnElements(spawn);
-  const ox = spawn.spawnPoint ? spawn.spawnPoint.x - 14 : spawn.x;
-  const oz = spawn.spawnPoint ? spawn.spawnPoint.z + 6 : spawn.z;
+  // Spawn points act as 22x22 obstacles (their 10 m display circle renders
+  // above other footprints and eats clicks — nothing may auto-place under it).
+  const existing = spawnElements(spawn).map((it) =>
+    it.kind === "spawnPoint" ? { ...it, w: 22, len: 22 } : it
+  );
+  const sp0 = (spawn.spawnPoints ?? [])[0] ?? spawn.spawnPoint;
+  const ox = sp0 ? sp0.x - 14 : spawn.x;
+  const oz = sp0 ? sp0.z + 6 : spawn.z;
   const free = (lx, lz) => {
     const cand = {
       x: ox + lx,
@@ -203,6 +211,15 @@ export function autoPlaceSpawnElement(spawn, kind) {
     // spawn point, clear of its ring).
     for (let row = 0; row < 4; row++) {
       for (let lx = 14; lx <= 30; lx += 3) candidates.push([lx, 8 + 3 * row]);
+    }
+  } else if (kind === "spawnPoint") {
+    // 24 m grid east then south of the first spawn point (local (14, -6)):
+    // keeps 10 m circles >= 4 m apart edge-to-edge and clears the crate rows.
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        if (row === 0 && col === 0) continue;
+        candidates.push([14 + 24 * col, -6 - 24 * row]);
+      }
     }
   } else if (kind === "heli") {
     const hz = spawn.farp ? 26 : 14;

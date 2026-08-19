@@ -77,7 +77,7 @@ export type MapProps = {
   selectedOrigin: { zoneId: string; moduleType: string; index: number } | null;
   /** Origin badge clicked on the map → page selects its panel row */
   onOriginClick: (zoneId: string, moduleType: string, index: number) => void;
-  /** Selected spawn element key ("farp" | "spawnPoint" | "crate:<id>" |
+  /** Selected spawn element key ("farp" | "sp:<id>" | "crate:<id>" |
    * "veh:<id>") — shows the rotate handle (2D, non-spawnPoint only) */
   selectedSpawnEl: string | null;
   onSpawnElementClick: (key: string) => void;
@@ -1261,7 +1261,7 @@ function drawSpawnElements(
       it.kind === "crate"
         ? `${tr(lang, "Arsenal crate")} ${(it.index ?? 0) + 1}`
         : it.kind === "spawnPoint"
-          ? tr(lang, "Spawn point")
+          ? `${tr(lang, "Spawn point")} ${(it.index ?? 0) + 1}`
           : it.kind === "vehicle"
             ? `${(it.index ?? 0) + 1}. ${labels[it.type ?? ""] ?? it.type}`
             : null;

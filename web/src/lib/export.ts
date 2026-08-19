@@ -163,7 +163,13 @@ export async function toGeneratorMission(m: Mission) {
       farp: m.spawn.farp,
       farpPos: [y(m.spawn.farpPos.x), y(m.spawn.farpPos.z)],
       farpRotation: m.spawn.farpPos.rotation,
-      spawnPoint: [y(m.spawn.spawnPoint.x), y(m.spawn.spawnPoint.z)],
+      // denied = squad INDICES into groups (unknown ids dropped); the
+      // generator resolves them to callsign names via gname() so escaping/
+      // fallback match the emitted m_aSquadNames exactly.
+      spawnPoints: m.spawn.spawnPoints.map((p) => ({
+        pos: [y(p.x), y(p.z)],
+        denied: p.denied.map((id) => m.groups.findIndex((g) => g.id === id)).filter((i) => i >= 0),
+      })),
       crates: m.spawn.crates.map((c) => ({ pos: [y(c.x), y(c.z)], rotation: c.rotation })),
       vehicles: m.spawn.vehicles.map((v) => ({ type: v.type, pos: [y(v.x), y(v.z)], rotation: v.rotation })),
     },

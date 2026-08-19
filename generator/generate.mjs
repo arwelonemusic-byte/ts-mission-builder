@@ -522,12 +522,23 @@ const SPAWN_POS_MISSION = {
     world: "6AA35D0E19E8A6F4",
     missionConf: "6AA35D0E7C30D815",
   },
+  // Squads exercise the deny-name resolution: Cyrillic passes through raw,
+  // 1"2 escapes to 1'2 (gname), and index 2 keeps its literal apostrophe.
+  groups: [
+    { name: "Гусыня-1", size: 9 },
+    { name: '1"2', size: 9 },
+    { name: "1'3", size: 3 },
+  ],
   spawn: {
     pos: [1351.9, 37.189, 2399.1],
     farp: true,
     farpPos: [1339.5, 2410.5],
     farpRotation: 51,
-    spawnPoint: [1365.9, 2393.1],
+    // Two spawn points -> $grp form; per-point deny lists by squad INDEX
+    spawnPoints: [
+      { pos: [1365.9, 2393.1], denied: [2] },
+      { pos: [1389.9, 2393.1], denied: [0, 1] },
+    ],
     crates: [
       { pos: [1365.9, 2399.1], rotation: 0 },
       { pos: [1368.9, 2399.1], rotation: 45 },

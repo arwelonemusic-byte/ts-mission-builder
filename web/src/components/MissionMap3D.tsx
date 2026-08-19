@@ -149,7 +149,7 @@ type World = {
    * Each carries its element key in userData.spawnKey. */
   spawnPick: THREE.Mesh[];
   /** Per-element live re-drape at (x, z) during a drag, keyed like
-   * selectedSpawnEl ("farp" | "spawnPoint" | "crate:<id>" | "veh:<id>"). */
+   * selectedSpawnEl ("farp" | "sp:<id>" | "crate:<id>" | "veh:<id>"). */
   spawnSetters: Map<string, (x: number, z: number) => void>;
   target: THREE.Vector3;
   minDistance: number;
@@ -1192,7 +1192,10 @@ export default function MissionMap3D(props: Map3DProps) {
     const spawnElPos = (key: string): { x: number; z: number } | null => {
       const sp = propsRef.current.spawn;
       if (key === "farp") return { x: sp.farpPos.x, z: sp.farpPos.z };
-      if (key === "spawnPoint") return { x: sp.spawnPoint.x, z: sp.spawnPoint.z };
+      if (key.startsWith("sp:")) {
+        const p = sp.spawnPoints.find((pp) => pp.id === key.slice("sp:".length));
+        return p ? { x: p.x, z: p.z } : null;
+      }
       if (key.startsWith("crate:")) {
         const c = sp.crates.find((cc) => cc.id === key.slice("crate:".length));
         return c ? { x: c.x, z: c.z } : null;

@@ -547,10 +547,41 @@ SCR_LoadoutManager : "{AA4E7419A1FF65B0}Prefabs/MP/Managers/Loadouts/LoadoutMana
     farpBlock = sp.farp
       ? `GenericEntity : "${K.FARP_COMP}" {\n coords ${+sp.farpPos[0].toFixed(3)} ${+yAt(sp.farpPos[0], sp.farpPos[1]).toFixed(3)} ${+sp.farpPos[1].toFixed(3)}\n${farpAngles}}\n`
       : "";
-    // Spawn point is move-only by design — no angles, ever.
-    spawnPointBlock = `SCR_SpawnPoint : "${F.spawnPoint}" {
- coords ${+sp.spawnPoint[0].toFixed(3)} ${+yAt(sp.spawnPoint[0], sp.spawnPoint[1]).toFixed(3)} ${+sp.spawnPoint[1].toFixed(3)}
-}`;
+    // Spawn points are move-only by design — no angles, ever. Deny-only
+    // per-squad filtering (toolkit TS_SpawnPointGroupFilter, modded
+    // SCR_SpawnPoint): each point may carry m_aTS_DeniedGroupNames as an
+    // ENTITY-LEVEL property (script-injected attribute — no component, no
+    // GUIDs). The runtime matches the squad CALLSIGN exactly and
+    // case-sensitively, which is gname()'s output (generated missions never
+    // emit m_sGroupName) — so denied names MUST be resolved here from squad
+    // indices, never web-side. Empty arrays are OMITTED (both-empty = open to
+    // everyone incl. in-game custom groups), so a single all-allowed point is
+    // byte-identical to the classic output. Multiple points use the $grp
+    // form: first body anonymous, later bodies named SpawnPoint2..N
+    // (serialization ground truth: Posredniki_war Spawn.layer).
+    const spPts = Array.isArray(sp.spawnPoints) && sp.spawnPoints.length
+      ? sp.spawnPoints
+      : [{ pos: sp.spawnPoint, denied: [] }];
+    const deniedNames = (p) => {
+      const idx = [...new Set((p.denied ?? []).filter((i) => Number.isInteger(i) && i >= 0 && i < groups.length))];
+      const allowedNames = new Set(groups.map((g, i) => (idx.includes(i) ? null : gname(g, i))).filter(Boolean));
+      // Duplicate squad names: denying the shared name would also strand the
+      // same-named ALLOWED squad — fail OPEN (omit the name).
+      return [...new Set(idx.map((i) => gname(groups[i], i)))].filter((n) => !allowedNames.has(n));
+    };
+    const spCoords = (p) => `coords ${+p.pos[0].toFixed(3)} ${+yAt(p.pos[0], p.pos[1]).toFixed(3)} ${+p.pos[1].toFixed(3)}`;
+    const deniedBlock = (names, pad) =>
+      names.length
+        ? `\n${pad}m_aTS_DeniedGroupNames {\n${names.map((n) => `${pad} "${n}"`).join("\n")}\n${pad}}`
+        : "";
+    spawnPointBlock =
+      spPts.length === 1
+        ? `SCR_SpawnPoint : "${F.spawnPoint}" {\n ${spCoords(spPts[0])}${deniedBlock(deniedNames(spPts[0]), " ")}\n}`
+        : `$grp SCR_SpawnPoint : "${F.spawnPoint}" {\n` +
+          spPts
+            .map((p, i) => ` ${i === 0 ? "" : `SpawnPoint${i + 1} `}{\n  ${spCoords(p)}${deniedBlock(deniedNames(p), "  ")}\n }`)
+            .join("\n") +
+          `\n}`;
   } else {
     // Legacy shape
     const bundleYaw = +((mission.spawn.yaw ?? 0) % 360).toFixed(1);

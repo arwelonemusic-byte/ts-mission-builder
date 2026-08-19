@@ -1,7 +1,19 @@
 import { ARSENAL_POOL, MOD_ARSENAL_POOLS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
-export type PlaceMode = "spawn" | "zone" | "marker" | "qrf-origin" | "objective" | "delivery" | "prop" | null;
+export type PlaceMode =
+  | "spawn"
+  | "spawn-point"
+  | "spawn-crate"
+  | "spawn-vehicle"
+  | "spawn-farp"
+  | "zone"
+  | "marker"
+  | "qrf-origin"
+  | "objective"
+  | "delivery"
+  | "prop"
+  | null;
 
 /** sizes = Foot Patrols weight-slider selection (size classes for the group
  *  pool); absent = the module default (all sizes).
@@ -25,6 +37,7 @@ export type Zone = { id: string; x: number; z: number; radius: number; modules: 
  * positions by migrate(). spawn.x/z stays as the bundle ANCHOR: Move-spawn
  * target, map-focus point, auto-place reference and generator Area origin. */
 export type SpawnCrate = { id: string; x: number; z: number; rotation: number };
+export type SpawnPointDef = { id: string; x: number; z: number; denied: string[] };
 export type SpawnVehicle = { id: string; type: string; x: number; z: number; rotation: number };
 export type MissionSpawn = {
   placed: boolean;
@@ -33,15 +46,20 @@ export type MissionSpawn = {
   farp: boolean;
   /** Persists across farp off/on so re-enabling restores the placement. */
   farpPos: { x: number; z: number; rotation: number };
-  /** Move-only — never rotated (the generator emits no angles for it). */
-  spawnPoint: { x: number; z: number };
+  /** Move-only — never rotated (the generator emits no angles for them).
+   * Min 1, cap 8. denied = squad IDS (MissionGroup.id) NOT allowed to deploy
+   * at this point → m_aTS_DeniedGroupNames on the emitted SCR_SpawnPoint
+   * (deny-only model: new squads are allowed everywhere by construction). */
+  spawnPoints: SpawnPointDef[];
   /** Min 1 (UI-enforced; lib.mjs throws as backstop — loadouts/arsenal live
    * on the crate). All crates spawn the same LoadoutCrates_Conf override. */
   crates: SpawnCrate[];
   vehicles: SpawnVehicle[];
 };
-/** Player squad: callsign (m_sCallsign) + max players (m_iGroupSize 1-9) */
-export type MissionGroup = { name: string; size: number };
+/** Player squad: callsign (m_sCallsign) + max players (m_iGroupSize 1-9).
+ * id = stable identity for spawn-point deny lists — survives renames; minted
+ * by freshGroupId() (backfilled for old saves in migrate()). */
+export type MissionGroup = { id: string; name: string; size: number };
 
 export type MissionMarker = {
   id: string;
@@ -246,11 +264,11 @@ export function sortArsenal(refs: string[]): string[] {
 /** The Mod Defaults standard squad set: 1'1-1'4 + 1'6 @ 9/9/9/9/3. */
 export function defaultGroups(): MissionGroup[] {
   return [
-    { name: "1'1", size: 9 },
-    { name: "1'2", size: 9 },
-    { name: "1'3", size: 9 },
-    { name: "1'4", size: 9 },
-    { name: "1'6", size: 3 },
+    { id: freshGroupId(), name: "1'1", size: 9 },
+    { id: freshGroupId(), name: "1'2", size: 9 },
+    { id: freshGroupId(), name: "1'3", size: 9 },
+    { id: freshGroupId(), name: "1'4", size: 9 },
+    { id: freshGroupId(), name: "1'6", size: 3 },
   ];
 }
 
@@ -270,37 +288,26 @@ export function freshSpawnElemId(): string {
   return `sc${Math.random().toString(36).slice(2)}`;
 }
 
+export function freshGroupId(): string {
+  return `g${Math.random().toString(36).slice(2)}`;
+}
+
 const normRotation = (r: unknown): number => ((Math.round(+(r as number)) % 360) + 360) % 360 || 0;
 
-/** First placement: materialize the classic default bundle at the clicked
- * anchor. `prev` (the un-placed spawn) carries the FARP toggle and vehicle
- * list through — e.g. a terrain change un-places the spawn but must not lose
- * the picked vehicles; they re-layout into the classic rows at the new spot. */
-export function materializeSpawnAt(x: number, z: number, prev?: Pick<MissionSpawn, "farp" | "vehicles">): MissionSpawn {
-  const farp = prev?.farp ?? true;
-  const prevVehicles = prev?.vehicles ?? [];
-  const { items } = layoutSpawnBundle({ farp, vehicles: prevVehicles });
-  const sp = items.find((i) => i.kind === "spawnPoint")!;
+/** First placement (map-click UX since 2026-08-19): just the spawn point AT
+ * the clicked spot + one arsenal crate 14 m north of it (outside the 10 m
+ * display circle). Everything else — more crates/spawn points, vehicles, the
+ * FARP — is added via its own map-click placement from the panel. */
+export function materializeSpawnAt(x: number, z: number): MissionSpawn {
   return {
     placed: true,
     x,
     z,
-    farp,
+    farp: false,
     farpPos: { x, z, rotation: 0 },
-    spawnPoint: { x: +(x + sp.x).toFixed(1), z: +(z + sp.z).toFixed(1) },
-    // Crate at local (14, 8) — NOT the classic layout's (14, 0), which sits
-    // inside the spawn point's 10 m display circle and can't be grabbed
-    // (matches the first autoPlaceSpawnElement crate candidate).
-    crates: [{ id: freshSpawnElemId(), x: +(x + 14).toFixed(1), z: +(z + 8).toFixed(1), rotation: 0 }],
-    vehicles: items
-      .filter((i) => i.kind === "vehicle")
-      .map((i) => ({
-        id: prevVehicles[i.index!]?.id ?? freshSpawnElemId(),
-        type: i.type!,
-        x: +(x + i.x).toFixed(1),
-        z: +(z + i.z).toFixed(1),
-        rotation: i.yaw ?? 0,
-      })),
+    spawnPoints: [{ id: freshSpawnElemId(), x, z, denied: [] }],
+    crates: [{ id: freshSpawnElemId(), x, z: +(z + 14).toFixed(1), rotation: 0 }],
+    vehicles: [],
   };
 }
 
@@ -334,7 +341,7 @@ function migrateSpawn(raw: unknown): MissionSpawn {
       z: oz,
       farp: !!sp.farp,
       farpPos: { x: ox, z: oz, rotation: yaw },
-      spawnPoint: { x: spw.x, z: spw.z },
+      spawnPoints: [{ id: freshSpawnElemId(), x: spw.x, z: spw.z, denied: [] }],
       crates: [{ id: freshSpawnElemId(), ...world(crateIt) }],
       vehicles: items
         .filter((i) => i.kind === "vehicle")
@@ -343,7 +350,25 @@ function migrateSpawn(raw: unknown): MissionSpawn {
   }
   // Modern shape: sanitize coords/rotations, backfill ids and missing objects.
   const fp = (sp.farpPos && typeof sp.farpPos === "object" ? sp.farpPos : {}) as Record<string, unknown>;
-  const spt = (sp.spawnPoint && typeof sp.spawnPoint === "object" ? sp.spawnPoint : {}) as Record<string, unknown>;
+  // Spawn points: accept the multi-point array, or wrap the pre-feature
+  // single spawnPoint object into a one-element list.
+  const rawPts = Array.isArray(sp.spawnPoints)
+    ? sp.spawnPoints
+    : sp.spawnPoint && typeof sp.spawnPoint === "object"
+      ? [sp.spawnPoint]
+      : [];
+  const spawnPoints = rawPts
+    .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
+    .slice(0, 8)
+    .map((p) => ({
+      id: String(p.id ?? freshSpawnElemId()),
+      x: num(p.x, ox),
+      z: num(p.z, oz),
+      denied: Array.isArray(p.denied) ? p.denied.map(String) : [],
+    }));
+  if (!spawnPoints.length) {
+    spawnPoints.push({ id: freshSpawnElemId(), x: +(ox + 14).toFixed(1), z: +(oz - 6).toFixed(1), denied: [] });
+  }
   const crates = (sp.crates as unknown[])
     .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
     .map((c) => ({
@@ -359,7 +384,7 @@ function migrateSpawn(raw: unknown): MissionSpawn {
     z: oz,
     farp: !!sp.farp,
     farpPos: { x: num(fp.x, ox), z: num(fp.z, oz), rotation: normRotation(fp.rotation) },
-    spawnPoint: { x: num(spt.x, ox), z: num(spt.z, oz) },
+    spawnPoints,
     crates,
     vehicles: (Array.isArray(sp.vehicles) ? sp.vehicles : [])
       .filter(
@@ -374,6 +399,23 @@ function migrateSpawn(raw: unknown): MissionSpawn {
         rotation: normRotation(v.rotation),
       })),
   };
+}
+
+/** Scrub spawn-point deny lists against the CURRENT squad list: dedupe, drop
+ * unknown squad ids, and re-allow any squad that ended up denied on EVERY
+ * point (deterministic un-stranding on the first point — also guarantees a
+ * single-point mission's denied list is always empty, which keeps its
+ * emission byte-identical to the pre-feature output). Pure, never throws.
+ * Called from migrate() and the SpawnPanel delete-point handler. */
+export function sanitizeSpawnDenials(pts: SpawnPointDef[], groups: MissionGroup[]): SpawnPointDef[] {
+  const ids = new Set(groups.map((g) => g.id));
+  const out = pts.map((p) => ({ ...p, denied: [...new Set(p.denied)].filter((d) => ids.has(d)) }));
+  for (const g of groups) {
+    if (out.length && out.every((p) => p.denied.includes(g.id))) {
+      out[0] = { ...out[0], denied: out[0].denied.filter((d) => d !== g.id) };
+    }
+  }
+  return out;
 }
 
 export function newMission(): Mission {
@@ -397,9 +439,9 @@ export function newMission(): Mission {
       placed: false,
       x: 0,
       z: 0,
-      farp: true,
+      farp: false,
       farpPos: { x: 0, z: 0, rotation: 0 },
-      spawnPoint: { x: 0, z: 0 },
+      spawnPoints: [{ id: freshSpawnElemId(), x: 0, z: 0, denied: [] }],
       crates: [],
       vehicles: [],
     },
@@ -464,13 +506,23 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     m.enemyGroupSets = [FACTIONS[m.enemyFaction].defaultGroupSet];
   }
   if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
-  // Squads: default old saves; clamp hand-edited ones (1-8 groups, size 1-9)
+  // Squads: default old saves; clamp hand-edited ones (1-8 groups, size 1-9).
+  // Stable ids arrived with multi-spawn-point deny lists — backfill (and
+  // dedupe hand-edited collisions) so renames keep spawn restrictions.
   if (!Array.isArray(m.groups) || m.groups.length === 0) m.groups = defaultGroups();
-  else
-    m.groups = m.groups.slice(0, 8).map((g) => ({
-      name: String(g?.name ?? ""),
-      size: Math.max(1, Math.min(9, Math.floor(+g?.size) || 9)),
-    }));
+  else {
+    const seen = new Set<string>();
+    m.groups = m.groups.slice(0, 8).map((g) => {
+      const raw = (g as { id?: unknown })?.id;
+      const id = typeof raw === "string" && raw && !seen.has(raw) ? raw : freshGroupId();
+      seen.add(id);
+      return {
+        id,
+        name: String(g?.name ?? ""),
+        size: Math.max(1, Math.min(9, Math.floor(+g?.size) || 9)),
+      };
+    });
+  }
   // Mods gate: default old saves to none; if a save somehow uses a mod
   // faction without the mod enabled, enable it rather than break the mission
   if (!Array.isArray(m.mods)) m.mods = [];
@@ -574,6 +626,9 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
   // Individual spawn element placement (2026-08-18): legacy derived-layout
   // saves get their bundle yaw baked into per-element positions/rotations.
   m.spawn = migrateSpawn(m.spawn);
+  // Deny lists reference squad ids — scrub against the normalized groups
+  // (also re-allows any squad a hand-edited save denied everywhere).
+  m.spawn.spawnPoints = sanitizeSpawnDenials(m.spawn.spawnPoints, m.groups);
   // Mounted-patrol/QRF-mounted modules gained per-zone vehicle selection;
   // default old saves. QRF modules: sanitize origins (array, max 3).
   for (const zn of m.zones) {

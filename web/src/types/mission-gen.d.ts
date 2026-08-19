@@ -199,7 +199,9 @@ declare module "mission-gen" {
     z: number;
     farp: boolean;
     farpPos?: { x: number; z: number; rotation: number };
+    /** Legacy single-point shape — runtime fallback only; new code uses spawnPoints. */
     spawnPoint?: { x: number; z: number };
+    spawnPoints?: { id: string; x: number; z: number; denied?: string[] }[];
     crates?: { id: string; x: number; z: number; rotation: number }[];
     vehicles?: { id: string; type: string; x: number; z: number; rotation: number }[];
   };
@@ -231,6 +233,6 @@ declare module "mission-gen" {
   ): boolean;
   export function autoPlaceSpawnElement(
     spawn: PositionedSpawn,
-    kind: "crate" | "light" | "heavy" | "heli"
+    kind: "crate" | "light" | "heavy" | "heli" | "spawnPoint"
   ): { x: number; z: number; rotation: number };
 }
