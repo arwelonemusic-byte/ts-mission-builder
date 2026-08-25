@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -129,8 +129,11 @@ export function buildMissionFiles(mission, options = {}) {
   const arsenalMods = Object.entries(MOD_ARSENAL_POOLS)
     .filter(([, pool]) => pool.some((i) => arsenalRefSet.has(i.ref) && !vanillaRefs.has(i.ref)))
     .map(([id]) => id);
+  // Core addons (ACE Medical) are mandatory for every mission — listed right
+  // after the toolkit, ahead of the usage-derived deps.
   const modDeps = [
     ...new Set([
+      ...CORE_ADDONS.map((a) => a.guid),
       ...usedMods.flatMap((id) => MODS[id].dependencies),
       ...arsenalMods.flatMap((id) => MODS[id].dependencies),
       ...(TERRAIN.dependencies ?? []),
@@ -234,14 +237,16 @@ ${taskTypes}
   // set; modes resolve from ARSENAL_POOL with the baked entries winning (keeps
   // mod-faction refs + curated modes authoritative). Min 1 item: an empty
   // override array would leave the base conf's ref-less placeholder member
-  // (conf arrays merge by member GUID).
-  const bakedArsenal = [...F.arsenalItems, ...(F.subfactionArsenalItems?.[mission.playableSubfaction] ?? [])];
+  // (conf arrays merge by member GUID). CORE_ARSENAL_ITEMS (ACE Medical
+  // epinephrine) close every faction's baked set.
+  const bakedArsenal = [...F.arsenalItems, ...(F.subfactionArsenalItems?.[mission.playableSubfaction] ?? []), ...CORE_ARSENAL_ITEMS];
   let arsenalList;
   if (Array.isArray(mission.arsenal)) {
     if (!mission.arsenal.length) throw new Error("mission.arsenal must contain at least one item");
     const modeByRef = new Map();
     for (const it of ARSENAL_POOL) modeByRef.set(it.ref, it.mode);
     for (const pool of Object.values(MOD_ARSENAL_POOLS)) for (const it of pool) modeByRef.set(it.ref, it.mode);
+    for (const it of CORE_ARSENAL_POOL) modeByRef.set(it.ref, it.mode);
     for (const it of bakedArsenal) modeByRef.set(it.ref, it.mode);
     arsenalList = mission.arsenal.map((entry) => {
       // {mode, ref} objects carry an explicit mode (CLI spikes, e.g. --thumbs
@@ -400,7 +405,19 @@ ${groupPresets}
   const base = (Array.isArray(mission.spawn.pos) ? mission.spawn.pos : mission.spawn.pos.split(" ").map(Number));
   const mgr = (dx, dy, dz) => `${+(base[0] + dx).toFixed(3)} ${+(base[1] + dy).toFixed(3)} ${+(base[2] + dz).toFixed(3)}`;
 
-  const defaultLayer = `SCR_AIWorld SCR_AIWorld : "{E0A05C76552E7F58}Prefabs/AI/SCR_AIWorld.et" {
+  // Terrains whose bare world lacks an SCR_MapEntity (Merak) get one emitted
+  // here, mirroring the map addon's own GM-world setup — the deploy menu
+  // hard-requires it ("Map entity is missing in the world!" VME).
+  const mapEntityBlock = TERRAIN.mapEntity
+    ? `SCR_MapEntity MapEntity : "{731564B66F91B107}Prefabs/World/Game/MapEntity.et" {
+ coords ${mgr(-20, 0, -21)}
+ "Map Geometry Data" "${TERRAIN.mapEntity.topo}"
+ "Satellite background image" "${TERRAIN.mapEntity.satellite}"
+}
+`
+    : "";
+
+  const defaultLayer = `${mapEntityBlock}SCR_AIWorld SCR_AIWorld : "{E0A05C76552E7F58}Prefabs/AI/SCR_AIWorld.et" {
  components {
 ${navBlocks}
  }

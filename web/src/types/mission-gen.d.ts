@@ -147,6 +147,14 @@ declare module "mission-gen" {
   /** Per-mod arsenal pools keyed by MODS id (e.g. "uk") — browse-list entries
    * gated by enabled mods; lib.mjs unions a mod's deps when its items are used */
   export const MOD_ARSENAL_POOLS: Record<string, ArsenalPoolEntry[]>;
+  /** Mandatory addons of EVERY generated mission (ACE Medical) — always in
+   * addon.gproj deps and the Important! callout, no UI gating */
+  export const CORE_ADDONS: { guid: string; label: string; workshopUrl: string }[];
+  /** Core-addon items: always browsable in the Arsenal Builder (no mod gating)
+   * and baked into every faction's default crate contents */
+  export const CORE_ARSENAL_POOL: ArsenalPoolEntry[];
+  /** {mode, ref} view of CORE_ARSENAL_POOL (baked-default shape) */
+  export const CORE_ARSENAL_ITEMS: { mode: string; ref: string }[];
   export function resolvePropDefenseGroup(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[] | undefined, ordinal?: number): string;
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];

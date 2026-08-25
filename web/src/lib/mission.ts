@@ -1,4 +1,4 @@
-import { ARSENAL_POOL, MOD_ARSENAL_POOLS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
+import { ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
 export type PlaceMode =
@@ -158,6 +158,10 @@ export type Mission = {
    * refs + the faction's baked set (mod factions). Min 1: an empty conf
    * override would leave the toolkit base conf's ref-less placeholder member. */
   arsenal: string[];
+  /** Core-addon item refs (CORE_ARSENAL_ITEMS, e.g. ACE Medical epinephrine)
+   * already offered to this mission — migrate() backfills each core ref into
+   * the arsenal ONCE, so a deliberate removal in the Arsenal Builder sticks. */
+  coreArsenalApplied: string[];
   /** Player squads (1-8) → playable faction's m_aSquadNames + m_aPredefinedGroups */
   groups: MissionGroup[];
   /** Artillery support → TS_FireSupportManagerComponent on GameModeSF */
@@ -218,17 +222,18 @@ export function defaultLoadouts(faction: string, subfaction: string): string[] {
 }
 
 /** Arsenal pool lookup by {GUID}path ref (name display + sorting) — vanilla +
- * ALL mod pools; browse-list gating by enabled mods happens in the modal. */
+ * core + ALL mod pools; browse-list gating by enabled mods happens in the modal. */
 export const arsenalPoolByRef = new Map(
-  [...ARSENAL_POOL, ...Object.values(MOD_ARSENAL_POOLS).flat()].map((i) => [i.ref, i])
+  [...ARSENAL_POOL, ...CORE_ARSENAL_POOL, ...Object.values(MOD_ARSENAL_POOLS).flat()].map((i) => [i.ref, i])
 );
 // Mod pools' categories normalize onto the vanilla set at harvest.
 const ARSENAL_CATEGORY_ORDER = [...new Set(ARSENAL_POOL.map((i) => i.category))];
 
-/** Default arsenal contents: the faction's baked set (+ subfaction extras). */
+/** Default arsenal contents: the faction's baked set (+ subfaction extras)
+ * + the core-addon items (ACE Medical epinephrine) — same order lib.mjs bakes. */
 export function defaultArsenal(faction: string, subfaction: string): string[] {
   const F = FACTIONS[faction];
-  return [...(F?.arsenalItems ?? []), ...(F?.subfactionArsenalItems?.[subfaction] ?? [])].map((i) => i.ref);
+  return [...(F?.arsenalItems ?? []), ...(F?.subfactionArsenalItems?.[subfaction] ?? []), ...CORE_ARSENAL_ITEMS].map((i) => i.ref);
 }
 
 /** Drop arsenal refs that aren't legal for the mission's enabled mods
@@ -432,6 +437,7 @@ export function newMission(): Mission {
     briefing: { situation: "", objectives: "", threats: "", extra: [] },
     loadouts: defaultLoadouts("US", "US_Army"),
     arsenal: defaultArsenal("US", "US_Army"),
+    coreArsenalApplied: CORE_ARSENAL_ITEMS.map((i) => i.ref),
     groups: defaultGroups(),
     arty: defaultArty(),
     thumbnail: null,
@@ -534,6 +540,15 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
   // baked set; sanitize hand-edited refs against the legal pools (after the
   // mods normalization above — mod items are only legal with the mod enabled).
   m.arsenal = sanitizeArsenal(m.arsenal, m.mods, m.playableFaction, m.playableSubfaction);
+  // Core items (ACE Medical epinephrine, 2026-08-25) are in every crate by
+  // default: backfill each core ref ONCE into pre-existing saves, tracked in
+  // coreArsenalApplied so a deliberate later removal is respected.
+  if (!Array.isArray(m.coreArsenalApplied)) m.coreArsenalApplied = [];
+  for (const { ref } of CORE_ARSENAL_ITEMS) {
+    if (m.coreArsenalApplied.includes(ref)) continue;
+    m.coreArsenalApplied.push(ref);
+    if (!m.arsenal.includes(ref)) m.arsenal = sortArsenal([...m.arsenal, ref]);
+  }
   // Old saves lack guidsName: "" never matches a sanitized name, so the
   // next export re-mints — also cures duplicates minted before this field
   // existed (rename-without-reset reused the stored guids verbatim)

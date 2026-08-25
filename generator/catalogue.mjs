@@ -35,6 +35,39 @@ import { ARSENAL_POOL_RHS_ION } from "./arsenal-pool-rhs-ion.mjs";
  * these pools; the 14-item remainder is radio parts + duplicate-GUID copies. */
 export const MOD_ARSENAL_POOLS = { uk: ARSENAL_POOL_UK, rhs: [...ARSENAL_POOL_RHS_AFRF, ...ARSENAL_POOL_RHS_USAF, ...ARSENAL_POOL_RHS_ION] };
 
+/** Core addons: MANDATORY dependencies of EVERY generated mission, alongside
+ * the toolkit — not usage-derived, not gated by a UI checkbox (user decision
+ * 2026-08-25). Each entry's own deps resolve transitively (ACE Medical pulls
+ * ACE Core `60C4CE4888FF4621`), so only the anchor GUID is listed. The
+ * Mission tab's Important! callout lists these right after the toolkit. */
+export const CORE_ADDONS = [
+  {
+    guid: "60C4C12DAE90727B",
+    label: "ACE Medical",
+    workshopUrl: "https://reforger.armaplatform.com/workshop/60C4C12DAE90727B",
+  },
+];
+
+/** Core arsenal pool: items from the core addons that are ALWAYS browsable in
+ * the Arsenal Builder (no mod gating) AND baked into every faction's default
+ * crate contents (CORE_ARSENAL_ITEMS below, appended after the faction's own
+ * set + subfaction extras). Same shape as ARSENAL_POOL entries. Ref/type/mode
+ * from ACE Medical Core's `Configs/EntityCatalog/<Faction>/InventoryItems_EntityCatalog_<Faction>.conf`
+ * (the mod appends it to US/USSR/FIA), names from its en_us/ru_ru tables. */
+export const CORE_ARSENAL_POOL = [
+  {
+    ref: "{5B2FD067D70C1E8F}Prefabs/Items/Medicine/EpinephrineInjection/ACE_Medical_EpinephrineInjection.et",
+    name: "Epinephrine",
+    nameRu: "Инъекция адреналина",
+    factions: ["US", "USSR", "FIA"],
+    category: "Equipment",
+    type: "HEAL",
+    mode: "CONSUMABLE",
+  },
+];
+/** `{mode, ref}` view of CORE_ARSENAL_POOL — the baked-default shape. */
+export const CORE_ARSENAL_ITEMS = CORE_ARSENAL_POOL.map(({ mode, ref }) => ({ mode, ref }));
+
 export const TERRAINS = {
   arland: {
     label: "Arland",
@@ -199,9 +232,19 @@ export const TERRAINS = {
   },
   // Merak Island (no external deps). The bare world file is literally named
   // "NEW MAP 22.ent" — space in the resource path is verbatim from the addon.
+  // The bare world ships NO SCR_MapEntity (the map author only placed one in
+  // the GM world's default.layer) — without it the in-game/deploy map VMEs
+  // ("Map entity is missing in the world!", found 2026-08-23). mapEntity
+  // makes lib.mjs emit one with the addon's own 2dMap refs. Mogadishu and
+  // Al Hadra bake theirs into the bare world — Merak is the only map with
+  // this hole so far.
   merak: {
     label: "Merak",
     parent: "{F526773E59780A60}worlds/MerakIsland/NEW MAP 22.ent",
+    mapEntity: {
+      topo: "{3300E05ABA3CCAC2}worlds/MerakIsland/2dMap/GameMaster.topo",
+      satellite: "{8B105E3AE1CD4F38}worlds/MerakIsland/2dMap/GameMaster.edds",
+    },
     nav: [
       "{E9D4D61376F15235}worlds/MerakIsland/Navmeshes/Soldier.nmn",
       "{9C321749FB3AC1EC}worlds/MerakIsland/Navmeshes/BTR.nmn",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MODS } from "mission-gen";
+import { MODS, CORE_ADDONS } from "mission-gen";
 import { TERRAIN_LIST, terrainByKey } from "@/lib/terrains";
 import type { Mission } from "@/lib/mission";
 import { prepareThumbnailSource, thumbnailPreviewUrl } from "@/lib/thumbnail";
@@ -76,15 +76,17 @@ export default function MissionPanel({
     }
   }
 
-  // Required addons = toolkit (always) + the selected map's addon (modded
-  // terrains) + every enabled content mod. Mirrors what the player must have
-  // installed, not what the generator ends up listing as dependencies.
+  // Required addons = toolkit + core addons (always) + the selected map's
+  // addon (modded terrains) + every enabled content mod. Mirrors what the
+  // player must have installed, not what the generator ends up listing as
+  // dependencies.
   const terrain = terrainByKey(mission.terrain);
   const requiredAddons = [
     {
       label: "TS Mission Toolkit",
       url: "https://reforger.armaplatform.com/workshop/6906F4528B72651A-TSMissionToolkit",
     },
+    ...CORE_ADDONS.map((a) => ({ label: a.label, url: a.workshopUrl })),
     ...(terrain.modded && terrain.workshopUrl
       ? [{ label: terrain.label, url: terrain.workshopUrl }]
       : []),

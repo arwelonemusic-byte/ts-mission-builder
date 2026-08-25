@@ -52,7 +52,7 @@
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { buildMissionFiles, FACTIONS, ARSENAL_POOL, MOD_ARSENAL_POOLS } from "./lib.mjs";
+import { buildMissionFiles, FACTIONS, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ARSENAL_ITEMS } from "./lib.mjs";
 
 const ADDONS_ROOT = String.raw`C:\Users\djdav\Documents\My Games\ArmaReforgerWorkbench\addons`;
 
@@ -506,6 +506,7 @@ const ARSENAL_MISSION = {
     ...FACTIONS.US.arsenalItems.slice(0, -1).map((i) => i.ref),
     "{3E413771E1834D2F}Prefabs/Weapons/Rifles/M16/Rifle_M16A2.et", // pool mode WEAPON
     "{C7861F11D5334C0E}Prefabs/Characters/Uniforms/Jacket_US_BDU.et", // pool mode "" (omitted)
+    ...CORE_ARSENAL_ITEMS.map((i) => i.ref), // core pool (ACE epinephrine) resolves its own mode
   ],
 };
 
