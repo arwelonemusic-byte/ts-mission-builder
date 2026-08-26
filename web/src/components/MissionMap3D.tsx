@@ -41,6 +41,7 @@ import { getSampler } from "@/lib/terrainSampler";
 import { compositeTerrainTexture } from "@/lib/tileComposite";
 import { propEntry, propRect } from "@/lib/props";
 import {
+  artyStopBadgeHtml,
   deliveryBadgeHtml,
   distanceLabel,
   distancePillHtml,
@@ -71,6 +72,7 @@ const SELECT_COLOR = 0xffcc00;
 const OBJECTIVE_COLOR = 0x9f2828; // sector "objective" rectangles
 const TASK_COLOR = 0xe8593c; // mission objectives (matches overlayHtml OBJECTIVE_COLOR)
 const PROP_GREEN = 0x4ade80; // props (matches overlayHtml PROP_COLOR)
+const ARTY_STOP_CYAN = 0x22d3ee; // Stop Artillery trigger (matches overlayHtml ARTY_STOP_COLOR)
 const AO_COLOR = 0x000000;
 const SPAWN_BLUE = 0x3fa9f5;
 const CRATE_GREEN = 0x50c878;
@@ -1070,6 +1072,43 @@ export default function MissionMap3D(props: Map3DProps) {
         });
       }
 
+      /* -- Stop Artillery trigger: cyan badge (draggable) + draped dashed
+            radius ring, re-draped live during a badge drag (objective pattern) -- */
+      const stopTrig = p.stopTrigger;
+      if (stopTrig) {
+        const selected = p.stopTriggerSelected;
+        const r = stopTrig.radius;
+        const ring = drapedLine(
+          grid,
+          96,
+          new THREE.LineDashedMaterial({ color: selected ? SELECT_COLOR : ARTY_STOP_CYAN, dashSize: 8, gapSize: 6 }),
+          true
+        );
+        overlay.add(ring.obj);
+        const disc = drapedGridMesh(grid, 48, 8, fillMaterial(ARTY_STOP_CYAN, 0.1));
+        overlay.add(disc.obj);
+        const drape = (x: number, z: number) => {
+          ring.fill((i) => {
+            const a = (i / 96) * Math.PI * 2;
+            return [x + r * Math.cos(a), z + r * Math.sin(a)];
+          }, LINE_LIFT + (selected ? 0.3 : 0));
+          disc.fill((u, v) => {
+            const a = u * Math.PI * 2;
+            const rr = v * r;
+            return [x + rr * Math.cos(a), z + rr * Math.sin(a)];
+          }, FILL_LIFT);
+        };
+        drape(stopTrig.x, stopTrig.z);
+        const badge = css2dNode(artyStopBadgeHtml(selected, !!p.fresh["arty-stop"]), true);
+        badge.obj.position.set(stopTrig.x, meshY(grid, stopTrig.x, stopTrig.z) + ICON_LIFT, -stopTrig.z);
+        overlay.add(badge.obj);
+        makeDraggable(world, badge.el, badge.obj, ICON_LIFT, {
+          onClick: () => propsRef.current.onStopTriggerClick(),
+          onDragLive: (x, z) => drape(x, z),
+          onDragEnd: (x, z) => propsRef.current.onStopTriggerMoved(x, z),
+        });
+      }
+
       /* -- props: green badge (draggable) + draped footprint outline + facing
             tick along local +Z; everything re-drapes live during a drag -- */
       for (const pr of p.props) {
@@ -1599,6 +1638,8 @@ export default function MissionMap3D(props: Map3DProps) {
     props.selectedObjectiveId,
     props.props,
     props.selectedPropId,
+    props.stopTrigger,
+    props.stopTriggerSelected,
     props.sectors,
     props.selectedSectorId,
     props.playableFaction,

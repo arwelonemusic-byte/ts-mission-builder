@@ -158,6 +158,26 @@ export function propBadgeHtml(selected: boolean, freshDrop = false): string {
   return `<div style="position:relative;width:24px;height:24px;${drop}">${halo}<div style="width:24px;height:24px;border-radius:50%;background:${PROP_COLOR};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;color:#fff;"><svg width="13" height="13" viewBox="0 0 16 16">${PROP_GLYPH}</svg></div></div>`;
 }
 
+/** Enemy-artillery Stop trigger accent (map badge, radius circle, ping) —
+ * cyan, distinct from objective red-orange, prop green, zone purple, QRF
+ * orange/pink and spawn blue. */
+export const ARTY_STOP_COLOR = "#22d3ee";
+
+/** Stop-trigger glyph: a "ban" sign (circle + diagonal), 16×16 viewBox. */
+export const ARTY_STOP_GLYPH =
+  `<circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.6" fill="none"/>` +
+  `<path d="M4.1 4.1 L11.9 11.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>`;
+
+/** Round badge at the Stop Artillery trigger: cyan disc + white ban glyph.
+ * Selection adds the standard yellow halo ring. Draggable in both views. */
+export function artyStopBadgeHtml(selected: boolean, freshDrop = false): string {
+  const halo = selected
+    ? `<div style="position:absolute;inset:-6px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
+    : "";
+  const drop = freshDrop ? "animation:mbDrop 0.4s cubic-bezier(0.22,1,0.36,1);" : "";
+  return `<div style="position:relative;width:24px;height:24px;${drop}">${halo}<div style="width:24px;height:24px;border-radius:50%;background:${ARTY_STOP_COLOR};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;color:#fff;"><svg width="13" height="13" viewBox="0 0 16 16">${ARTY_STOP_GLYPH}</svg></div></div>`;
+}
+
 /** Small square chip at a sector's center — the 3D view's select/move handle
  * (2D uses the outline stroke instead). */
 export function sectorChipHtml(kind: "ao" | "objective", selected: boolean): string {

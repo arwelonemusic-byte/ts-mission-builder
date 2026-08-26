@@ -5,10 +5,12 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { spawnElements, itemWorldCorners, rotateLocal, vehicleWorldOutline, FACTIONS, FARP_DETAIL } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
-import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, Zone } from "@/lib/mission";
+import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
 import {
   distanceLabel,
+  ARTY_STOP_COLOR,
+  artyStopBadgeHtml,
   distancePillHtml,
   markerHtml,
   deliveryBadgeHtml,
@@ -58,6 +60,9 @@ export type MapProps = {
   selectedObjectiveId: string | null;
   props: MissionProp[];
   selectedPropId: string | null;
+  /** Enemy-artillery Stop trigger (null when absent or artillery is off) */
+  stopTrigger: StopTrigger | null;
+  stopTriggerSelected: boolean;
   markers: MissionMarker[];
   selectedMarkerId: string | null;
   sectors: MissionSector[];
@@ -91,6 +96,8 @@ export type MapProps = {
   onDeliveryMoved: (id: string, x: number, z: number) => void;
   onPropClick: (id: string) => void;
   onPropMoved: (id: string, x: number, z: number) => void;
+  onStopTriggerClick: () => void;
+  onStopTriggerMoved: (x: number, z: number) => void;
   onSectorDrawn: (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => void;
   onSectorClick: (id: string) => void;
   onSectorChanged: (
@@ -746,6 +753,39 @@ export default function MissionMap(props: MapProps) {
         propsRef.current.onPropMoved(pr.id, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
       });
     }
+
+    // Stop Artillery trigger: cyan badge (draggable, click-selects) + dashed
+    // radius circle that follows the badge live (objective pattern).
+    const stopTrig = props.stopTrigger;
+    if (stopTrig) {
+      const selected = props.stopTriggerSelected;
+      const circle = L.circle([stopTrig.z, stopTrig.x], {
+        radius: stopTrig.radius,
+        color: selected ? "#ffcc00" : ARTY_STOP_COLOR,
+        weight: selected ? 3 : 2,
+        fillColor: ARTY_STOP_COLOR,
+        fillOpacity: 0.1,
+        dashArray: "6 6",
+        interactive: false,
+        className: props.fresh["arty-stop"] ? "mb-fresh-path" : "",
+      }).addTo(overlay);
+      const badge = L.marker([stopTrig.z, stopTrig.x], {
+        icon: artyStopBadgeIcon(selected, !!props.fresh["arty-stop"]),
+        draggable: true,
+      })
+        .bindTooltip(tr(props.lang, "Stop Artillery Trigger"), { direction: "top", offset: [0, -12], opacity: 1 })
+        .addTo(overlay);
+      badge.on("click", (e) => {
+        L.DomEvent.stopPropagation(e);
+        propsRef.current.onStopTriggerClick();
+      });
+      badge.on("dragstart", () => badge.unbindTooltip());
+      badge.on("drag", () => circle.setLatLng(badge.getLatLng()));
+      badge.on("dragend", () => {
+        const ll = badge.getLatLng();
+        propsRef.current.onStopTriggerMoved(+ll.lng.toFixed(1), +ll.lat.toFixed(1));
+      });
+    }
   }, [
     props.spawn,
     props.selectedSpawnEl,
@@ -758,6 +798,8 @@ export default function MissionMap(props: MapProps) {
     props.selectedObjectiveId,
     props.props,
     props.selectedPropId,
+    props.stopTrigger,
+    props.stopTriggerSelected,
     props.sectors,
     props.selectedSectorId,
     props.playableFaction,
@@ -903,6 +945,21 @@ function objectiveBadgeIcon(type: MissionObjective["type"], selected: boolean, f
     iconSize: [36, 36],
     iconAnchor: [18, 18],
     html: `<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">${badge}</div>`,
+  });
+}
+
+/** DivIcon wrapper for the Stop Artillery trigger badge; 32px hit box on touch. */
+function artyStopBadgeIcon(selected: boolean, freshDrop = false) {
+  const badge = artyStopBadgeHtml(selected, freshDrop);
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [24, 24], iconAnchor: [12, 12], html: badge });
+  }
+  return L.divIcon({
+    className: "",
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;">${badge}</div>`,
   });
 }
 

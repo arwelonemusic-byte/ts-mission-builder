@@ -141,12 +141,18 @@ export default function MissionPanel({
         <SelectInput
           value={mission.terrain}
           onChange={(e) =>
+            // Every map-positioned thing goes — coordinates from one world
+            // land in the sea / on the wrong hill of another. Non-spatial
+            // settings (factions, loadouts, briefing, arsenal…) survive.
             update({
               terrain: e.target.value,
               spawn: { ...mission.spawn, placed: false },
               zones: [],
               markers: [],
               sectors: [],
+              objectives: [],
+              props: [],
+              aiArty: { ...mission.aiArty, stopTrigger: null },
             })
           }
         >

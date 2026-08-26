@@ -1030,6 +1030,18 @@ export const K = {
   // GameModeSF.et. Prefab-effective round counts: HE 60, Smoke 30, Illum 30
   // (m_bEnabled defaults to 0 in script — omit the block to keep arty off).
   CMP_FIRE_SUPPORT: "{6995258B6DFFBB1F}",
+  // TS_AiArtilleryComponent instance GUID inside the toolkit's GameModeSF.et.
+  // Prefab-effective values: rounds 60, cooldown 600-1800 s; script defaults
+  // not set by the prefab: m_bEnabled 0, m_fStrikeChance 0.6 (omit the block
+  // to keep enemy artillery off).
+  CMP_AI_ARTILLERY: "{69B743637B168ACE}",
+  // Vanilla SlotPlayerTrigger.et + its fixed component/plugin instance GUIDs
+  // (Stop Artillery triggers; serialization ground truth: Operation_Base_Jumping
+  // AO.layer SlotPlayerTrigger1). Plugin default m_eActivationPresence PLAYER
+  // is exactly what the stop trigger wants - no override.
+  SLOT_PLAYERTRIGGER_PREFAB: "{D183AFE8DAF9793D}Prefabs/Systems/ScenarioFramework/Components/SlotPlayerTrigger.et",
+  CMP_SLOT_TRIGGER: "{5A4B5098DE424991}",
+  CMP_PLUGINTRIG_PLAYERTRIGGER: "{5AC53D73FCB1F805}",
   // Loadout system (conf-based): missions spawn the toolkit's LoadoutCrates_Conf.et
   // and override the toolkit's loadout .conf with the selected loadouts. The crate
   // prefab is only overridden to set faction affiliation (1.7 arsenal validation).

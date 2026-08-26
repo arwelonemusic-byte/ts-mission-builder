@@ -28,12 +28,14 @@ import {
   type ObjectiveType,
   type PlaceMode,
   type Zone,
+  STOP_TRIGGER_RADIUS,
+  type AiArtillery,
 } from "@/lib/mission";
 import { rangeLabel, totalEnemyRange } from "@/lib/enemyEstimate";
 import { exportMission } from "@/lib/export";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
-import { OBJECTIVE_COLOR, PROP_COLOR } from "@/lib/overlayHtml";
+import { ARTY_STOP_COLOR, OBJECTIVE_COLOR, PROP_COLOR } from "@/lib/overlayHtml";
 import { LangProvider, loadLang, saveLang, tr, zonesCountLabel, type Lang } from "@/lib/i18n";
 import AppBar, { type StepId } from "@/components/AppBar";
 import GenerateOverlay, { GEN_STAGES, type GenState } from "@/components/GenerateOverlay";
@@ -104,6 +106,8 @@ export default function Editor() {
   const [pendingObjectiveType, setPendingObjectiveType] = useState<ObjectiveType | null>(null);
   const [selectedObjectiveId, setSelectedObjectiveId] = useState<string | null>(null);
   const [selectedPropId, setSelectedPropId] = useState<string | null>(null);
+  // Enemy-artillery Stop trigger selection (single trigger → boolean)
+  const [stopTriggerSelected, setStopTriggerSelected] = useState(false);
   // Selected spawn element (map footprint click) — shows the 2D rotate handle.
   // Keys: "farp" | "sp:<id>" | "crate:<id>" | "veh:<id>".
   const [selectedSpawnEl, setSelectedSpawnEl] = useState<string | null>(null);
@@ -370,6 +374,13 @@ export default function Editor() {
       return same ? null : { zoneId, moduleType };
     });
   };
+  /** Toggle Stop Artillery trigger placement (re-click cancels). */
+  const armStopTriggerPlace = () => {
+    setDeliveryTarget(null);
+    armPlaceMode(placeMode === "arty-stop" ? null : "arty-stop");
+  };
+  const setAiArty = (patch: Partial<AiArtillery>) =>
+    setMission((m) => (m ? { ...m, aiArty: { ...m.aiArty, ...patch } } : m));
   const onSectorDrawn = (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => {
     const id = freshId();
     setMission((m) => (m ? { ...m, sectors: [...m.sectors, { id, kind, x, z, length, width, rotation: 0 }] } : m));
@@ -511,6 +522,7 @@ export default function Editor() {
       setSelectedOrigin(null);
       setSelectedObjectiveId(null);
       setSelectedPropId(null);
+      setStopTriggerSelected(false);
       setSelectedSpawnEl(null);
       return;
     }
@@ -612,6 +624,13 @@ export default function Editor() {
       markFresh(prop.id);
       setPlaceMode(null);
       setPendingPropRef(null);
+    } else if (placeMode === "arty-stop") {
+      // Single trigger; moving it afterwards = dragging the map badge
+      setAiArty({ stopTrigger: { x: xi, z: zi, radius: STOP_TRIGGER_RADIUS.default } });
+      setStopTriggerSelected(true);
+      mapApi()?.addPing(xi, zi, ARTY_STOP_COLOR);
+      markFresh("arty-stop");
+      setPlaceMode(null);
     } else if (placeMode === "delivery" && deliveryTarget) {
       updateObjective(deliveryTarget, { delivery: { x: xi, z: zi } });
       setSelectedObjectiveId(deliveryTarget);
@@ -683,6 +702,24 @@ export default function Editor() {
     setSelectedPropId(id);
     const p = mission?.props.find((pr) => pr.id === id);
     if (p) focusOn(p.x, p.z, 150);
+  };
+
+  /* ----- Stop Artillery trigger selection (panel card ↔ map badge) ----- */
+  const [stopTriggerRevealSeq, setStopTriggerRevealSeq] = useState(0);
+  const onStopTriggerClick = () => {
+    setStopTriggerSelected(true);
+    setStopTriggerRevealSeq((s) => s + 1);
+    setStep("enemy");
+  };
+  const selectAndFocusStopTrigger = () => {
+    setStopTriggerSelected(true);
+    const st = mission?.aiArty.stopTrigger;
+    if (st) focusOn(st.x, st.z, Math.max(200, st.radius * 1.5));
+  };
+  const removeStopTrigger = () => {
+    setAiArty({ stopTrigger: null });
+    setStopTriggerSelected(false);
+    if (placeMode === "arty-stop") setPlaceMode(null);
   };
 
   /* ----- spawn element selection / move / rotate (map-side) ----- */
@@ -880,6 +917,7 @@ export default function Editor() {
     setSelectedOrigin(null);
     setSelectedObjectiveId(null);
     setSelectedPropId(null);
+    setStopTriggerSelected(false);
     setOriginTarget(null);
     setSectorDraw(null);
     setPendingObjectiveType(null);
@@ -944,7 +982,9 @@ export default function Editor() {
             ? t("the delivery point")
             : placeMode === "prop"
               ? t("the prop")
-              : t("an AI zone");
+              : placeMode === "arty-stop"
+                ? t("the stop-artillery trigger")
+                : t("an AI zone");
   const sectorNoun = sectorDraw === "ao" ? t("the AO sector") : t("an objective sector");
 
   return (
@@ -972,6 +1012,15 @@ export default function Editor() {
             selectedPropId,
             onPropClick,
             onPropMoved: (id: string, x: number, z: number) => updateProp(id, { x, z }),
+            stopTrigger: mission.aiArty.enabled ? mission.aiArty.stopTrigger : null,
+            stopTriggerSelected,
+            onStopTriggerClick,
+            onStopTriggerMoved: (x: number, z: number) =>
+              setMission((m) =>
+                m && m.aiArty.stopTrigger
+                  ? { ...m, aiArty: { ...m.aiArty, stopTrigger: { ...m.aiArty.stopTrigger, x, z } } }
+                  : m
+              ),
             markers: mission.markers,
             selectedMarkerId,
             sectors: mission.sectors,
@@ -1149,6 +1198,12 @@ export default function Editor() {
                 update={update}
                 factionKeys={enemyFactionKeys}
                 onEnemyFaction={setEnemyFaction}
+                placeMode={placeMode}
+                onArmStopTrigger={armStopTriggerPlace}
+                stopTriggerSelected={stopTriggerSelected}
+                stopTriggerRevealSeq={stopTriggerRevealSeq}
+                onSelectStopTrigger={selectAndFocusStopTrigger}
+                onRemoveStopTrigger={removeStopTrigger}
               />
             )}
             {step === "spawn" && (

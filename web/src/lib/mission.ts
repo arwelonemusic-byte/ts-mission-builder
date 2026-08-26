@@ -13,6 +13,7 @@ export type PlaceMode =
   | "objective"
   | "delivery"
   | "prop"
+  | "arty-stop"
   | null;
 
 /** sizes = Foot Patrols weight-slider selection (size classes for the group
@@ -29,6 +30,28 @@ export type ZoneModule = {
 };
 export type ArtyShell = { on: boolean; count: number };
 export type ArtySupport = { enabled: boolean; he: ArtyShell; smoke: ArtyShell; illum: ArtyShell };
+/** Map-placed "Stop Artillery" trigger: players entering it silence the enemy
+ * AI artillery for the rest of the mission (SlotPlayerTrigger +
+ * TS_ScenarioFrameworkActionStopArtillery appended to AO.layer). */
+export type StopTrigger = { x: number; z: number; radius: number };
+/** Enemy AI artillery -> TS_AiArtilleryComponent on GameModeSF. */
+export type AiArtillery = {
+  enabled: boolean;
+  /** m_iRoundsAvailable, >=1 (-1 unlimited deliberately not exposed) */
+  rounds: number;
+  /** m_fStrikeChance as a percent int (5-100, step 5) */
+  strikeChance: number;
+  /** Fixed cooldown in MINUTES (1-60) -> m_iCooldownMin = m_iCooldownMax = min*60 */
+  cooldownMin: number;
+  /** Kept while the toggle is off (hidden + not emitted), like farpPos */
+  stopTrigger: StopTrigger | null;
+};
+export const STOP_TRIGGER_RADIUS = { min: 25, max: 200, default: 50 };
+/** Clamp + round a stop-trigger radius to the slider's 5 m steps. */
+export function stopTriggerRadius(r?: number): number {
+  const v = Math.round((Number.isFinite(+(r as number)) ? +(r as number) : STOP_TRIGGER_RADIUS.default) / 5) * 5;
+  return Math.max(STOP_TRIGGER_RADIUS.min, Math.min(STOP_TRIGGER_RADIUS.max, v));
+}
 export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[] };
 
 /** Spawn elements are individually placed (world coords) since 2026-08-18;
@@ -166,6 +189,9 @@ export type Mission = {
   groups: MissionGroup[];
   /** Artillery support → TS_FireSupportManagerComponent on GameModeSF */
   arty: ArtySupport;
+  /** Enemy AI artillery → TS_AiArtilleryComponent on GameModeSF (+ optional
+   * Stop Artillery trigger in AO.layer) */
+  aiArty: AiArtillery;
   /** User-supplied thumbnail photo as a JPEG data URL, already cover-fitted to
    * 1920x1200 (see prepareThumbnailSource). The shipped image is this photo
    * composited under the TS template with the mission name drawn on top; null
@@ -287,6 +313,13 @@ export function defaultArty(): ArtySupport {
     smoke: { on: true, count: 30 },
     illum: { on: true, count: 30 },
   };
+}
+
+// Rounds mirror the toolkit GameModeSF prefab (60); cooldown 10 min = the
+// prefab's m_iCooldownMin (so defaults emit only m_iCooldownMax); strike
+// chance 60% = the script default 0.6.
+export function defaultAiArty(): AiArtillery {
+  return { enabled: false, rounds: 60, strikeChance: 60, cooldownMin: 10, stopTrigger: null };
 }
 
 export function freshSpawnElemId(): string {
@@ -440,6 +473,7 @@ export function newMission(): Mission {
     coreArsenalApplied: CORE_ARSENAL_ITEMS.map((i) => i.ref),
     groups: defaultGroups(),
     arty: defaultArty(),
+    aiArty: defaultAiArty(),
     thumbnail: null,
     spawn: {
       placed: false,
@@ -637,6 +671,22 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     m.arty.illum.on && m.arty.illum.count === 40
   ) {
     m.arty = defaultArty();
+  }
+  // Enemy AI artillery arrived after the first saves: rebuild field-by-field
+  // with clamps so a hand-edited save can't smuggle bad values into the layer.
+  {
+    const a = (m.aiArty && typeof m.aiArty === "object" ? m.aiArty : {}) as Partial<AiArtillery>;
+    const st = a.stopTrigger;
+    m.aiArty = {
+      enabled: a.enabled === true,
+      rounds: Math.min(100000, Math.max(1, Math.floor(+(a.rounds as number)) || 60)),
+      strikeChance: Math.max(5, Math.min(100, Math.round(((+(a.strikeChance as number)) || 60) / 5) * 5)),
+      cooldownMin: Math.min(60, Math.max(1, Math.floor(+(a.cooldownMin as number)) || 10)),
+      stopTrigger:
+        st && typeof st === "object" && Number.isFinite(+st.x) && Number.isFinite(+st.z)
+          ? { x: +st.x, z: +st.z, radius: stopTriggerRadius(st.radius) }
+          : null,
+    };
   }
   // Individual spawn element placement (2026-08-18): legacy derived-layout
   // saves get their bundle yaw baked into per-element positions/rotations.

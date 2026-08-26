@@ -113,6 +113,15 @@ export async function toGeneratorMission(m: Mission) {
     });
   }
 
+  // Stop Artillery trigger (0-1 from the web; the generator input is a list
+  // so CLI spikes can exercise multiples) — heightmap Y like objectives
+  const stopTriggers = [];
+  if (m.aiArty.enabled && m.aiArty.stopTrigger) {
+    const st = m.aiArty.stopTrigger;
+    const sty = await elevationAt(m.terrain, st.x, st.z);
+    stopTriggers.push({ pos: [y(st.x), y(sty), y(st.z)], radius: st.radius });
+  }
+
   // Props → Props.layer entities (+ AO.layer defense trios in the generator)
   const props = [];
   for (const p of m.props) {
@@ -180,6 +189,17 @@ export async function toGeneratorMission(m: Mission) {
           he: m.arty.he.on ? m.arty.he.count : 0,
           smoke: m.arty.smoke.on ? m.arty.smoke.count : 0,
           illum: m.arty.illum.on ? m.arty.illum.count : 0,
+        }
+      : null,
+    // Enemy AI artillery: null when off (no component block, no triggers).
+    // Percent → 0..1 float; the single UI cooldown feeds both seconds fields.
+    aiArty: m.aiArty.enabled
+      ? {
+          rounds: m.aiArty.rounds,
+          strikeChance: +(m.aiArty.strikeChance / 100).toFixed(2),
+          cooldownMin: m.aiArty.cooldownMin * 60,
+          cooldownMax: m.aiArty.cooldownMin * 60,
+          stopTriggers,
         }
       : null,
     zones,

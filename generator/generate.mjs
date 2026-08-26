@@ -26,6 +26,8 @@
 //               vs ChDKZ — exercises both new-faction sides + NAPA availability)
 //   --arsenal   build the Arsenal Builder variant (TS_WebSpikeArsenal: US vs
 //               USSR with a mission.arsenal override — pool-resolved modes)
+//   --ai-arty   build the enemy-AI-artillery variant (TS_WebSpikeAiArty:
+//               TS_AiArtilleryComponent override + 2 Stop Artillery triggers)
 //   --thumbs    build the thumbnail-harvest mock (TS_WebSpikeThumbs: ALL
 //               vanilla pool items in the crate, pool order, variants forced
 //               flat — screenshot the crate pages for the thumbnail slicer)
@@ -508,6 +510,35 @@ const ARSENAL_MISSION = {
     "{C7861F11D5334C0E}Prefabs/Characters/Uniforms/Jacket_US_BDU.et", // pool mode "" (omitted)
     ...CORE_ARSENAL_ITEMS.map((i) => i.ref), // core pool (ACE epinephrine) resolves its own mode
   ],
+};
+
+// Enemy-AI-artillery spike (2026-08-26): GameModeSF gets BOTH artillery
+// component overrides (player arty inherited from MISSION), strikeChance 0.6
+// exercises the omit-at-default rule, equal cooldowns mirror the web UI, and
+// two Stop Artillery triggers exercise the AreaArtyStop<N> suffix path
+// (trigger 1 at Area1's center, trigger 2 off to its east).
+const AI_ARTY_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeAiArty",
+  dirName: "TS_WebSpikeAiArty",
+  addonTitle: "TS Web Spike AiArty Mission",
+  name: "TS_WebSpikeAiArty",
+  displayName: "TS Web Spike AiArty",
+  guids: {
+    addon: "6A8E8AADEBACC1C1",
+    world: "6A8E8AAD3DF5F162",
+    missionConf: "6A8E8AADE2ADCA13",
+  },
+  aiArty: {
+    rounds: 24,
+    strikeChance: 0.6, // = script default -> omitted from the block
+    cooldownMin: 300,
+    cooldownMax: 300,
+    stopTriggers: [
+      { pos: [2795.307, 74.075, 1628.664], radius: 75 },
+      { pos: [2995.5, 70, 1628.664], radius: 25 },
+    ],
+  },
 };
 
 // Positioned-spawn spike (individual spawn element placement, 2026-08-18):
@@ -1551,6 +1582,8 @@ const BUILT = process.argv.includes("--alhadra")
                   ? SFS_MISSION
                 : process.argv.includes("--arsenal")
                   ? ARSENAL_MISSION
+                : process.argv.includes("--ai-arty")
+                  ? AI_ARTY_MISSION
                 : process.argv.includes("--spawn-pos")
                   ? SPAWN_POS_MISSION
                 : process.argv.includes("--thumbs-sfs-us")

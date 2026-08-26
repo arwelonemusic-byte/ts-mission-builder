@@ -7,6 +7,7 @@ import type {
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from "react";
+import { useEffect, useState } from "react";
 
 /** Universal floating-element shadow from the ops-planner design system. */
 export const PANEL_SHADOW = "shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]";
@@ -135,6 +136,47 @@ export function Slider({
         ...sliderProgressStyle(value, min, max),
         ...(trackColor ? { ["--ts-slider-track" as string]: trackColor } : {}),
       }}
+    />
+  );
+}
+
+/** Integer spinner with local text state so the field can be transiently
+ * empty while typing; commits clamped to [min, max], restores the last value
+ * on blur (PlayersPanel SizeInput pattern, generalized). */
+export function IntInput({
+  value,
+  min,
+  max,
+  onCommit,
+}: {
+  value: number;
+  min: number;
+  max?: number;
+  onCommit: (v: number) => void;
+}) {
+  const [text, setText] = useState(String(value));
+  useEffect(() => setText(String(value)), [value]);
+  const hi = max ?? Number.MAX_SAFE_INTEGER;
+  return (
+    <input
+      type="number"
+      min={min}
+      max={max}
+      value={text}
+      onChange={(e) => {
+        const raw = e.target.value;
+        if (raw === "") {
+          setText("");
+          return;
+        }
+        const v = Math.min(hi, Math.max(min, Math.floor(+raw) || min));
+        setText(String(v));
+        onCommit(v);
+      }}
+      onBlur={() => {
+        if (text === "") setText(String(value));
+      }}
+      className="w-[64px] h-[28px] shrink-0 bg-[#202427] border border-[#2e3439] rounded-[4px] px-2 text-[12px] text-white text-center focus:border-[#f4db50] focus:outline-none"
     />
   );
 }

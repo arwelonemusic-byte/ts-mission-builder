@@ -77,6 +77,35 @@ function fireSupportBlock(arty) {
   }`;
 }
 
+// Enemy AI artillery: TS_AiArtilleryComponent override on the same GameModeSF
+// entity. m_bEnabled defaults to 0 in script (the prefab doesn't set it), so
+// a disabled toggle = no block at all. Fields are written only when they
+// differ from the prefab-effective values (rounds 60, cooldown 600/1800 s;
+// strike chance keeps its script default 0.6). The web UI sends a single
+// cooldown as equal min/max seconds; the generator input keeps them separate.
+// mission.aiArty = { rounds, strikeChance (0..1), cooldownMin, cooldownMax,
+// stopTriggers } or null/undefined = off.
+function aiArtilleryBlock(a) {
+  if (!a) return "";
+  let f = "";
+  const rounds = Math.max(1, Math.floor(a.rounds ?? 60));
+  if (rounds !== 60) f += `
+   m_iRoundsAvailable ${rounds}`;
+  const chance = +Math.max(0, Math.min(1, a.strikeChance ?? 0.6)).toFixed(2);
+  if (chance !== 0.6) f += `
+   m_fStrikeChance ${chance}`;
+  const cdMin = Math.max(0, Math.round(a.cooldownMin ?? 600));
+  const cdMax = Math.max(cdMin, Math.round(a.cooldownMax ?? cdMin));
+  if (cdMin !== 600) f += `
+   m_iCooldownMin ${cdMin}`;
+  if (cdMax !== 1800) f += `
+   m_iCooldownMax ${cdMax}`;
+  return `
+  TS_AiArtilleryComponent "${K.CMP_AI_ARTILLERY}" {
+   m_bEnabled 1${f}
+  }`;
+}
+
 export function buildMissionFiles(mission, options = {}) {
   const F = FACTIONS[mission.playableFaction];
   const ENEMY = FACTIONS[mission.enemyFaction];
@@ -442,7 +471,7 @@ SCR_BaseGameMode GameModeSF : "{ECEEDB2D3737204B}Prefabs/Systems/ScenarioFramewo
   SCR_RespawnSystemComponent "{56B2B4793051E7C9}" {
    m_SpawnLogic SCR_MenuSpawnLogic "{5D36888CC966608A}" {
    }
-  }${fireSupportBlock(mission.arty)}
+  }${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}
  }
  coords ${mgr(-20, 0, -21)}
 }
@@ -891,6 +920,53 @@ ${farpBlock}`;
     })
     .join("");
 
+  // Stop Artillery triggers: Area > Layer > SlotPlayerTrigger trios appended
+  // to AO.layer (AreaPropDef precedent). Emitted only when enemy artillery is
+  // on - TS_ScenarioFrameworkActionStopArtillery logs a WARNING when no
+  // enabled TS_AiArtilleryComponent exists. No dynamic despawn: the trigger
+  // is mission-critical and must live from session start (AreaObjectives
+  // rule). m_fAreaRadius is always written (the plugin default 5 sits below
+  // the UI minimum); the plugin's default PLAYER presence is kept. The action
+  // GUID is a new array member -> per-run mintGuid() like every other member.
+  const artyStopBlocks = (mission.aiArty?.stopTriggers ?? [])
+    .map((st, i) => `GenericEntity AreaArtyStop${i + 1} : "${K.AREA_PREFAB}" {
+ components {
+  SCR_ScenarioFrameworkArea "${K.CMP_SF_AREA}" {
+  }
+ }
+ coords ${posStr(st.pos)}
+ {
+  GenericEntity LayerArtyStop${i + 1} : "${K.LAYER_PREFAB}" {
+   components {
+    SCR_ScenarioFrameworkLayerBase "${K.CMP_SF_LAYER}" {
+    }
+   }
+   coords 0 0 0
+   {
+    GenericEntity SlotArtyStop${i + 1} : "${K.SLOT_PLAYERTRIGGER_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotTrigger "${K.CMP_SLOT_TRIGGER}" {
+       m_aPlugins {
+        SCR_ScenarioFrameworkPluginTrigger "${K.CMP_PLUGINTRIG_PLAYERTRIGGER}" {
+         m_fAreaRadius ${Math.round(st.radius)}
+        }
+       }
+       m_aTriggerActions {
+        TS_ScenarioFrameworkActionStopArtillery "{${mintGuid()}}" {
+         m_iMaxNumberOfActivations 1
+        }
+       }
+      }
+     }
+     coords 0 0 0
+    }
+   }
+  }
+ }
+}
+`)
+    .join("");
+
   // --- Markers.layer ---
   // Workbench pattern (see Operation Crayfish): ONE Area wraps all markers,
   // one Layer inside it, one $grp SlotMarker group with a named body per
@@ -1331,7 +1407,7 @@ ${objectiveBlocks}
     [`${K.BRIEFING_PATH}.meta`]: meta("CONFResourceClass", K.BRIEFING_GUID, K.BRIEFING_PATH),
     [`${layersDir}/default.layer`]: defaultLayer,
     [`${layersDir}/Spawn.layer`]: spawnLayer,
-    [`${layersDir}/AO.layer`]: aoLayer + propDefenseBlocks,
+    [`${layersDir}/AO.layer`]: aoLayer + propDefenseBlocks + artyStopBlocks,
     [`${layersDir}/Markers.layer`]: markersLayer,
     [`${layersDir}/QRF.layer`]: qrfLayer,
     [`${layersDir}/Objectives.layer`]: objectivesLayer,

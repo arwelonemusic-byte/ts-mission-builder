@@ -88,6 +88,16 @@ say the word if you want that too.
 | Enemy Faction | Фракция противника |
 | (playable) | (игроки) |
 | Enemy troops (mix any) | Войска противника (можно несколько) |
+| Enemy Artillery Support | Артиллерия противника |
+| Enemy AI calls in mortar strikes on players spotted by its troops. | ИИ противника вызывает миномётные удары по игрокам, замеченным его войсками. |
+| Rounds available | Боезапас (снарядов) |
+| Strike chance | Вероятность удара |
+| Cooldown (minutes) | Перерыв между ударами (мин) |
+| Stop Artillery Trigger | Триггер остановки артиллерии |
+| Players entering the trigger stop the enemy artillery for the rest of the mission. Without one it fires until it runs out of rounds. | Когда игроки входят в триггер, артиллерия противника прекращает огонь до конца миссии. Без триггера она стреляет, пока не кончатся снаряды. |
+| Add Stop Artillery Trigger | Добавить триггер остановки |
+| Remove trigger | Удалить триггер |
+| the stop-artillery trigger (placement banner) | триггер остановки артиллерии |
 
 ## Spawn tab
 
