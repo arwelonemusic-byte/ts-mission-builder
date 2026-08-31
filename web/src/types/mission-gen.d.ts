@@ -7,6 +7,8 @@ declare module "mission-gen" {
       nav: string[];
       dependencies?: string[];
       parentHasPerceptionManager?: boolean;
+      parentHasAIWorld?: boolean;
+      parentHasRadioManager?: boolean;
     }
   >;
   export const FACTIONS: Record<

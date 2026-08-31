@@ -51,6 +51,7 @@
 //   --merak     same, on Merak Island
 //   --mogadishu same, on Mogadishu
 //   --alhadra   same, on Al Hadra
+//   --novka     same, on Novka (parent bakes in AIWorld + RadioManager)
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -1534,7 +1535,61 @@ const ALHADRA_MISSION = {
   props: [],
 };
 
-const BUILT = process.argv.includes("--alhadra")
+// Novka spike: small coastal map (2.8 km) — heightmap validated against
+// terrain-fitted structures (3 exact matches). Exercises the
+// parentHasAIWorld/parentHasRadioManager skip path.
+const NOVKA_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeNovka",
+  dirName: "TS_WebSpikeNovka",
+  addonTitle: "TS Web Spike Novka Mission",
+  name: "TS_WebSpikeNovka",
+  displayName: "TS Web Spike Novka",
+  terrain: "novka",
+  guids: {
+    addon: "6A933E1D28051620",
+    world: "6A933E1D73F7383B",
+    missionConf: "6A933E1DA418404C",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces hold the valley farms below the Novka heights.",
+      "",
+      "Friendly forces are staging on the ridge north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "600 98.38 2300",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "1200 66.69 1950",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "1050 55.69 1850",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [1200, 66.7, 1950], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [650, 111.9, 2250], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [1050, 55.7, 1850], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [1150, 64.6, 1900], length: 800, width: 600, rotation: 0 },
+    { kind: "objective", pos: [1200, 66.7, 1950], length: 300, width: 200, rotation: 30 },
+  ],
+  // Terrain spike: drop the base MISSION's Arland-coord props/objectives.
+  objectives: [],
+  props: [],
+};
+
+const BUILT = process.argv.includes("--novka")
+  ? NOVKA_MISSION
+  : process.argv.includes("--alhadra")
   ? ALHADRA_MISSION
   : process.argv.includes("--mogadishu")
   ? MOGADISHU_MISSION

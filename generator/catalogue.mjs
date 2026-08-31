@@ -277,6 +277,24 @@ export const TERRAINS = {
     ],
     dependencies: ["68957914EA45BA6C"],
   },
+  // Novka (no external deps; COE2Novka is a separate dependent scenario addon,
+  // not ours). FIRST map whose bare world bakes in the whole AI/comms stack:
+  // Novka_World_Layers/default.layer ships SCR_AIWorld_Novka (all 3 navmeshes
+  // configured), a RadioManagerEntity AND its own SCR_MapEntity — so we skip
+  // emitting AIWorld + RadioManager entirely (nav[] kept for the record; it
+  // is unused while parentHasAIWorld is set).
+  novka: {
+    label: "Novka",
+    parent: "{A04B76B2EFFD07FE}Novka_World.ent",
+    parentHasAIWorld: true,
+    parentHasRadioManager: true,
+    nav: [
+      "{E814F2DCE263BB95}Navmesh/Navmesh_Soldiers.nmn",
+      "{164D28ADF55D976B}Navmesh/Navmesh_BTR.nmn",
+      "{8787ACB79E0F2BBC}Navmesh/Navmesh_LowRes.nmn",
+    ],
+    dependencies: ["6550CDE61DD51E14"],
+  },
 };
 
 const P_OPFOR = "Prefabs/Groups/OPFOR";

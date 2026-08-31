@@ -446,13 +446,13 @@ ${groupPresets}
 `
     : "";
 
-  const defaultLayer = `${mapEntityBlock}SCR_AIWorld SCR_AIWorld : "{E0A05C76552E7F58}Prefabs/AI/SCR_AIWorld.et" {
+  const defaultLayer = `${mapEntityBlock}${TERRAIN.parentHasAIWorld ? "" : `SCR_AIWorld SCR_AIWorld : "{E0A05C76552E7F58}Prefabs/AI/SCR_AIWorld.et" {
  components {
 ${navBlocks}
  }
  coords ${mgr(-20, 0, -20)}
 }
-${TERRAIN.parentHasPerceptionManager ? "" : `PerceptionManager PerceptionManager : "{028DAEAD63E056BE}Prefabs/World/Game/PerceptionManager.et" {
+`}${TERRAIN.parentHasPerceptionManager ? "" : `PerceptionManager PerceptionManager : "{028DAEAD63E056BE}Prefabs/World/Game/PerceptionManager.et" {
  coords ${mgr(-20, 0, -18)}
 }
 `}SCR_FactionManager FactionManager_Editor : "{4A188E44289B9A50}Prefabs/MP/Managers/Factions/FactionManager_Editor.et" {
@@ -463,10 +463,10 @@ ${["US", "USSR", "FIA", ...modFactionKeys].map(factionEntry).join("\n")}
   }
  }
 }
-RadioManagerEntity RadioManager : "{B8E09FAB91C4ECCD}Prefabs/Systems/Radio/RadioManager.et" {
+${TERRAIN.parentHasRadioManager ? "" : `RadioManagerEntity RadioManager : "{B8E09FAB91C4ECCD}Prefabs/Systems/Radio/RadioManager.et" {
  coords ${mgr(-20, 0, -19)}
 }
-SCR_BaseGameMode GameModeSF : "{ECEEDB2D3737204B}Prefabs/Systems/ScenarioFramework/GameModeSF.et" {
+`}SCR_BaseGameMode GameModeSF : "{ECEEDB2D3737204B}Prefabs/Systems/ScenarioFramework/GameModeSF.et" {
  components {
   SCR_RespawnSystemComponent "{56B2B4793051E7C9}" {
    m_SpawnLogic SCR_MenuSpawnLogic "{5D36888CC966608A}" {

@@ -192,6 +192,17 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/68957914EA45BA6C-ALHadra",
   },
+  {
+    key: "novka",
+    label: "Novka",
+    worldSize: [2816, 2816],
+    heightmapBin: "/heightmaps/novka.bin",
+    heightmapMeta: "/heightmaps/novka.json",
+    tilePattern: "/tiles/novka/{z}/{x}/{y}.jpg",
+    tileMaxZoom: 4,
+    modded: true,
+    workshopUrl: "https://reforger.armaplatform.com/workshop/6550CDE61DD51E14-Novka",
+  },
 ];
 
 export const terrainByKey = (key: string): TerrainConfig =>
