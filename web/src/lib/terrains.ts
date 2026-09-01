@@ -203,6 +203,17 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/6550CDE61DD51E14-Novka",
   },
+  {
+    key: "westzagoria",
+    label: "West Zagoria",
+    worldSize: [4608, 4608],
+    heightmapBin: "/heightmaps/westzagoria.bin",
+    heightmapMeta: "/heightmaps/westzagoria.json",
+    tilePattern: "/tiles/westzagoria/{z}/{x}/{y}.jpg",
+    tileMaxZoom: 5,
+    modded: true,
+    workshopUrl: "https://reforger.armaplatform.com/workshop/6044F5AB4E6F9D5A-WestZagoria",
+  },
 ];
 
 export const terrainByKey = (key: string): TerrainConfig =>

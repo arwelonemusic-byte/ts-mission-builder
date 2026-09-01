@@ -295,6 +295,21 @@ export const TERRAINS = {
     ],
     dependencies: ["6550CDE61DD51E14"],
   },
+  // West Zagoria (no external deps; world filenames contain spaces —
+  // verbatim). Nav refs in custom SCR_AIWorld_WZ.et (paths verified against
+  // shipped .nmn files). Bare world's game.layer bakes in a MapEntity AND a
+  // PerceptionManager; AIWorld/RadioManager stay ours.
+  westzagoria: {
+    label: "West Zagoria",
+    parent: "{F98105BA01708075}West Zagoria.ent",
+    parentHasPerceptionManager: true,
+    nav: [
+      "{8A269363D3C725C5}Navmesh/WZNavmeshnew_soldier.nmn",
+      "{3EDE349EA0C6B156}Navmesh/WZNavmeshnew_BTRlike.nmn",
+      "{93BF5500564717AA}Navmesh/WZNavmeshnew_lowres.nmn",
+    ],
+    dependencies: ["6044F5AB4E6F9D5A"],
+  },
 };
 
 const P_OPFOR = "Prefabs/Groups/OPFOR";

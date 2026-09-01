@@ -52,6 +52,7 @@
 //   --mogadishu same, on Mogadishu
 //   --alhadra   same, on Al Hadra
 //   --novka     same, on Novka (parent bakes in AIWorld + RadioManager)
+//   --zagoria   same, on West Zagoria
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -1587,7 +1588,61 @@ const NOVKA_MISSION = {
   props: [],
 };
 
-const BUILT = process.argv.includes("--novka")
+// West Zagoria spike: valley farmland — heightmap validated against
+// terrain-fitted entities (96.59 sampled vs 96.594 placed). Parent bakes a
+// MapEntity + PerceptionManager into its game.layer.
+const ZAGORIA_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeZagoria",
+  dirName: "TS_WebSpikeZagoria",
+  addonTitle: "TS Web Spike Zagoria Mission",
+  name: "TS_WebSpikeZagoria",
+  displayName: "TS Web Spike Zagoria",
+  terrain: "westzagoria",
+  guids: {
+    addon: "6A944F2E39163731",
+    world: "6A944F2E84084942",
+    missionConf: "6A944F2EB5295153",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces have fortified the farms in the West Zagoria valley.",
+      "",
+      "Friendly forces are staging north-west of the AO. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "800 36.53 2400",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "1700 62.38 1900",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "1550 33.34 1800",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [1700, 62.4, 1900], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [850, 26.0, 2350], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [1550, 33.3, 1800], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [1650, 47.8, 1850], length: 1000, width: 800, rotation: 0 },
+    { kind: "objective", pos: [1700, 62.4, 1900], length: 300, width: 200, rotation: 30 },
+  ],
+  // Terrain spike: drop the base MISSION's Arland-coord props/objectives.
+  objectives: [],
+  props: [],
+};
+
+const BUILT = process.argv.includes("--zagoria")
+  ? ZAGORIA_MISSION
+  : process.argv.includes("--novka")
   ? NOVKA_MISSION
   : process.argv.includes("--alhadra")
   ? ALHADRA_MISSION
