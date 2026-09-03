@@ -536,12 +536,17 @@ SCR_LoadoutManager : "{AA4E7419A1FF65B0}Prefabs/MP/Managers/Loadouts/LoadoutMana
     return [clamp((Math.atan2(f1 - f0, 2 * dF) * 180) / Math.PI), clamp((-Math.atan2(r1 - r0, 2 * dR) * 180) / Math.PI)];
   };
 
+  // m_bCanBeGarbageCollected 0 on every crate/vehicle slot (2026-08-20): the
+  // engine garbage collector treats parked player vehicles as abandoned and
+  // despawns them mid-mission; base equipment must live for the whole session
+  // (same protection as the HVT/destroy objective slots).
   const slotBlockRel = (name, objectRef, dx, relY, dz, slotYaw, pitch = 0, roll = 0) => {
     const angles = pitch || slotYaw || roll ? `\n     angles ${pitch} ${slotYaw} ${roll}` : "";
     return `    GenericEntity ${name} : "${K.SLOT_PREFAB}" {
      components {
       SCR_ScenarioFrameworkSlotBase "${K.CMP_SF_SLOT}" {
        m_sObjectToSpawn "${objectRef}"
+       m_bCanBeGarbageCollected 0
       }
      }
      coords ${+dx.toFixed(3)} ${relY} ${+dz.toFixed(3)}${angles}
