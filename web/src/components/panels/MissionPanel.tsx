@@ -120,7 +120,9 @@ export default function MissionPanel({
           extends the required-addons list above it. */}
       <div className="text-[12px] text-white">{t("Supported mods")}</div>
       <div className="flex flex-col gap-2">
-        {Object.values(MODS).map((mod: { id: string; label: string; workshopUrl: string }) => {
+        {Object.values(MODS)
+          .filter((mod) => !mod.hidden)
+          .map((mod: { id: string; label: string; workshopUrl: string }) => {
           const on = mission.mods.includes(mod.id);
           return (
             <div key={mod.id} className="flex flex-col gap-1">

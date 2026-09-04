@@ -76,6 +76,8 @@ declare module "mission-gen" {
       label: string;
       workshopUrl: string;
       dependencies: string[];
+      /** Not offered in the UI (broken dep chain etc.); saves using it fall back to vanilla */
+      hidden?: boolean;
       factions: Record<string, unknown>;
     }
   >;

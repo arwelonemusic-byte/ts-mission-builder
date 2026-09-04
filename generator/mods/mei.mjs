@@ -35,6 +35,14 @@ export const MEI = {
   label: "Middle East Insurgents",
   workshopUrl: "https://reforger.armaplatform.com/workshop/68DC13E97BF267BD-CzechtoArabic",
   dependencies: ["68DC13E97BF267BD"],
+  // HIDDEN from the web app (2026-09-04): Bohemia blocked "Israelite Utility"
+  // (69EB4E9F50C09430), a direct dependency of the Czech to Arabic anchor, so
+  // generated missions can't be joined. The registry stays (CLI spikes, alias
+  // machinery) until a clean Arabic-voice route for the real MEI faction
+  // exists. NB MEI 1.3.1 also regenerated its FactionManager member GUID
+  // ({6A4624294CD7E4A0}, was {64E5479B63D9AEFF}) — update entryGuid before
+  // un-hiding.
+  hidden: true,
   factions: {
     MEI: {
       label: "Middle East Insurgents",

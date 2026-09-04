@@ -1,4 +1,4 @@
-import { ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
+import { ARSENAL_POOL, MODS, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
 export type PlaceMode =
@@ -534,6 +534,25 @@ export function loadMission(): Mission {
  * write-back in page.tsx: anything that bails to newMission() here would
  * overwrite the user's save). */
 function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
+  // Hidden mods (MODS[id].hidden — registry kept for CLI spikes, nothing
+  // offered in the UI): a save still pointing at one falls back to vanilla,
+  // exactly like disabling the mod. The enemy side re-defaults its group
+  // sets below; vehicle modules re-default via the per-module backfill.
+  const hiddenMod = (fk: string) => {
+    const mod = factionMeta(fk).mod;
+    return !!(mod && MODS[mod]?.hidden);
+  };
+  if (hiddenMod(m.playableFaction)) {
+    m.playableFaction = "US";
+    m.playableSubfaction = "US_Army";
+    m.loadouts = defaultLoadouts("US", "US_Army");
+    if (Array.isArray(m.spawn?.vehicles)) m.spawn.vehicles = [];
+  }
+  if (hiddenMod(m.enemyFaction)) {
+    m.enemyFaction = "USSR";
+    m.enemyGroupSets = ["USSR_Army"];
+    for (const zn of m.zones ?? []) for (const mod of zn.modules ?? []) if (mod.vehicles) mod.vehicles = [];
+  }
   if (!m.enemyGroupSets?.length) {
     m.enemyGroupSets = [m.enemyGroupSet ?? FACTIONS[m.enemyFaction]?.defaultGroupSet ?? "USSR_Army"];
     delete m.enemyGroupSet;
@@ -566,6 +585,7 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
   // Mods gate: default old saves to none; if a save somehow uses a mod
   // faction without the mod enabled, enable it rather than break the mission
   if (!Array.isArray(m.mods)) m.mods = [];
+  m.mods = m.mods.filter((id) => !MODS[id]?.hidden);
   for (const fk of [m.playableFaction, m.enemyFaction]) {
     const mod = factionMeta(fk).mod;
     if (mod && !m.mods.includes(mod)) m.mods.push(mod);
