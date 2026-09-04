@@ -1,12 +1,9 @@
 // Middle East Insurgents — REAL faction from the "MiddleEastInsurgents" mod,
-// voiced Arabic via the "Czech to Arabic" chain.
+// voiced Arabic via our own "TS MEI Arabic Voices" addon (see the anchor note
+// on the mod def below; the original Czech to Arabic anchor died 2026-09-04
+// when its direct dependency "Israelite Utility" was blocked by Bohemia).
 //
-// Dependency anchor: Czech to Arabic (68DC13E97BF267BD) — its own .gproj pulls
-// MiddleEastInsurgents (64CEC8E005828E5D) + RussiantoArabic (65E0AE1A83DA063A)
-// transitively. CzechtoArabic itself is voice/cosmetic-only (67 files: audio +
-// Arabic-styled USSR sign retextures, no configs — verified 2026-07-29).
-//
-// Why this chain (v2, replacing the earlier "USSR 2 Middle East" alias
+// Why a real faction (v2, replacing the earlier "USSR 2 Middle East" alias
 // integration): MiddleEastInsurgents defines MEI as a REAL faction (FactionKey
 // "MEI", INDFOR-based, own flag/callsigns/radio 52000, friendly only to
 // CIV+MEC) and OVERRIDES the vanilla FactionManager_Editor.et (same root ID
@@ -51,9 +48,9 @@ export const MEI = {
   // Side effect: vanilla USSR troops in the same mission speak Arabic too.
   workshopUrl: "https://reforger.armaplatform.com/workshop/0B6643C078688A29",
   dependencies: ["0B6643C078688A29"],
-  // HIDDEN from the web app (2026-09-04) until the TS MEI Arabic Voices
-  // addon is published to the Workshop and the route is playtested.
-  hidden: true,
+  // Un-hidden 2026-09-04 once the TS MEI Arabic Voices addon was published
+  // to the Workshop (0B6643C078688A29); playtest of the Arabic voices pending.
+  hidden: false,
   factions: {
     MEI: {
       label: "Middle East Insurgents",
