@@ -10,12 +10,20 @@
 // integration): MiddleEastInsurgents defines MEI as a REAL faction (FactionKey
 // "MEI", INDFOR-based, own flag/callsigns/radio 52000, friendly only to
 // CIV+MEC) and OVERRIDES the vanilla FactionManager_Editor.et (same root ID
-// 56B2B4776E6E4499), appending MEI as member {64E5479B63D9AEFF} (+ a MEC
-// civilian-militia member {64E51887ABD12B07} we leave untouched) — the
+// 56B2B4776E6E4499), appending MEI as member {6A4624294CD7E4A0} (+ a MEC
+// civilian-militia member {6A4624294DDAF524} we leave untouched) — the
 // validated RHS entryGuid path. A real faction means USSR-vs-MEI works, no
 // reskin-coverage caveats, and no alias machinery. Plain "MiddleEastInsurgents"
 // alone would leave the insurgents speaking Czech (they inherit FIA voices).
 //
+// All GUIDs RE-HARVESTED for MEI 1.3.1 (2026-09-04): the author regenerated
+// the resource GUIDs of every group + character prefab AND the FactionManager
+// member + callsign instance; the mod's catalog confs still carry the OLD
+// GUIDs next to the new ones (Workbench flagged every old one nonexistent).
+// Truth = prefab side (parent chains / variant tables); conf-only paths take
+// the unflagged candidate. Vehicles + squad-name members were NOT regenerated.
+// 1.3.1 also grew the catalog: Team_GL/LAT/Suppress + SharpshooterTeam now
+// have trustworthy GUIDs (unrecoverable in July) and RifleSquad is 7 slots.
 // All GUIDs ground-truthed from the extraction
 // (D:\VSCode_dev\arma-reforger\reference\MiddleEastInsurgents):
 //   - faction member:  Prefabs/MP/Managers/Factions/FactionManager_Editor.et
@@ -24,31 +32,37 @@
 // MEI ships no vehicle catalog of its own (MEI.conf points at the vanilla FIA
 // vehicle catalog) and no spawn points — vehicles/spawn refs below are the
 // vanilla FIA ones; fortifications reuse the vanilla USSR pools (user call).
-// Enemy-only by design (riflemen/loadoutSets empty). Group prefabs
-// Team_GL/Team_LAT/Team_Suppress exist on disk but are NOT in the catalog
-// (no trustworthy GUIDs) — excluded.
+// Enemy-only by design (riflemen/loadoutSets empty).
 const P_MEI_G = "Prefabs/Groups/MEI";
 const P_SLOT = "Prefabs/Compositions/Slotted";
 
 export const MEI = {
   id: "mei",
   label: "Middle East Insurgents",
-  workshopUrl: "https://reforger.armaplatform.com/workshop/68DC13E97BF267BD-CzechtoArabic",
-  dependencies: ["68DC13E97BF267BD"],
-  // HIDDEN from the web app (2026-09-04): Bohemia blocked "Israelite Utility"
-  // (69EB4E9F50C09430), a direct dependency of the Czech to Arabic anchor, so
-  // generated missions can't be joined. The registry stays (CLI spikes, alias
-  // machinery) until a clean Arabic-voice route for the real MEI faction
-  // exists. NB MEI 1.3.1 also regenerated its FactionManager member GUID
-  // ({6A4624294CD7E4A0}, was {64E5479B63D9AEFF}) — update entryGuid before
-  // un-hiding.
+  // Anchor = our own "TS MEI Arabic Voices" addon (0B6643C078688A29, built
+  // 2026-09-04, source: Workbench addons dir "TS MEI Arabic Voices"): two
+  // resource overrides that route MEI characters through the vanilla Russian
+  // voice pipeline (Character_MEI_Base.et sound component -> vanilla voice
+  // code + RU radio-protocol acps; FactionIdentity_MEI.conf VoiceIDs 201/202
+  // -> 101/102), which "Russian to Arabic" 1.0.9 (65E0AE1A83DA063A, now
+  // self-contained) overrides with Arabic samples. Its .gproj pulls
+  // MiddleEastInsurgents + Russian to Arabic transitively. Replaces the
+  // Czech to Arabic anchor (direct dep on the blocked Israelite Utility).
+  // Side effect: vanilla USSR troops in the same mission speak Arabic too.
+  workshopUrl: "https://reforger.armaplatform.com/workshop/0B6643C078688A29",
+  dependencies: ["0B6643C078688A29"],
+  // HIDDEN from the web app (2026-09-04) until the TS MEI Arabic Voices
+  // addon is published to the Workshop and the route is playtested.
   hidden: true,
   factions: {
     MEI: {
       label: "Middle East Insurgents",
-      entryGuid: "{64E5479B63D9AEFF}",
-      // m_CallsignInfo instance in MEI.conf, members from Callsigns_MEI.conf
-      callsignGuid: "{60A6B21E18F28741}",
+      // MEI 1.3.1 (2026-09-03) regenerated the FactionManager override: MEI
+      // member {6A4624294CD7E4A0} (was {64E5479B63D9AEFF}), MEC {6A4624294DDAF524}
+      entryGuid: "{6A4624294CD7E4A0}",
+      // m_CallsignInfo instance in MEI.conf (regenerated in 1.3.1), members
+      // from Callsigns_MEI.conf (unchanged)
+      callsignGuid: "{68E0FDE916735380}",
       squadBase: ["{64D896904E7CCB74}", "{64D896904E7CCB45}", "{64D896904E7CCB44}", "{64D896904E7CCB47}"],
       squadFifth: null,
       // MEI.conf declares CIV + MEC friendly — neither can be a mission side,
@@ -56,7 +70,7 @@ export const MEI = {
       friendlyWith: ["CIV", "MEC"],
       spawnPoint: "{72713ED566A531F3}PrefabsEditable/SpawnPoints/E_SpawnPoint_FIA.et",
       // HVT for Eliminate-HVT objectives
-      hvt: "{58B923E15109E91A}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Leader.et",
+      hvt: "{15CD0954AEE19BF2}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Leader.et",
       riflemen: {},
       loadoutSets: {},
       arsenalItems: [],
@@ -89,11 +103,11 @@ export const MEI = {
       // pipeline (FillCompartments spawns directly) it spawns the base:
       // unarmed identical civilians (bug found 2026-07-31)
       patrolCrew: [
-        "{76B11940F6EDF623}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman1.et",
-        "{EB364CCCBCFD29A5}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman2.et",
-        "{0EAA0035B018BECE}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman3.et",
-        "{339E250DC57437F9}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman4.et",
-        "{D60269F4C991A092}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman5.et",
+        "{F95AEA26749B12EC}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman1.et",
+        "{950EDEC6C85F9DC2}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman2.et",
+        "{7092923FC4BA0AA9}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman3.et",
+        "{4DA6B707B1D6839E}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman4.et",
+        "{A83AFBFEBD3314F5}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman5.et",
       ],
       // Vanilla USSR pools (insurgents captured Soviet positions — user call)
       fortifications: {
@@ -117,29 +131,34 @@ export const MEI = {
         ],
       },
       // ONE pool, no subfaction choice (EnemyPanel hides single-set factions).
-      // Slot counts from m_aUnitPrefabSlots; classes per the project size rules.
+      // Slot counts from m_aUnitPrefabSlots (1.3.1); classes count-driven per
+      // the 1.8 rules: small = 2, medium = 3-5, large = 6+.
       defaultGroupSet: "Insurgents",
       groupSets: {
         Insurgents: {
           label: "Insurgents",
-          sentry: `{92A836D86D75707B}${P_MEI_G}/Group_MEI_SentryTeam.et`,
-          defense: { ref: `{329BC4FEFAE79CAF}${P_MEI_G}/Group_MEI_RifleSquad.et`, size: 8 },
+          sentry: `{9BB41B28EB97A926}${P_MEI_G}/Group_MEI_SentryTeam.et`,
+          defense: { ref: `{C289D03E4F13A740}${P_MEI_G}/Group_MEI_RifleSquad.et`, size: 7 },
           small: [
-            `{1CC538C6B0DE68D5}${P_MEI_G}/Group_MEI_MachineGunTeam.et`,
-            `{92A836D86D75707B}${P_MEI_G}/Group_MEI_SentryTeam.et`,
-            `{172965BB188FCB8F}${P_MEI_G}/Group_MEI_ReconTeam.et`,
-            `{42A0E2DD1E8F9779}${P_MEI_G}/Group_MEI_SniperTeam.et`,
-            `{15BD9D7E0910185F}${P_MEI_G}/Group_MEI_MedicalSection.et`,
-            `{4E9F762B4C0DD5ED}${P_MEI_G}/Group_MEI_SapperTeam.et`,
-            `{613836A938A01319}${P_MEI_G}/Group_MEI_AmmoTeam.et`,
-            `{F0982B2402D1BE70}${P_MEI_G}/Group_MEI_Team_AT.et`,
+            `{015F1AAC16472DD2}${P_MEI_G}/Group_MEI_MachineGunTeam.et`,
+            `{9BB41B28EB97A926}${P_MEI_G}/Group_MEI_SentryTeam.et`,
+            `{D4E0EF34D4BC6BDB}${P_MEI_G}/Group_MEI_ReconTeam.et`,
+            `{702A22210F060E93}${P_MEI_G}/Group_MEI_SniperTeam.et`,
+            `{5C6AFE7AA57EB290}${P_MEI_G}/Group_MEI_SharpshooterTeam.et`,
+            `{2419190B7861CBD9}${P_MEI_G}/Group_MEI_MedicalSection.et`,
+            `{04ED87FFCC68373D}${P_MEI_G}/Group_MEI_SapperTeam.et`,
           ],
           medium: [
-            `{43A262F8A24DF461}${P_MEI_G}/Group_MEI_LightFireTeam.et`,
-            `{9036410306683271}${P_MEI_G}/Group_MEI_FireTeam.et`,
-            `{4B5FEBA696C827D4}${P_MEI_G}/Group_MEI_PlatoonHQ.et`,
+            `{DFC9AD6C43E608A7}${P_MEI_G}/Group_MEI_LightFireTeam.et`,
+            `{BDBE43FE17B323D7}${P_MEI_G}/Group_MEI_FireTeam.et`,
+            `{E30B7B9AC1E82157}${P_MEI_G}/Group_MEI_PlatoonHQ.et`,
+            `{094294F8A8B4357E}${P_MEI_G}/Group_MEI_AmmoTeam.et`,
+            `{4AAF649CEA888EC6}${P_MEI_G}/Group_MEI_Team_AT.et`,
+            `{081D451BF3C817D0}${P_MEI_G}/Group_MEI_Team_GL.et`,
+            `{E4160FF3ED018519}${P_MEI_G}/Group_MEI_Team_LAT.et`,
+            `{2F91C1FC6ADAB3D9}${P_MEI_G}/Group_MEI_Team_Suppress.et`,
           ],
-          large: [`{329BC4FEFAE79CAF}${P_MEI_G}/Group_MEI_RifleSquad.et`],
+          large: [`{C289D03E4F13A740}${P_MEI_G}/Group_MEI_RifleSquad.et`],
         },
       },
     },
