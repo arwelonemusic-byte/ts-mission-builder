@@ -254,8 +254,8 @@ export default function Editor() {
   const playableFactionKeys = factionKeys.filter(
     (k) => Object.keys(FACTIONS[k].riflemen ?? {}).length > 0
   );
-  // playableOnly marks factions with no enemy-side content (none currently —
-  // SFS gained AI groups in its 2026-08 update; mechanism kept for future mods)
+  // playableOnly marks factions with no enemy-side content (US_DESERT — a pure
+  // reskin alias of US; SFS lost the flag when it gained AI groups in 2026-08)
   const enemyFactionKeys = factionKeys.filter((k) => !FACTIONS[k].playableOnly);
   // Alias factions (aliasOf) share their base faction's in-game FactionKey —
   // both sides of an alias pair in one mission would be the same faction.
@@ -434,8 +434,35 @@ export default function Editor() {
     update(enemyPatch(ef, mission.zones));
   };
 
+  /** Move the playable side to `pf` keeping every pick that still resolves
+   * there (subfaction, chosen loadouts, spawn vehicles; the arsenal is
+   * re-sanitized by the caller). Used for alias hops (US ⇄ US_DESERT,
+   * SFS_US → US): an alias inherits its base's rosters, so toggling a camo
+   * pack must not wipe the user's setup. Anything that doesn't resolve falls
+   * back exactly like a manual faction change. */
+  const aliasHopPatch = (pf: string): Partial<Mission> => {
+    if (!mission) return {};
+    const F = FACTIONS[pf];
+    const sub = F.riflemen[mission.playableSubfaction]
+      ? mission.playableSubfaction
+      : Object.keys(F.riflemen)[0];
+    const set = new Set((F.loadoutSets[sub] ?? []).map((l) => l.prefab));
+    const loadouts = mission.loadouts.filter((l) => set.has(l));
+    return {
+      playableFaction: pf,
+      playableSubfaction: sub,
+      loadouts: loadouts.length ? loadouts : defaultLoadouts(pf, sub),
+      spawn: {
+        ...mission.spawn,
+        vehicles: mission.spawn.vehicles.filter((v) => !!F.vehicles?.[v.type]),
+      },
+    };
+  };
+
   /** Toggle enabled mods; factions of a disabled mod fall back to vanilla
-   * defaults (with the same cascades as a manual faction change). */
+   * defaults (with the same cascades as a manual faction change). Enabling a
+   * mod whose faction is a `defaultWhenEnabled` alias of the current playable
+   * faction switches the players onto it (camo packs: US → US_DESERT). */
   const setMods = (mods: string[]) => {
     if (!mission) return;
     const allowed = (k: string) => {
@@ -445,15 +472,32 @@ export default function Editor() {
     const patch: Partial<Mission> = { mods };
     let playable = mission.playableFaction;
     if (!allowed(playable)) {
-      playable = "US";
-      const sub = Object.keys(FACTIONS[playable].riflemen)[0];
-      Object.assign(patch, {
-        playableFaction: playable,
-        playableSubfaction: sub,
-        loadouts: defaultLoadouts(playable, sub),
-        arsenal: defaultArsenal(playable, sub),
-        spawn: { ...mission.spawn, vehicles: [] },
+      const base = FACTIONS[playable]?.aliasOf;
+      if (base && allowed(base)) {
+        // Disabling an alias pack: back to its base faction, picks preserved
+        playable = base;
+        Object.assign(patch, aliasHopPatch(playable));
+      } else {
+        playable = "US";
+        const sub = Object.keys(FACTIONS[playable].riflemen)[0];
+        Object.assign(patch, {
+          playableFaction: playable,
+          playableSubfaction: sub,
+          loadouts: defaultLoadouts(playable, sub),
+          arsenal: defaultArsenal(playable, sub),
+          spawn: { ...mission.spawn, vehicles: [] },
+        });
+      }
+    } else {
+      const justEnabled = mods.filter((id) => !mission.mods.includes(id));
+      const target = Object.keys(FACTIONS).find((k) => {
+        const f = FACTIONS[k];
+        return !!f.defaultWhenEnabled && f.aliasOf === playable && justEnabled.includes(f.mod ?? "");
       });
+      if (target) {
+        playable = target;
+        Object.assign(patch, aliasHopPatch(playable));
+      }
     }
     if (
       !allowed(mission.enemyFaction) ||
@@ -468,7 +512,12 @@ export default function Editor() {
     // Disabling a mod also scrubs its items from the arsenal (unless the
     // playable cascade above already reset it to the new faction's default).
     if (!patch.arsenal) {
-      patch.arsenal = sanitizeArsenal(mission.arsenal, mods, playable, mission.playableSubfaction);
+      patch.arsenal = sanitizeArsenal(
+        mission.arsenal,
+        mods,
+        playable,
+        patch.playableSubfaction ?? mission.playableSubfaction
+      );
     }
     update(patch);
   };

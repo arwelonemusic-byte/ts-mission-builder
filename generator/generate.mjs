@@ -16,6 +16,8 @@
 //               PLASTICBANDIT — enemy-only, FactionManager_Base append pattern)
 //   --afrf-mei  build the RHS-vs-MEI variant (TS_WebSpikeAFRFMEI: RHS_AFRF vs
 //               MEI — validates the friendly-faction clearing override)
+//   --usdesert  build the US Desert Camo variant (TS_WebSpikeUSDesert: US_DESERT
+//               alias vs USSR — pure material reskin; deps = the addon GUID)
 //   --sfs       build the SFS loadout-pack variant (TS_WebSpikeSFS: SFS_US
 //               "US Special Force Squad (Abrashka)" vs USSR — playable alias)
 //   --sfs-enemy build the SFS enemy-side variant (TS_WebSpikeSFSEnemy: vanilla
@@ -676,6 +678,26 @@ const BANDITS_MISSION = {
       ],
     },
   ],
+};
+
+// US Desert Camo spike: the material-reskin addon as a playable alias of US
+// vs vanilla USSR — the vanilla US member gets the playable/callsign block,
+// every serialized key is "US", the only extra dependency is the addon GUID.
+const USDESERT_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeUSDesert",
+  dirName: "TS_WebSpikeUSDesert",
+  addonTitle: "TS Web Spike US Desert Mission",
+  name: "TS_WebSpikeUSDesert",
+  displayName: "TS Web Spike US Desert",
+  playableFaction: "US_DESERT",
+  playableSubfaction: "US_Army",
+  loadouts: FACTIONS.US_DESERT.loadoutSets.US_Army.slice(0, 6),
+  guids: {
+    addon: "5D3A7F19C2E84B60",
+    world: "A1C6E39B7D2F5804",
+    missionConf: "6B8F2D4E9A17C3D5",
+  },
 };
 
 // SFS spike: the Abrashka loadout pack as playable "faction" vs vanilla USSR
@@ -1690,6 +1712,8 @@ const BUILT = process.argv.includes("--zagoria")
                   ? SFS_ENEMY_MISSION
                 : process.argv.includes("--sfs")
                   ? SFS_MISSION
+                : process.argv.includes("--usdesert")
+                  ? USDESERT_MISSION
                 : process.argv.includes("--arsenal")
                   ? ARSENAL_MISSION
                 : process.argv.includes("--ai-arty")

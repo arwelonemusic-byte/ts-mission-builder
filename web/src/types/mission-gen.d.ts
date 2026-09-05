@@ -23,8 +23,11 @@ declare module "mission-gen" {
       /** Vanilla faction key this faction is a reskin-alias of (e.g. MEI → USSR) */
       aliasOf?: string;
       /** Factions with no enemy-side content: playable side only, never enemy
-       *  (none currently — SFS gained AI groups; kept for future mods) */
+       *  (US_DESERT — a pure reskin alias of US) */
       playableOnly?: boolean;
+      /** Alias factions only: enabling their mod while the players are the
+       *  base faction switches the playable side to this entry (camo packs) */
+      defaultWhenEnabled?: boolean;
       /** In-game faction keys this faction's conf declares friendly (symmetric!)
        *  — lib.mjs clears the list via member override when the mission pits
        *  such a pair against each other */
