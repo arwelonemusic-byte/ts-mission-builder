@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -204,6 +204,9 @@ export function buildMissionFiles(mission, options = {}) {
   const worldEnt = `SubScene {\n Parent "${TERRAIN.parent}"\n}\n`;
 
   // --- mission .conf ---
+  // m_ACE_Settings: ACE Medical clobbers the game-mode bleeding/regen scales at
+  // init from its own settings; the mission header is the per-mission override
+  // (see ACE_MEDICAL_SETTINGS in catalogue.mjs). Nested objects = fresh GUIDs.
   const taskTypes = ["DELIVER", "DESTROY", "CLEAR_AREA", "KILL", "DEFEND"]
     .map((t) => `  SCR_ScenarioFrameworkTaskType "{${mintGuid()}}" {\n   m_eTypeOfTask ${t}\n  }`)
     .join("\n");
@@ -222,6 +225,11 @@ export function buildMissionFiles(mission, options = {}) {
  m_bOverrideScenarioTimeAndWeather 1
  m_bRandomStartingDaytime 1
  m_iMapMarkerLimitPerPlayer 999
+ m_ACE_Settings ACE_MissionHeaderSettings "{${mintGuid()}}" {
+  m_ACE_Medical_Core ACE_Medical_Core_Settings "{${mintGuid()}}" {
+   m_fBleedingRateScale ${ACE_MEDICAL_SETTINGS.bleedingRateScale}
+  }
+ }
  m_aTaskTypesAvailable {
 ${taskTypes}
  }

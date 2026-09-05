@@ -48,6 +48,19 @@ export const CORE_ADDONS = [
   },
 ];
 
+/** ACE Medical settings written into every mission header (`m_ACE_Settings`).
+ * ACE Medical's modded SCR_GameModeHealthSettings.OnPostInit overwrites the
+ * game-mode `m_fDOTScale`/`m_fRegenScale` on the server with its own
+ * ACE_Medical_Core_Settings, so the toolkit prefab's values are dead under ACE —
+ * the mission header is the supported per-mission override (applied by ACE Core
+ * in ArmaReforgerScripted.OnMissionSet; DS-validated 2026-09-05, GM global
+ * attribute read 0.30×). Fields omitted here fall back to the ACE class
+ * defaults (identical to ACE's shipped Settings.conf). Workbench Play mode
+ * attaches no mission header — validate on a dedicated server. */
+export const ACE_MEDICAL_SETTINGS = {
+  bleedingRateScale: 0.3, // = the toolkit GameModeSF.et m_fDOTScale
+};
+
 /** Core arsenal pool: items from the core addons that are ALWAYS browsable in
  * the Arsenal Builder (no mod gating) AND baked into every faction's default
  * crate contents (CORE_ARSENAL_ITEMS below, appended after the faction's own
