@@ -84,6 +84,27 @@ declare module "mission-gen" {
       factions: Record<string, unknown>;
     }
   >;
+  /** Vehicle mods: side-agnostic pool contributors (no factions). Enabled
+   * mods extend the spawn-vehicle picker, the zone patrol/QRF multiselects
+   * and the deliver/destroy pools; deps are usage-derived in lib.mjs. */
+  export const VEHICLE_MODS: Record<
+    string,
+    {
+      id: string;
+      label: string;
+      workshopUrl: string;
+      dependencies: string[];
+      hidden?: boolean;
+      vehicles: Record<string, string>;
+      vehicleLabels: Record<string, string>;
+      /** Armed patrol candidates — the zone multiselect's "Armed" group */
+      patrolVehicleKeys: string[];
+      /** Unarmed candidates — the zone multiselect's "Unarmed" group */
+      transportVehicleKeys: string[];
+    }
+  >;
+  /** Flat modded-vehicle lookup: key -> { ref, label, mod } */
+  export const MOD_VEHICLES: Record<string, { ref: string; label: string; mod: string }>;
   export const ZONE_MODULES: {
     type: string;
     label: string;

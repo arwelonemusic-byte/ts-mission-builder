@@ -82,7 +82,8 @@ const RU: Record<string, string> = {
   "Important!": "Важно!",
   "Make sure you have these addons and their dependencies installed and updated:":
     "Убедитесь, что эти аддоны и их зависимости установлены и обновлены:",
-  "Supported mods": "Поддерживаемые моды",
+  "Faction mods": "Моды фракций",
+  "Vehicle mods": "Моды техники",
 
   // Players tab
   "Player Faction": "Фракция игроков",
@@ -138,12 +139,13 @@ const RU: Record<string, string> = {
   "the vehicle": "технику",
   "the FARP": "FARP",
   Vehicles: "Техника",
-  "+ add vehicle…": "+ добавить технику…",
+  "Add vehicle": "Добавить технику",
+  "Duplicate vehicle": "Дублировать технику",
   "No vehicle catalogue for this faction yet.": "Для этой фракции пока нет каталога техники.",
   "Remove vehicle": "Убрать технику",
   "Arsenal crate": "Ящик снаряжения",
   "Spawn points": "Точки спавна",
-  "+ add spawn point": "+ добавить точку спавна",
+  "Add spawn point": "Добавить точку спавна",
   "Remove spawn point": "Убрать точку спавна",
   "Untick squads that must not deploy at a point.":
     "Снимите галочки с отрядов, которым запрещён спавн в точке.",
@@ -151,7 +153,7 @@ const RU: Record<string, string> = {
     "Единственная точка спавна — здесь спавнятся все отряды.",
   "This squad's last spawn point.": "Последняя точка спавна этого отряда.",
   "Arsenal crates": "Ящики снаряжения",
-  "+ add crate": "+ добавить ящик",
+  "Add crate": "Добавить ящик",
   "Remove crate": "Убрать ящик",
   "Spawn point": "Точка спавна",
 

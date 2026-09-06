@@ -20,6 +20,7 @@ import { SFSRF } from "./mods/sfsrf.mjs";
 import { SFSFIA } from "./mods/sfsfia.mjs";
 import { ARMA2 } from "./mods/arma2.mjs";
 import { USDESERT } from "./mods/usdesert.mjs";
+import { DAXHUMVEES } from "./mods/daxhumvees.mjs";
 
 // Props tab catalogue (placeable prefabs + footprints) lives in its own file.
 export { PROPS, PROP_CATEGORIES, DEFAULT_PROP } from "./props.mjs";
@@ -1048,6 +1049,29 @@ for (const mod of Object.values(MODS)) {
   for (const [key, faction] of Object.entries(mod.factions)) {
     const base = faction.aliasOf ? FACTIONS[faction.aliasOf] : undefined;
     FACTIONS[key] = { ...base, ...faction, mod: mod.id };
+  }
+}
+
+// --- Vehicle mods ----------------------------------------------------------
+// Side-agnostic pool contributors (design settled 2026-08-09, first mod = Dax
+// Humvees 2026-09-06): NOT factions — an enabled vehicle mod's vehicles join
+// the player spawn-vehicle picker, the per-zone mounted-patrol / vehicle-QRF
+// multiselects (armed -> "Armed", transport -> "Unarmed") and the deliver/
+// destroy objective pools, for any mission side. Captured-vehicle scenarios
+// are legitimate, so there is deliberately NO faction gating; enemy crews are
+// correct for free because lib.mjs always emits m_aCrewPrefabPool. Deps are
+// usage-derived: lib.mjs unions a mod's `dependencies` only when the mission
+// actually places one of its vehicles (spawn element, zone module selection,
+// or a deliver/destroy objective ref). Vehicle keys must be globally unique
+// across all vehicle mods AND all faction `vehicles` dicts (prefix them).
+export const VEHICLE_MODS = { [DAXHUMVEES.id]: DAXHUMVEES };
+/** Flat lookup for every modded vehicle: key -> { ref, label, mod }.
+ * lib.mjs falls back here when a spawn/patrol vehicle key isn't in the
+ * faction's own dict; the web panels use it for labels + gating. */
+export const MOD_VEHICLES = {};
+for (const vm of Object.values(VEHICLE_MODS)) {
+  for (const [key, ref] of Object.entries(vm.vehicles)) {
+    MOD_VEHICLES[key] = { ref, label: vm.vehicleLabels[key] ?? key, mod: vm.id };
   }
 }
 

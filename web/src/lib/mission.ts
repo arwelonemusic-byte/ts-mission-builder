@@ -1,4 +1,4 @@
-import { ARSENAL_POOL, MODS, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
+import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
 export type PlaceMode =
@@ -163,9 +163,11 @@ export type Mission = {
   playableSubfaction: string;
   enemyFaction: string;
   enemyGroupSets: string[];
-  /** Enabled content mods (MODS keys, e.g. "rhs") — gates which factions the
-   * UI offers. Dependencies in the generated addon.gproj derive from the
-   * factions actually used, not from this list. */
+  /** Enabled content mods — faction mods (MODS keys, e.g. "rhs") AND vehicle
+   * mods (VEHICLE_MODS keys, e.g. "daxhumvees") share this list; ids are
+   * unique across both registries. Gates what the UI offers (factions /
+   * modded vehicles). Dependencies in the generated addon.gproj derive from
+   * the content actually used, not from this list. */
   mods: string[];
   briefing: {
     situation: string;
@@ -276,6 +278,49 @@ export function sanitizeArsenal(refs: unknown, mods: string[], faction: string, 
   ]);
   const kept = [...new Set(refs.map(String))].filter((r) => known.has(r));
   return kept.length ? kept : fallback;
+}
+
+/** Strip content of DISABLED (or hidden) vehicle mods from a mission and
+ * return the fields that changed: spawn vehicles are dropped, zone-module
+ * patrol/QRF selections lose the mod's keys (an emptied selection backfills
+ * the enemy's default armed candidate — the UI's min-1 rule), and deliver/
+ * destroy objectives targeting a mod vehicle reset to the vanilla defaults.
+ * Shared by migrate() and the mod-toggle cascade in page.tsx. */
+export function scrubVehicleMods(m: Mission, mods: string[]): Partial<Mission> {
+  const bannedKey = (k: string) => {
+    const mod = MOD_VEHICLES[k]?.mod;
+    return !!mod && (!mods.includes(mod) || !!VEHICLE_MODS[mod]?.hidden);
+  };
+  const bannedRefs = new Set(
+    Object.values(VEHICLE_MODS)
+      .filter((vm) => !mods.includes(vm.id) || vm.hidden)
+      .flatMap((vm) => Object.values(vm.vehicles))
+  );
+  const patch: Partial<Mission> = {};
+  if ((m.spawn?.vehicles ?? []).some((v) => bannedKey(v.type))) {
+    patch.spawn = { ...m.spawn, vehicles: m.spawn.vehicles.filter((v) => !bannedKey(v.type)) };
+  }
+  if ((m.zones ?? []).some((zn) => (zn.modules ?? []).some((md) => md.vehicles?.some(bannedKey)))) {
+    patch.zones = m.zones.map((zn) => ({
+      ...zn,
+      modules: (zn.modules ?? []).map((md) => {
+        if (!md.vehicles?.some(bannedKey)) return md;
+        const kept = md.vehicles.filter((k) => !bannedKey(k));
+        return {
+          ...md,
+          vehicles: kept.length ? kept : (FACTIONS[m.enemyFaction]?.patrolVehicleKeys ?? []).slice(0, 1),
+        };
+      }),
+    }));
+  }
+  if ((m.objectives ?? []).some((o) => o.objectRef && bannedRefs.has(o.objectRef))) {
+    patch.objectives = m.objectives.map((o) =>
+      o.objectRef && bannedRefs.has(o.objectRef)
+        ? { ...o, objectRef: o.type === "destroy" ? DEFAULT_DESTROY_OBJECT : DEFAULT_DELIVER_VEHICLE }
+        : o
+    );
+  }
+  return patch;
 }
 
 /** Category-sort arsenal refs (stable): pool category order, then name.
@@ -585,11 +630,36 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
   // Mods gate: default old saves to none; if a save somehow uses a mod
   // faction without the mod enabled, enable it rather than break the mission
   if (!Array.isArray(m.mods)) m.mods = [];
-  m.mods = m.mods.filter((id) => !MODS[id]?.hidden);
+  m.mods = m.mods.filter((id) => !MODS[id]?.hidden && !VEHICLE_MODS[id]?.hidden);
   for (const fk of [m.playableFaction, m.enemyFaction]) {
     const mod = factionMeta(fk).mod;
     if (mod && !m.mods.includes(mod)) m.mods.push(mod);
   }
+  // Vehicle mods: a save using a modded vehicle without the mod enabled gets
+  // the mod enabled (same rescue as factions); content of HIDDEN vehicle
+  // mods is scrubbed instead (spawn/zones/objectives — see scrubVehicleMods).
+  const usedVehicleMods = new Set<string>();
+  for (const v of m.spawn?.vehicles ?? []) {
+    const mod = MOD_VEHICLES[v?.type]?.mod;
+    if (mod) usedVehicleMods.add(mod);
+  }
+  for (const zn of m.zones ?? [])
+    for (const md of zn.modules ?? [])
+      for (const k of md.vehicles ?? []) {
+        const mod = MOD_VEHICLES[k]?.mod;
+        if (mod) usedVehicleMods.add(mod);
+      }
+  const vehicleRefOwner = new Map(
+    Object.values(VEHICLE_MODS).flatMap((vm) => Object.values(vm.vehicles).map((ref) => [ref, vm.id] as const))
+  );
+  for (const o of m.objectives ?? []) {
+    const mod = typeof o?.objectRef === "string" ? vehicleRefOwner.get(o.objectRef) : undefined;
+    if (mod) usedVehicleMods.add(mod);
+  }
+  for (const mod of usedVehicleMods) {
+    if (!VEHICLE_MODS[mod]?.hidden && !m.mods.includes(mod)) m.mods.push(mod);
+  }
+  Object.assign(m, scrubVehicleMods(m, m.mods));
   // Arsenal Builder arrived after the first saves: default old saves to the
   // baked set; sanitize hand-edited refs against the legal pools (after the
   // mods normalization above — mod items are only legal with the mod enabled).

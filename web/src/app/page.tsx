@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { FACTIONS, ZONE_MODULES } from "mission-gen";
+import { FACTIONS, MOD_VEHICLES, ZONE_MODULES } from "mission-gen";
 import {
   DEFAULT_DELIVER_VEHICLE,
   DEFAULT_DESTROY_OBJECT,
@@ -10,6 +10,7 @@ import {
   defaultLoadouts,
   downloadMissionJson,
   sanitizeArsenal,
+  scrubVehicleMods,
   factionMeta,
   freshenGuids,
   freshSpawnElemId,
@@ -400,14 +401,24 @@ export default function Editor() {
     setStep("markers");
   };
 
-  /** Everything that must change together when the enemy faction changes. */
+  /** Everything that must change together when the enemy faction changes.
+   * Faction-specific patrol keys reset to the new enemy's default armed
+   * candidate; MODDED vehicle keys are side-agnostic and survive the change. */
   const enemyPatch = (ef: string, zones: Zone[]): Partial<Mission> => ({
     enemyFaction: ef,
     enemyGroupSets: [FACTIONS[ef].defaultGroupSet],
     zones: zones.map((zn) => ({
       ...zn,
       modules: zn.modules.map((mm) =>
-        mm.vehicles ? { ...mm, vehicles: FACTIONS[ef].patrolVehicleKeys.slice(0, 1) } : mm
+        mm.vehicles
+          ? {
+              ...mm,
+              vehicles: [
+                ...mm.vehicles.filter((k) => !!MOD_VEHICLES[k]),
+                ...FACTIONS[ef].patrolVehicleKeys.slice(0, 1),
+              ],
+            }
+          : mm
       ),
     })),
   });
@@ -420,7 +431,9 @@ export default function Editor() {
       playableSubfaction: sub,
       loadouts: defaultLoadouts(pf, sub),
       arsenal: defaultArsenal(pf, sub),
-      spawn: { ...mission.spawn, vehicles: [] },
+      // Faction vehicles reset with the faction; modded vehicles are
+      // side-agnostic and keep their placement across faction changes
+      spawn: { ...mission.spawn, vehicles: mission.spawn.vehicles.filter((v) => !!MOD_VEHICLES[v.type]) },
     };
     if (pf === mission.enemyFaction || aliasConflict(pf, mission.enemyFaction)) {
       const nextEnemy = enemyFactionKeys.find((f) => f !== pf && !aliasConflict(f, pf));
@@ -454,7 +467,7 @@ export default function Editor() {
       loadouts: loadouts.length ? loadouts : defaultLoadouts(pf, sub),
       spawn: {
         ...mission.spawn,
-        vehicles: mission.spawn.vehicles.filter((v) => !!F.vehicles?.[v.type]),
+        vehicles: mission.spawn.vehicles.filter((v) => !!F.vehicles?.[v.type] || !!MOD_VEHICLES[v.type]),
       },
     };
   };
@@ -485,7 +498,7 @@ export default function Editor() {
           playableSubfaction: sub,
           loadouts: defaultLoadouts(playable, sub),
           arsenal: defaultArsenal(playable, sub),
-          spawn: { ...mission.spawn, vehicles: [] },
+          spawn: { ...mission.spawn, vehicles: mission.spawn.vehicles.filter((v) => !!MOD_VEHICLES[v.type]) },
         });
       }
     } else {
@@ -519,6 +532,22 @@ export default function Editor() {
         patch.playableSubfaction ?? mission.playableSubfaction
       );
     }
+    // Disabling a VEHICLE mod scrubs its vehicles everywhere they can be
+    // referenced (spawn elements, zone patrol/QRF selections, deliver/destroy
+    // objective targets) — computed on the merged view so the cascades above
+    // aren't clobbered.
+    Object.assign(
+      patch,
+      scrubVehicleMods(
+        {
+          ...mission,
+          ...patch,
+          spawn: patch.spawn ?? mission.spawn,
+          zones: patch.zones ?? mission.zones,
+        } as Mission,
+        mods
+      )
+    );
     update(patch);
   };
 

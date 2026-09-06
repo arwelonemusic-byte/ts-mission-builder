@@ -1,15 +1,35 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { FACTIONS, vehicleSizeClass } from "mission-gen";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FACTIONS, MOD_VEHICLES, VEHICLE_MODS, vehicleSizeClass } from "mission-gen";
 import type { Mission, PlaceMode, SpawnVehicle } from "@/lib/mission";
 import { sanitizeSpawnDenials } from "@/lib/mission";
+import { thumbFromRef } from "@/lib/destroyObjects";
+import { OBJECTIVE_GLYPHS } from "@/lib/overlayHtml";
 import { useT } from "@/lib/i18n";
 import ArsenalBuilderModal from "../ArsenalBuilderModal";
-import { Divider, GhostButton, SectionLabel, SelectInput } from "../ui";
+import { ObjectPickerModal, type PickerEntry } from "../ObjectPicker";
+import { Divider, GhostButton, PlusIcon, SectionLabel } from "../ui";
 
 const MAX_CRATES = 8;
 const MAX_SPAWN_POINTS = 8;
+
+/** Picker filter chips — every spawn-pickable vehicle is armed or unarmed. */
+const VEHICLE_PICKER_CATEGORIES = [
+  { key: "armed", label: "Armed" },
+  { key: "unarmed", label: "Unarmed" },
+];
+
+/** Armed verdict for a faction vehicle key (picker chips). Patrol candidates
+ * are armed by definition (covers UK's LR3_LWB_recce, whose key says nothing);
+ * the pattern covers the rest of the catalogue — verified by eye against all
+ * playable factions' dicts 2026-09-06 (armed-but-not-patrol cases are the
+ * gunship/armed helis, MERDC/desert twins of patrol vehicles, APC_K17s). */
+function isArmedVehicle(key: string, patrolKeys: string[] | undefined): boolean {
+  if (patrolKeys?.includes(key)) return true;
+  if (/unarmed/i.test(key)) return false;
+  return /(M2HB|PKM|UK59|GPMG|gunship|LAV25|BRDM2|BTR70|SP02|armed)/i.test(key) || /^APC_K17/.test(key);
+}
 
 export default function SpawnPanel({
   mission,
@@ -39,6 +59,33 @@ export default function SpawnPanel({
   const t = useT();
   const spawn = mission.spawn;
   const playable = FACTIONS[mission.playableFaction];
+  const enabledVehicleMods = Object.values(VEHICLE_MODS).filter(
+    (vm) => !vm.hidden && mission.mods.includes(vm.id)
+  );
+  const [vehicleModalOpen, setVehicleModalOpen] = useState(false);
+  // Picker pool: the playable faction's vehicles, then enabled vehicle mods'.
+  // entry.ref = the vehicle KEY (what MissionSpawn stores); thumb resolved
+  // from the actual prefab ref like the deliver/destroy modals.
+  const vehiclePool = useMemo<PickerEntry[]>(() => {
+    const entries: PickerEntry[] = Object.entries(playable?.vehicles ?? {}).map(([key, ref]) => ({
+      ref: key,
+      label: playable?.vehicleLabels[key] ?? key,
+      cat: isArmedVehicle(key, playable?.patrolVehicleKeys) ? "armed" : "unarmed",
+      thumb: thumbFromRef(ref as string),
+    }));
+    for (const vm of enabledVehicleMods) {
+      for (const [key, ref] of Object.entries(vm.vehicles)) {
+        entries.push({
+          ref: key,
+          label: vm.vehicleLabels[key] ?? key,
+          cat: vm.patrolVehicleKeys.includes(key) ? "armed" : "unarmed",
+          thumb: thumbFromRef(ref),
+        });
+      }
+    }
+    return entries;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mission.playableFaction, mission.mods]);
   const placing = placeMode === "spawn";
   const togglePlace = () => setPlaceMode(placing ? null : "spawn");
   /** Per-element add buttons toggle their map placement mode. */
@@ -97,8 +144,25 @@ export default function SpawnPanel({
       onClick={() => selectSpawnEl(`veh:${v.id}`)}
     >
       <span className="flex-1 min-w-0 truncate text-[12px] text-white/80">
-        {spawn.vehicles.indexOf(v) + 1}. {playable?.vehicleLabels[v.type] ?? v.type}
+        {spawn.vehicles.indexOf(v) + 1}. {playable?.vehicleLabels[v.type] ?? MOD_VEHICLES[v.type]?.label ?? v.type}
       </span>
+      {/* Duplicate = arm one more map placement of the same type, skipping
+          the picker modal (the map click still decides where it lands) */}
+      <button
+        type="button"
+        aria-label={t("Duplicate vehicle")}
+        title={t("Duplicate vehicle")}
+        onClick={(e) => {
+          e.stopPropagation();
+          onAddVehicle(v.type);
+        }}
+        className="size-[24px] shrink-0 flex items-center justify-center rounded-[4px] hover:bg-[#2e3439] transition-colors"
+      >
+        <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden>
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" stroke="#fafafa" strokeWidth="1.4" fill="none" opacity="0.8" />
+          <path d="M10.5 2.5 H4 A1.5 1.5 0 0 0 2.5 4 V10.5" stroke="#fafafa" strokeWidth="1.4" fill="none" strokeLinecap="round" opacity="0.8" />
+        </svg>
+      </button>
       {trashBtn(t("Remove vehicle"), () =>
         updateSpawn({ vehicles: spawn.vehicles.filter((x) => x.id !== v.id) })
       )}
@@ -151,6 +215,7 @@ export default function SpawnPanel({
           </GhostButton>
         ) : (
           <GhostButton small active={placeMode === "spawn-farp"} onClick={() => toggleAdd("spawn-farp")}>
+            {placeMode !== "spawn-farp" && <PlusIcon />}
             {placeMode === "spawn-farp" ? t("Click the map… (cancel)") : t("Add FARP (click map)")}
           </GhostButton>
         )}
@@ -241,7 +306,8 @@ export default function SpawnPanel({
       </div>
       {spawn.spawnPoints.length < MAX_SPAWN_POINTS && (
         <GhostButton active={placeMode === "spawn-point"} onClick={() => toggleAdd("spawn-point")}>
-          {placeMode === "spawn-point" ? t("Click the map… (cancel)") : t("+ add spawn point")}
+          {placeMode !== "spawn-point" && <PlusIcon />}
+          {placeMode === "spawn-point" ? t("Click the map… (cancel)") : t("Add spawn point")}
         </GhostButton>
       )}
 
@@ -277,7 +343,8 @@ export default function SpawnPanel({
       </div>
       {spawn.crates.length < MAX_CRATES && (
         <GhostButton active={placeMode === "spawn-crate"} onClick={() => toggleAdd("spawn-crate")}>
-          {placeMode === "spawn-crate" ? t("Click the map… (cancel)") : t("+ add crate")}
+          {placeMode !== "spawn-crate" && <PlusIcon />}
+          {placeMode === "spawn-crate" ? t("Click the map… (cancel)") : t("Add crate")}
         </GhostButton>
       )}
 
@@ -291,26 +358,39 @@ export default function SpawnPanel({
           {helis.map(vehRow)}
         </div>
       )}
-      {Object.keys(playable?.vehicles ?? {}).length === 0 ? (
+      {vehiclePool.length === 0 ? (
         <span className="text-[11px] leading-4 text-white/40">
           {t("No vehicle catalogue for this faction yet.")}
         </span>
       ) : (
-        <SelectInput
-          value=""
-          onChange={(e) => {
-            const type = e.target.value;
-            if (!type) return;
-            onAddVehicle(type);
+        <GhostButton
+          active={placeMode === "spawn-vehicle"}
+          onClick={() => {
+            if (placeMode === "spawn-vehicle") setPlaceMode(null);
+            else setVehicleModalOpen(true);
           }}
         >
-          <option value="">{t("+ add vehicle…")}</option>
-          {Object.keys(playable?.vehicles ?? {}).map((vk) => (
-            <option key={vk} value={vk}>
-              {playable?.vehicleLabels[vk] ?? vk}
-            </option>
-          ))}
-        </SelectInput>
+          {placeMode !== "spawn-vehicle" && <PlusIcon />}
+          {placeMode === "spawn-vehicle" ? t("Click the map… (cancel)") : t("Add vehicle")}
+        </GhostButton>
+      )}
+      {/* Visual vehicle picker (2026-09-06, replaced the dropdown): the same
+          full-screen thumbnail modal as Props/Objectives. Entry.ref carries
+          the vehicle KEY (the picker only needs an identity string); picking
+          arms the one-shot spawn-vehicle map placement like the dropdown did. */}
+      {vehicleModalOpen && (
+        <ObjectPickerModal
+          pool={vehiclePool}
+          categories={VEHICLE_PICKER_CATEGORIES}
+          glyph={OBJECTIVE_GLYPHS.deliver}
+          title={t("Select vehicle")}
+          current={undefined}
+          onPick={(key) => {
+            setVehicleModalOpen(false);
+            onAddVehicle(key);
+          }}
+          onClose={() => setVehicleModalOpen(false)}
+        />
       )}
     </>
   );

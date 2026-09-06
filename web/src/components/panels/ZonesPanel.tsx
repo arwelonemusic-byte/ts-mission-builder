@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FACTIONS, ZONE_MODULES } from "mission-gen";
+import { FACTIONS, MOD_VEHICLES, VEHICLE_MODS, ZONE_MODULES } from "mission-gen";
 import type { Mission, PlaceMode, Zone, ZoneModule } from "@/lib/mission";
 import { rangeLabel, zoneEnemyRange } from "@/lib/enemyEstimate";
 import { MODULE_DESCRIPTIONS, MODULE_ICONS } from "@/lib/zoneModules";
@@ -104,6 +104,9 @@ export default function ZonesPanel({
   const t = useT();
   const lang = useLang();
   const enemy = FACTIONS[mission.enemyFaction];
+  const enabledVehicleMods = Object.values(VEHICLE_MODS).filter(
+    (vm) => !vm.hidden && mission.mods.includes(vm.id)
+  );
   const placing = placeMode === "zone";
 
   // When a zone is selected on the map, reveal its card in the scrollable panel
@@ -302,9 +305,23 @@ export default function ZonesPanel({
                   )}
                   {mod && wantsVehicles && (
                     <div className="ml-1 pl-4 border-l border-[#2e3439] flex flex-col gap-1">
+                      {/* Modded vehicles (side-agnostic) join the faction's
+                          candidates in the matching armed/unarmed group */}
                       {[
-                        { heading: "Armed", keys: enemy?.patrolVehicleKeys ?? [] },
-                        { heading: "Unarmed", keys: enemy?.transportVehicleKeys ?? [] },
+                        {
+                          heading: "Armed",
+                          keys: [
+                            ...(enemy?.patrolVehicleKeys ?? []),
+                            ...enabledVehicleMods.flatMap((vm) => vm.patrolVehicleKeys),
+                          ],
+                        },
+                        {
+                          heading: "Unarmed",
+                          keys: [
+                            ...(enemy?.transportVehicleKeys ?? []),
+                            ...enabledVehicleMods.flatMap((vm) => vm.transportVehicleKeys),
+                          ],
+                        },
                       ]
                         .filter((grp) => grp.keys.length > 0)
                         .map((grp) => (
@@ -327,7 +344,7 @@ export default function ZonesPanel({
                                     });
                                   }}
                                 >
-                                  {enemy?.vehicleLabels[vk] ?? vk}
+                                  {enemy?.vehicleLabels[vk] ?? MOD_VEHICLES[vk]?.label ?? vk}
                                 </CheckRow>
                               );
                             })}

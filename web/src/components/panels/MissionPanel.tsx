@@ -1,12 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { MODS, CORE_ADDONS } from "mission-gen";
+import { MODS, VEHICLE_MODS, CORE_ADDONS } from "mission-gen";
 import { TERRAIN_LIST, terrainByKey } from "@/lib/terrains";
 import type { Mission } from "@/lib/mission";
 import { prepareThumbnailSource, thumbnailPreviewUrl } from "@/lib/thumbnail";
 import { useT } from "@/lib/i18n";
 import { CheckRow, Divider, Field, GhostButton, Hint, SelectInput, TextInput } from "../ui";
+
+function ChevronDown({ open }: { open?: boolean }) {
+  return (
+    <svg
+      width="10"
+      height="6"
+      viewBox="0 0 9.33 5.33"
+      className={`shrink-0 opacity-60 transition-transform ${open ? "rotate-180" : ""}`}
+      aria-hidden
+    >
+      <path d="M0.67 0.67 L4.67 4.67 L8.67 0.67" stroke="#fafafa" strokeWidth="1.4" fill="none" />
+    </svg>
+  );
+}
 
 export default function MissionPanel({
   mission,
@@ -30,6 +44,8 @@ export default function MissionPanel({
   // Live thumbnail preview. Compositing a 1920x1200 canvas per keystroke is
   // wasteful, so the name edits are debounced; the object URL is swapped (and
   // the old one revoked) only once a render actually completes.
+  const [factionModsOpen, setFactionModsOpen] = useState(false);
+  const [vehicleModsOpen, setVehicleModsOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const previewRef = useRef<string | null>(null);
   const [thumbBusy, setThumbBusy] = useState(false);
@@ -91,10 +107,56 @@ export default function MissionPanel({
       ? [{ label: terrain.label, url: terrain.workshopUrl }]
       : []),
     ...mission.mods
-      .map((id) => MODS[id])
+      .map((id) => MODS[id] ?? VEHICLE_MODS[id])
       .filter(Boolean)
       .map((mod) => ({ label: mod.label, url: mod.workshopUrl })),
   ];
+  const modCheckRow = (mod: { id: string; label: string }) => {
+    const on = mission.mods.includes(mod.id);
+    return (
+      <div key={mod.id} className="flex flex-col gap-1">
+        <CheckRow
+          checked={on}
+          onChange={(next) =>
+            onMods(next ? [...mission.mods, mod.id] : mission.mods.filter((x) => x !== mod.id))
+          }
+        >
+          {mod.label}
+        </CheckRow>
+      </div>
+    );
+  };
+  // Mod lists collapse by default — the sheet was getting too long. The
+  // header shows how many of the section's mods are enabled so a collapsed
+  // section still tells the user something is active.
+  const modSection = (
+    label: string,
+    mods: { id: string; label: string; hidden?: boolean }[],
+    open: boolean,
+    onToggle: () => void
+  ) => {
+    const visible = mods.filter((mod) => !mod.hidden);
+    const enabled = visible.filter((mod) => mission.mods.includes(mod.id)).length;
+    return (
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={onToggle}
+          className="w-full flex items-center gap-2 text-left cursor-pointer"
+        >
+          <span className="text-[12px] text-white">{label}</span>
+          {enabled > 0 && (
+            <span className="text-[11px] leading-4 px-[6px] rounded-[8px] bg-[rgba(244,219,80,0.15)] text-[#f4db50]">
+              {enabled}
+            </span>
+          )}
+          <span className="flex-1" />
+          <ChevronDown open={open} />
+        </button>
+        {open && <div className="flex flex-col gap-2">{visible.map(modCheckRow)}</div>}
+      </div>
+    );
+  };
   return (
     <>
       <div className="bg-[rgba(244,219,80,0.12)] border border-[rgba(244,219,80,0.4)] rounded-[8px] p-3 flex flex-col gap-1">
@@ -114,30 +176,18 @@ export default function MissionPanel({
           </a>
         ))}
       </div>
-      {/* Content mods: gate which factions the builder offers. Disabling a mod
-          resets any faction selections that depend on it (page.tsx setMods).
-          Sits right under the Important callout so enabling a mod visibly
-          extends the required-addons list above it. */}
-      <div className="text-[12px] text-white">{t("Supported mods")}</div>
-      <div className="flex flex-col gap-2">
-        {Object.values(MODS)
-          .filter((mod) => !mod.hidden)
-          .map((mod: { id: string; label: string; workshopUrl: string }) => {
-          const on = mission.mods.includes(mod.id);
-          return (
-            <div key={mod.id} className="flex flex-col gap-1">
-              <CheckRow
-                checked={on}
-                onChange={(next) =>
-                  onMods(next ? [...mission.mods, mod.id] : mission.mods.filter((x) => x !== mod.id))
-                }
-              >
-                {mod.label}
-              </CheckRow>
-            </div>
-          );
-        })}
-      </div>
+      {/* Faction mods gate which factions the builder offers; vehicle mods
+          gate the modded-vehicle entries in the spawn picker / zone patrol
+          multiselects / objective pools. Disabling a mod resets or scrubs the
+          selections that depend on it (page.tsx setMods). Sits right under
+          the Important callout so enabling a mod visibly extends the
+          required-addons list above it. */}
+      {modSection(t("Faction mods"), Object.values(MODS), factionModsOpen, () =>
+        setFactionModsOpen((v) => !v)
+      )}
+      {modSection(t("Vehicle mods"), Object.values(VEHICLE_MODS), vehicleModsOpen, () =>
+        setVehicleModsOpen((v) => !v)
+      )}
       <Divider />
       <Field label={t("Terrain")}>
         <SelectInput

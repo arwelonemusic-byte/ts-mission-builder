@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -158,6 +158,24 @@ export function buildMissionFiles(mission, options = {}) {
   const arsenalMods = Object.entries(MOD_ARSENAL_POOLS)
     .filter(([, pool]) => pool.some((i) => arsenalRefSet.has(i.ref) && !vanillaRefs.has(i.ref)))
     .map(([id]) => id);
+  // Vehicle mods (side-agnostic pool contributors): usage-derived like faction
+  // mods — a mod's deps join only when the mission actually places one of its
+  // vehicles: a player spawn vehicle, a zone module's patrol/QRF selection, or
+  // a deliver/destroy objective targeting one of its refs.
+  const usedVehicleKeys = [
+    ...(mission.spawn?.vehicles ?? []).map((v) => v.type),
+    ...(mission.zones ?? []).flatMap((z) => (z.plugins ?? []).flatMap((p) => p.vehicles ?? [])),
+  ];
+  const modVehicleRefs = new Map(
+    Object.values(VEHICLE_MODS).flatMap((vm) => Object.values(vm.vehicles).map((ref) => [ref, vm.id]))
+  );
+  const objectiveRefs = (mission.objectives ?? []).map((o) => o.objectRef).filter(Boolean);
+  const vehicleMods = [
+    ...new Set([
+      ...usedVehicleKeys.map((k) => MOD_VEHICLES[k]?.mod),
+      ...objectiveRefs.map((r) => modVehicleRefs.get(r)),
+    ]),
+  ].filter(Boolean);
   // Core addons (ACE Medical) are mandatory for every mission — listed right
   // after the toolkit, ahead of the usage-derived deps.
   const modDeps = [
@@ -165,6 +183,7 @@ export function buildMissionFiles(mission, options = {}) {
       ...CORE_ADDONS.map((a) => a.guid),
       ...usedMods.flatMap((id) => MODS[id].dependencies),
       ...arsenalMods.flatMap((id) => MODS[id].dependencies),
+      ...vehicleMods.flatMap((id) => VEHICLE_MODS[id].dependencies),
       ...(TERRAIN.dependencies ?? []),
     ]),
   ];
@@ -588,7 +607,7 @@ SCR_LoadoutManager : "{AA4E7419A1FF65B0}Prefabs/MP/Managers/Loadouts/LoadoutMana
       .join("\n");
     vehicleSlots = (sp.vehicles ?? [])
       .map((v, i) => {
-        const ref = F.vehicles[v.type];
+        const ref = F.vehicles[v.type] ?? MOD_VEHICLES[v.type]?.ref;
         if (!ref) throw new Error(`No vehicle GUID for ${mission.playableFaction}/${v.type}`);
         // +20 cm so physics settles the vehicle down instead of it clipping
         // into a terrain undulation between tilt sample points
@@ -661,7 +680,7 @@ SCR_LoadoutManager : "{AA4E7419A1FF65B0}Prefabs/MP/Managers/Loadouts/LoadoutMana
     vehicleSlots = layout.items
       .filter((it) => it.kind === "vehicle")
       .map((it, i) => {
-        const ref = F.vehicles[it.type];
+        const ref = F.vehicles[it.type] ?? MOD_VEHICLES[it.type]?.ref;
         if (!ref) throw new Error(`No vehicle GUID for ${mission.playableFaction}/${it.type}`);
         return slotBlock(`SlotVehicle${i + 1}`, ref, it);
       })
@@ -751,7 +770,7 @@ ${farpBlock}`;
       // falls back to all patrol candidates if the mission doesn't specify.
       const keys = p.vehicles?.length ? p.vehicles : ENEMY.patrolVehicleKeys;
       const refs = keys.map((k) => {
-        const ref = ENEMY.vehicles[k];
+        const ref = ENEMY.vehicles[k] ?? MOD_VEHICLES[k]?.ref;
         if (!ref) throw new Error(`Unknown patrol vehicle ${mission.enemyFaction}/${k}`);
         return ref;
       });

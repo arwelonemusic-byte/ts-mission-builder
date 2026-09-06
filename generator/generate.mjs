@@ -18,6 +18,10 @@
 //               MEI — validates the friendly-faction clearing override)
 //   --usdesert  build the US Desert Camo variant (TS_WebSpikeUSDesert: US_DESERT
 //               alias vs USSR — pure material reskin; deps = the addon GUID)
+//   --dax       build the Dax Humvees vehicle-mod variant (TS_WebSpikeDax:
+//               US vs USSR with Dax spawn vehicles + a mixed vanilla/Dax
+//               mounted patrol + a Dax deliver target — all three usage-derived
+//               dep paths of the first VEHICLE mod)
 //   --sfs       build the SFS loadout-pack variant (TS_WebSpikeSFS: SFS_US
 //               "US Special Force Squad (Abrashka)" vs USSR — playable alias)
 //   --sfs-enemy build the SFS enemy-side variant (TS_WebSpikeSFSEnemy: vanilla
@@ -698,6 +702,66 @@ const USDESERT_MISSION = {
     world: "A1C6E39B7D2F5804",
     missionConf: "6B8F2D4E9A17C3D5",
   },
+};
+
+// Dax Humvees spike: first VEHICLE mod (side-agnostic pool contributor, no
+// faction). Exercises every usage-derived dep path in one mission: player
+// spawn vehicles (armed M2 + unarmed Platoon truck via MOD_VEHICLES key
+// fallback), a zone mounted patrol mixing a vanilla BRDM2 with two Dax keys
+// (USSR crews via patrolCrew — the crew rule), and a deliver objective whose
+// target is a Dax vehicle ref. addon.gproj must list 62DA2C805FEB90A1 exactly
+// once.
+const DAX_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeDax",
+  dirName: "TS_WebSpikeDax",
+  addonTitle: "TS Web Spike Dax Mission",
+  name: "TS_WebSpikeDax",
+  displayName: "TS Web Spike Dax",
+  guids: {
+    addon: "6AD40A11B3C5E972",
+    world: "6AD40A114F28D6A3",
+    missionConf: "6AD40A1190E71B54",
+  },
+  spawn: {
+    pos: "1351.898 37.189 2399.095",
+    yaw: 51,
+    farp: true,
+    vehicles: [
+      { type: "DAX_M1025_11" },
+      { type: "DAX_M998_01" },
+      { type: "M923A1_transport_covered" },
+    ],
+  },
+  zones: [
+    {
+      name: "Area1",
+      pos: "2795.307 74.075 1628.664",
+      radius: 200,
+      plugins: [
+        { type: "DefenseGroup" },
+        { type: "TS_ScenarioFrameworkPluginAIPatrol", attrs: { m_iBudget: 2 } },
+        // Mixed vanilla + Dax patrol pool (armed M60 + unarmed DUKE)
+        {
+          type: "TS_ScenarioFrameworkPluginMountedPatrol",
+          attrs: { m_iBudget: 2 },
+          vehicles: ["BRDM2", "DAX_M1025_12", "DAX_M1025_13"],
+        },
+      ],
+    },
+  ],
+  objectives: [
+    {
+      type: "deliver",
+      pos: [2836.2, 72.96, 1620.4],
+      delivery: [1380.5, 36.3, 2378.9],
+      deliveryRadius: 30,
+      objectRef: "{BAF3973B1161C284}Prefabs/Vehicles/Wheeled/M998/Green/M998 02.et",
+      taskTitle: "Угнать M998",
+      taskDesc: "В лагере противника стоит трофейный M998 с пулемётом M2. Угоните его и доставьте на базу.",
+    },
+  ],
+  props: [],
 };
 
 // SFS spike: the Abrashka loadout pack as playable "faction" vs vanilla USSR
@@ -1714,6 +1778,8 @@ const BUILT = process.argv.includes("--zagoria")
                   ? SFS_MISSION
                 : process.argv.includes("--usdesert")
                   ? USDESERT_MISSION
+                : process.argv.includes("--dax")
+                  ? DAX_MISSION
                 : process.argv.includes("--arsenal")
                   ? ARSENAL_MISSION
                 : process.argv.includes("--ai-arty")

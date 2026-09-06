@@ -5,7 +5,7 @@
 // thumbs are keyed by prefab basename — factions whose mods ship no
 // EditorPreviews (British Forces, MEI reskins) fall back to the modal's
 // placeholder tile via <img> onError.
-import { DESTROY_OBJECTS, FACTIONS } from "mission-gen";
+import { DESTROY_OBJECTS, FACTIONS, VEHICLE_MODS } from "mission-gen";
 import type { Mission } from "./mission";
 
 export type DestroyCategory = "comms" | "fuel" | "cache" | "weapons" | "vehicles";
@@ -101,12 +101,27 @@ const THUMB_FALLBACKS: Record<string, string> = {
   BTR70_Ses_NAPA: "BTR70.png",
 };
 
-const thumbFromRef = (ref: string) => {
+export const thumbFromRef = (ref: string) => {
   const base = (ref.split("/").pop() ?? "").replace(/\.et$/i, "");
   return THUMB_FALLBACKS[base] ?? `${base}.png`;
 };
 
-/** Full selectable pool for a mission: curated objects + both sides' vehicles. */
+/** Enabled vehicle mods' entries (side-agnostic — join every vehicle pool). */
+function modVehicleEntries(m: Mission, seen: Set<string>): DestroyEntry[] {
+  const entries: DestroyEntry[] = [];
+  for (const vm of Object.values(VEHICLE_MODS)) {
+    if (vm.hidden || !m.mods.includes(vm.id)) continue;
+    for (const [key, ref] of Object.entries(vm.vehicles)) {
+      if (seen.has(ref)) continue;
+      seen.add(ref);
+      entries.push({ ref, label: vm.vehicleLabels?.[key] ?? key, cat: "vehicles", thumb: thumbFromRef(ref) });
+    }
+  }
+  return entries;
+}
+
+/** Full selectable pool for a mission: curated objects + both sides' vehicles
+ * + enabled vehicle mods. */
 export function destroyPool(m: Mission): DestroyEntry[] {
   const entries: DestroyEntry[] = DESTROY_OBJECTS.map((o) => ({ ...o }));
   const seen = new Set(entries.map((e) => e.ref));
@@ -124,6 +139,7 @@ export function destroyPool(m: Mission): DestroyEntry[] {
       });
     }
   }
+  entries.push(...modVehicleEntries(m, seen));
   return entries;
 }
 
@@ -135,7 +151,8 @@ export function destroyEntry(m: Mission, ref: string | undefined): DestroyEntry 
 
 /** Deliver-vehicle pool: every vehicle of vanilla + ENABLED-mod factions
  * (not just the mission's two sides — steal-and-deliver plots want the full
- * garage). Deduped by ref; vanilla factions come first in FACTIONS order. */
+ * garage) + enabled vehicle mods. Deduped by ref; vanilla factions come
+ * first in FACTIONS order. */
 export function deliverVehiclePool(m: Mission): DestroyEntry[] {
   const entries: DestroyEntry[] = [];
   const seen = new Set<string>();
@@ -147,6 +164,7 @@ export function deliverVehiclePool(m: Mission): DestroyEntry[] {
       entries.push({ ref, label: f.vehicleLabels?.[key] ?? key, cat: "vehicles", thumb: thumbFromRef(ref) });
     }
   }
+  entries.push(...modVehicleEntries(m, seen));
   return entries;
 }
 
