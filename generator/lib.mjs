@@ -887,14 +887,71 @@ ${farpBlock}`;
     // shared math lives in terrainTilt (spawn section)
     return terrainTilt(p.pos[0], p.pos[2], yaw, Math.max(2, (fp.d ?? fp.w ?? 0) / 2), Math.max(2, (fp.d ?? fp.len ?? 0) / 2));
   };
-  const propsLayer = props
-    .map((p, i) => {
-      const yaw = +((p.rotation ?? 0) % 360).toFixed(1);
-      const [pitch, roll] = propTilt(p, yaw);
+  // Fortification-category props go through the Scenario Framework
+  // (AreaProps > LayerProps > SlotProp<N>) so SCR_ScenarioFrameworkSlotBase
+  // .SpawnAsset requests a navmesh rebuild for them — a directly placed
+  // obstacle is invisible to the pre-baked navmesh and AI walk straight
+  // into its barbed wire (2026-09-07, navmesh-and-object-placement.md). The
+  // slot copies its FULL world transform (position + pitch/yaw/roll, no
+  // terrain snap), so the sampled Y and tilt reach the spawned composition
+  // unchanged; same Y/angles as the direct form, just Area-relative. One
+  // shared Area with dynamic despawn OFF: static state (destruction)
+  // persists and the navmesh rebuilds once at init; defense groups keep
+  // their own despawning AreaPropDef trios. Every other category stays a
+  // plain world entity — minefields are logical areas, wrecks/cargo/base
+  // props are decoration, and the 6 base-prefab wrecks chain to Props_Base
+  // with NO RplComponent (slot-spawned they'd exist on the server only:
+  // client-invisible collision). N = prop ordinal in both forms so
+  // SlotAIPropDef<N> keeps correlating.
+  const isSlotProp = (p) => PROPS.find((e) => e.ref === p.ref)?.cat === "fortification";
+  const propEntries = props.map((p, i) => {
+    const yaw = +((p.rotation ?? 0) % 360).toFixed(1);
+    const [pitch, roll] = propTilt(p, yaw);
+    return { p, i, pos: propPos(p), yaw, pitch, roll };
+  });
+  const directPropsBlock = propEntries
+    .filter((e) => !isSlotProp(e.p))
+    .map(({ p, i, pos, yaw, pitch, roll }) => {
       const angles = pitch || yaw || roll ? `\n angles ${pitch} ${yaw} ${roll}` : "";
-      return `GenericEntity Prop${i + 1} : "${p.ref}" {\n coords ${posStr(propPos(p))}${angles}\n}\n`;
+      return `GenericEntity Prop${i + 1} : "${p.ref}" {\n coords ${posStr(pos)}${angles}\n}\n`;
     })
     .join("");
+  const slotProps = propEntries.filter((e) => isSlotProp(e.p));
+  let slotPropsBlock = "";
+  if (slotProps.length) {
+    const avg = (k) => slotProps.reduce((s, e) => s + e.pos[k], 0) / slotProps.length;
+    const areaOrigin = [+avg(0).toFixed(3), +avg(1).toFixed(3), +avg(2).toFixed(3)];
+    const slots = slotProps
+      .map(({ p, i, pos, yaw, pitch, roll }) => {
+        const rel = posStr([pos[0] - areaOrigin[0], pos[1] - areaOrigin[1], pos[2] - areaOrigin[2]]);
+        const angles = pitch || yaw || roll ? `\n     angles ${pitch} ${yaw} ${roll}` : "";
+        return `    GenericEntity SlotProp${i + 1} : "${K.SLOT_PREFAB}" {
+     components {
+      SCR_ScenarioFrameworkSlotBase "${K.CMP_SF_SLOT}" {
+       m_sObjectToSpawn "${p.ref}"
+       m_bCanBeGarbageCollected 0
+      }
+     }
+     coords ${rel}${angles}
+    }`;
+      })
+      .join("\n");
+    // No component block on the Area/Layer = pure prefab defaults (dynamic
+    // despawn off) — the AreaMarkers precedent.
+    slotPropsBlock = `GenericEntity AreaProps : "${K.AREA_PREFAB}" {
+ coords ${posStr(areaOrigin)}
+ {
+  GenericEntity LayerProps : "${K.LAYER_PREFAB}" {
+   coords 0 0 0
+   {
+${slots}
+   }
+  }
+ }
+}
+`;
+  }
+  const propsLayer = slotPropsBlock + directPropsBlock;
   const propDefenseBlocks = props
     .map((p, i) => {
       if (!p.defense) return "";

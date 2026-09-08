@@ -139,7 +139,7 @@ export type MissionObjective = {
   taskDesc: string;
 };
 
-/** Placed prop (Props tab) → a plain world entity in Props.layer. ref is a
+/** Placed prop (Props tab) → Props.layer (fortification cat = SF slot, rest = plain entity). ref is a
  * PROPS catalogue entry (stored identity); rotation is a compass bearing
  * (prefabs face local +Z, 0 = north). defense (only meaningful for
  * defense-capable categories) adds an enemy group holding the prop;

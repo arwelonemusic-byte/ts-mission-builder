@@ -122,7 +122,7 @@ export async function toGeneratorMission(m: Mission) {
     stopTriggers.push({ pos: [y(st.x), y(sty), y(st.z)], radius: st.radius });
   }
 
-  // Props → Props.layer entities (+ AO.layer defense trios in the generator)
+  // Props → Props.layer (fortifications as SF slots, rest plain entities; + AO.layer defense trios in the generator)
   const props = [];
   for (const p of m.props) {
     const py = await elevationAt(m.terrain, p.x, p.z);
