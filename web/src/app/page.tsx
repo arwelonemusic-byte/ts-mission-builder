@@ -639,7 +639,8 @@ export default function Editor() {
       const id = freshSpawnElemId();
       const type = pendingVehicleType;
       // Faction switched while armed → the type no longer resolves; disarm.
-      if (!FACTIONS[mission.playableFaction]?.vehicles?.[type]) {
+      // Mod vehicles (Dax Humvees…) are side-agnostic and live in MOD_VEHICLES, not the faction dict.
+      if (!FACTIONS[mission.playableFaction]?.vehicles?.[type] && !MOD_VEHICLES[type]) {
         setPlaceMode(null);
         setPendingVehicleType(null);
         return;

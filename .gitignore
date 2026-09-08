@@ -11,3 +11,6 @@ __pycache__/
 
 input/addon-audit/_vanilla-index.json.gz
 input/addon-audit/_junctions.json
+
+# Junction to the TS Mission Toolkit addon (own git repo) - see CLAUDE.md "Working on the toolkit from here"
+toolkit
