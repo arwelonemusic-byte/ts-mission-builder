@@ -185,6 +185,11 @@ export const TERRAINS = {
       "{301510D49B59DE2C}worlds/Gamemaster/Navmeshes/GM_Ruha_navmesh_vehicles.nmn",
       "{806B3036EA17E548}worlds/Gamemaster/Navmeshes/GM_Ruha_navmesh_lowres.nmn",
     ],
+    // The bare world bakes in a PerceptionManager (named PerceptionManager1 in
+    // worlds/Ruha_Layers/default.layer — no name clash with ours, so Workbench
+    // never complained, but missions carried two; caught by /addon-audit
+    // 2026-09-08). Skip emitting ours like Serhiivka/Zarichne.
+    parentHasPerceptionManager: true,
     dependencies: ["653CB36244ADBE0F"],
   },
   // Serhiivka (WCS; dep WCS_Core resolves transitively). Nav refs in custom
@@ -262,7 +267,8 @@ export const TERRAINS = {
     },
     nav: [
       "{E9D4D61376F15235}worlds/MerakIsland/Navmeshes/Soldier.nmn",
-      "{9C321749FB3AC1EC}worlds/MerakIsland/Navmeshes/BTR.nmn",
+      // 1.0.28 (2026-09-03) replaced BTR.nmn with BTRlike.nmn (caught by /addon-audit 2026-09-08)
+      "{5D2C71EE05F0C6A6}worlds/MerakIsland/Navmeshes/BTRlike.nmn",
       "{D74F912176060F10}worlds/MerakIsland/Navmeshes/lowres.nmn",
     ],
     dependencies: ["6047000574D60BF9"],

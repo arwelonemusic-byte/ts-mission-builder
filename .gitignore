@@ -8,3 +8,6 @@ generated-missions/
 .claude/handoffs/
 input/thumb-shots/
 __pycache__/
+
+input/addon-audit/_vanilla-index.json.gz
+input/addon-audit/_junctions.json

@@ -177,3 +177,11 @@ line + 634). Faction: `BF-Faction_UK-name` = "British Military". Role names reso
 roles reuse vanilla `#AR-Role_*`. Hardcoded English names in prefabs: L4LMG_No1 = "Light
 Machine-Gunner", Section2IC = "Section 2IC", SectionCommander = "Section Commander",
 CRW = "Counter Revolutionary Warfare Trooper".
+
+## Audit log
+
+- **2026-09-08 — v1.0.65 → v1.0.67** (`/addon-audit`): 8 prefab tweaks (Character_UK_BaseLoadout,
+  3Series Land Rover base/LWB transport/civvie V8 base, GPMG L7A2 mounted ×3, Tripod_GPMG — new
+  wheel/wind sound refs, one AA .xob dropped) + the mod's showcase world layer. No catalog, GUID
+  or FactionManager changes; every Builder ref OK (`check uk`: 236 prefab-corroborated + 96
+  catalog-only). No Builder change; baseline advanced to 1.0.67. Truck, Utility still 1.0.3.
