@@ -78,7 +78,7 @@ export default function SpawnPanel({
         entries.push({
           ref: key,
           label: vm.vehicleLabels[key] ?? key,
-          cat: vm.patrolVehicleKeys.includes(key) ? "armed" : "unarmed",
+          cat: (vm.armedVehicleKeys ?? vm.patrolVehicleKeys).includes(key) ? "armed" : "unarmed",
           thumb: thumbFromRef(ref),
         });
       }

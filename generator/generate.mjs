@@ -22,6 +22,10 @@
 //               US vs USSR with Dax spawn vehicles + a mixed vanilla/Dax
 //               mounted patrol + a Dax deliver target — all three usage-derived
 //               dep paths of the first VEHICLE mod)
+//   --wcs       build the WCS vehicle-mods variant (TS_WebSpikeWCS: US vs USSR
+//               using all seven WCS mods at once — JLTV/FMTV/Stryker/MRZR spawn
+//               vehicles (light + heavy slots), a BMP-1/BMP-3 mounted patrol,
+//               an M1 Abrams deliver target — addon.gproj must list the 7 GUIDs)
 //   --sfs       build the SFS loadout-pack variant (TS_WebSpikeSFS: SFS_US
 //               "US Special Force Squad (Abrashka)" vs USSR — playable alias)
 //   --sfs-enemy build the SFS enemy-side variant (TS_WebSpikeSFSEnemy: vanilla
@@ -759,6 +763,65 @@ const DAX_MISSION = {
       objectRef: "{BAF3973B1161C284}Prefabs/Vehicles/Wheeled/M998/Green/M998 02.et",
       taskTitle: "Угнать M998",
       taskDesc: "В лагере противника стоит трофейный M998 с пулемётом M2. Угоните его и доставьте на базу.",
+    },
+  ],
+  props: [],
+};
+
+// WCS spike (2026-09-10): all seven Worst Case Scenario vehicle mods in one
+// mission — every mod contributes through at least one usage path so the
+// .gproj lists each of the 7 GUIDs exactly once (SpaceCore/Armaments arrive
+// transitively). Spawn = light (JLTV, MRZR) + heavy (FMTV covered, Stryker ICV)
+// slots via vehicleSizeClass; mounted patrol = vanilla BRDM2 + BMP-1 + BMP-3
+// with USSR crews (crew rule); deliver target = an M1A1 (Olive) parked in the AO.
+const WCS_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeWCS",
+  dirName: "TS_WebSpikeWCS",
+  addonTitle: "TS Web Spike WCS Mission",
+  name: "TS_WebSpikeWCS",
+  displayName: "TS Web Spike WCS",
+  guids: {
+    addon: "6AE0C3F17B25A9D4",
+    world: "6AE0C3F1D48E2B67",
+    missionConf: "6AE0C3F12F9C6E15",
+  },
+  spawn: {
+    pos: "1351.898 37.189 2399.095",
+    yaw: 51,
+    farp: true,
+    vehicles: [
+      { type: "WCS_JLTV_CROWS_M2HB" },
+      { type: "WCS_MRZR_D4_Unarmed_Olive" },
+      { type: "WCS_M1083_Transport_Covered" },
+      { type: "WCS_Stryker_APC" },
+    ],
+  },
+  zones: [
+    {
+      name: "Area1",
+      pos: "2795.307 74.075 1628.664",
+      radius: 200,
+      plugins: [
+        { type: "DefenseGroup" },
+        { type: "TS_ScenarioFrameworkPluginAIPatrol", attrs: { m_iBudget: 2 } },
+        {
+          type: "TS_ScenarioFrameworkPluginMountedPatrol",
+          attrs: { m_iBudget: 2 },
+          vehicles: ["BRDM2", "WCS_BMP1_Base", "WCS_BMP3_Base"],
+        },
+      ],
+    },
+  ],
+  objectives: [
+    {
+      type: "deliver",
+      pos: [2836.2, 72.96, 1620.4],
+      delivery: [1380.5, 36.3, 2378.9],
+      deliveryRadius: 30,
+      objectRef: "{E80B119CFDF50ABE}Prefabs/Vehicles/Tracked/M1A1/M1A1_Olive.et",
+      taskTitle: "Угнать M1A1",
+      taskDesc: "В лагере противника стоит трофейный M1A1 Abrams. Угоните его и доставьте на базу.",
     },
   ],
   props: [],
@@ -1780,6 +1843,8 @@ const BUILT = process.argv.includes("--zagoria")
                   ? USDESERT_MISSION
                 : process.argv.includes("--dax")
                   ? DAX_MISSION
+                : process.argv.includes("--wcs")
+                  ? WCS_MISSION
                 : process.argv.includes("--arsenal")
                   ? ARSENAL_MISSION
                 : process.argv.includes("--ai-arty")

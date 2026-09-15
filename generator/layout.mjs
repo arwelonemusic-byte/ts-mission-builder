@@ -9,7 +9,8 @@
 
 export function vehicleSizeClass(key) {
   if (/^(UH1H|Mi8MT)/.test(key)) return "heli";
-  if (/^(M923A1|Ural4320|BTR70|BRDM2|LAV25|M998_covered_long)/.test(key)) return "heavy";
+  // WCS vehicle mods (2026-09-10): Abrams/BMP/Stryker/FMTV hulls are 6.7-8.5 m long -> heavy slot; JLTV/MRZR stay light.
+  if (/^(M923A1|Ural4320|BTR70|BRDM2|LAV25|M998_covered_long|WCS_M1A[12]_|WCS_BMP[13]P?_|WCS_Stryker_|WCS_M108[0-9]_|WCS_M109[0-9]_)/.test(key)) return "heavy";
   return "light";
 }
 

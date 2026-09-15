@@ -21,6 +21,13 @@ import { SFSFIA } from "./mods/sfsfia.mjs";
 import { ARMA2 } from "./mods/arma2.mjs";
 import { USDESERT } from "./mods/usdesert.mjs";
 import { DAXHUMVEES } from "./mods/daxhumvees.mjs";
+import { WCS_JLTV } from "./mods/wcs-jltv.mjs";
+import { WCS_M1A1 } from "./mods/wcs-m1a1.mjs";
+import { WCS_BMP3 } from "./mods/wcs-bmp3.mjs";
+import { WCS_BMP1 } from "./mods/wcs-bmp1.mjs";
+import { WCS_FMTV } from "./mods/wcs-fmtv.mjs";
+import { WCS_STRYKER } from "./mods/wcs-stryker.mjs";
+import { WCS_MRZR } from "./mods/wcs-mrzr.mjs";
 
 // Props tab catalogue (placeable prefabs + footprints) lives in its own file.
 export { PROPS, PROP_CATEGORIES, DEFAULT_PROP } from "./props.mjs";
@@ -1070,7 +1077,9 @@ for (const mod of Object.values(MODS)) {
 // actually places one of its vehicles (spawn element, zone module selection,
 // or a deliver/destroy objective ref). Vehicle keys must be globally unique
 // across all vehicle mods AND all faction `vehicles` dicts (prefix them).
-export const VEHICLE_MODS = { [DAXHUMVEES.id]: DAXHUMVEES };
+export const VEHICLE_MODS = Object.fromEntries(
+  [DAXHUMVEES, WCS_JLTV, WCS_M1A1, WCS_BMP3, WCS_BMP1, WCS_FMTV, WCS_STRYKER, WCS_MRZR].map((vm) => [vm.id, vm])
+);
 /** Flat lookup for every modded vehicle: key -> { ref, label, mod }.
  * lib.mjs falls back here when a spawn/patrol vehicle key isn't in the
  * faction's own dict; the web panels use it for labels + gating. */

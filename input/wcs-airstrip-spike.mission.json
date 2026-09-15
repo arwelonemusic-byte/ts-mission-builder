@@ -1,0 +1,1303 @@
+{
+  "version": 1,
+  "displayName": "WCS Airstrip Spike",
+  "author": "",
+  "terrain": "arland",
+  "playableFaction": "US",
+  "playableSubfaction": "US_Army",
+  "enemyFaction": "USSR",
+  "enemyGroupSets": [
+    "USSR_Army"
+  ],
+  "mods": [
+    "wcsjltv",
+    "wcsm1a1",
+    "wcsbmp3",
+    "wcsbmp1",
+    "wcsfmtv",
+    "wcsstryker",
+    "wcsmrzr"
+  ],
+  "briefing": {
+    "situation": "",
+    "objectives": "",
+    "threats": "",
+    "extra": []
+  },
+  "loadouts": [
+    "{26A9756790131354}Prefabs/Characters/Factions/BLUFOR/US_Army/Character_US_Rifleman.et"
+  ],
+  "arsenal": [
+    "{9C5C20FB0E01E64F}Prefabs/Weapons/Launchers/M72/Launcher_M72A3.et",
+    "{EC9BDA3D9DDD8795}Prefabs/Weapons/Flares/FlareStarParachute_M127A1_white.et",
+    "{756231FF84F158A4}Prefabs/Weapons/Flares/FlareStarParachute_M126A1_red.et",
+    "{51D9E3AEC8476BA4}Prefabs/Weapons/Flares/FlareStarParachute_M195_green.et",
+    "{D8F2CA92583B23D3}Prefabs/Weapons/Magazines/Magazine_556x45_STANAG_30rnd_M855_M856_Last_5Tracer.et",
+    "{BCB5E5C608ECFF50}Prefabs/Weapons/Magazines/Magazine_762x51_M14_20rnd_M80.et",
+    "{06D722FC2666EB83}Prefabs/Weapons/Magazines/Box_556x45_M249_200rnd_4Ball_1Tracer.et",
+    "{4D2C1E8F3A81F894}Prefabs/Weapons/Magazines/Box_762x51_M60_100rnd_4Ball_1Tracer.et",
+    "{5375FA7CB1F68573}Prefabs/Weapons/Ammo/Ammo_Grenade_HE_M406.et",
+    "{1663496AE5B9F10B}Prefabs/Weapons/Ammo/Ammo_Grenade_HEDP_M433.et",
+    "{98DB57ECEDC81CC2}Prefabs/Weapons/Ammo/Ammo_Flare_40mm_M583A1_White.et",
+    "{E8F00BF730225B00}Prefabs/Weapons/Grenades/Grenade_M67.et",
+    "{9DB69176CEF0EE97}Prefabs/Weapons/Grenades/Smoke_ANM8HC.et",
+    "{D41D22DD1B8E921E}Prefabs/Weapons/Grenades/M18/Smoke_M18_Green.et",
+    "{3343A055A83CB30D}Prefabs/Weapons/Grenades/M18/Smoke_M18_Red.et",
+    "{14C1A0F061D9DDEE}Prefabs/Weapons/Grenades/M18/Smoke_M18_Violet.et",
+    "{9BBDEE253A16CC66}Prefabs/Weapons/Grenades/M18/Smoke_M18_Yellow.et",
+    "{33CBDE73AB48172A}Prefabs/Weapons/Explosives/DemoBlock_M112/DemoBlock_M112.et",
+    "{CE0AF733722B3978}Prefabs/Items/Equipment/Detonators/BlastingMachine_M34/BlastingMachine_M34.et",
+    "{E4C9F0A4090CFE4D}Prefabs/Weapons/Explosives/Mine_M14/Mine_M14.et",
+    "{49FFE8F373F55960}Prefabs/Weapons/Explosives/Mine_M15AT/Mine_M15AT.et",
+    "{A81F501D3EF6F38E}Prefabs/Items/Medicine/FieldDressing_01/FieldDressing_US_01.et",
+    "{0D9A5DCF89AE7AA9}Prefabs/Items/Medicine/MorphineInjection_01/MorphineInjection_01.et",
+    "{00E36F41CA310E2A}Prefabs/Items/Medicine/SalineBag_01/SalineBag_US_01.et",
+    "{D70216B1B2889129}Prefabs/Items/Medicine/Tourniquet_01/Tourniquet_US_01.et",
+    "{73950FBA2D7DB5C5}Prefabs/Items/Equipment/Radios/Radio_ANPRC68.et",
+    "{5C5C6EE05EE2FF1A}Prefabs/Items/Equipment/Backpacks/Backpack_ALICE_Medium_assembled.et",
+    "{95D4766BBE46F23D}Prefabs/Items/Equipment/Backpacks/Backpack_IIFS_FieldPack.et",
+    "{5B2FD067D70C1E8F}Prefabs/Items/Medicine/EpinephrineInjection/ACE_Medical_EpinephrineInjection.et"
+  ],
+  "coreArsenalApplied": [
+    "{5B2FD067D70C1E8F}Prefabs/Items/Medicine/EpinephrineInjection/ACE_Medical_EpinephrineInjection.et"
+  ],
+  "groups": [
+    {
+      "id": "ghnq4wp62jb5",
+      "name": "1'1",
+      "size": 9
+    },
+    {
+      "id": "g7pdpzc4b7qm",
+      "name": "1'2",
+      "size": 9
+    },
+    {
+      "id": "gyyq0dndnee",
+      "name": "1'3",
+      "size": 9
+    },
+    {
+      "id": "g4s4j8drck1",
+      "name": "1'4",
+      "size": 9
+    },
+    {
+      "id": "gtg5kakg587",
+      "name": "1'6",
+      "size": 3
+    }
+  ],
+  "arty": {
+    "enabled": false,
+    "he": {
+      "on": true,
+      "count": 60
+    },
+    "smoke": {
+      "on": true,
+      "count": 30
+    },
+    "illum": {
+      "on": true,
+      "count": 30
+    }
+  },
+  "aiArty": {
+    "enabled": false,
+    "rounds": 60,
+    "strikeChance": 60,
+    "cooldownMin": 10,
+    "stopTrigger": null
+  },
+  "thumbnail": null,
+  "spawn": {
+    "placed": true,
+    "x": 603,
+    "z": 2554.3,
+    "farp": false,
+    "farpPos": {
+      "x": 603,
+      "z": 2554.3,
+      "rotation": 0
+    },
+    "spawnPoints": [
+      {
+        "id": "wsp1",
+        "x": 603,
+        "z": 2554.3,
+        "denied": []
+      }
+    ],
+    "crates": [
+      {
+        "id": "wc1",
+        "x": 600.4,
+        "z": 2564,
+        "rotation": 345
+      }
+    ],
+    "vehicles": [
+      {
+        "id": "wv1",
+        "type": "WCS_JLTV_Unarmed",
+        "x": 636.6,
+        "z": 2544.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv2",
+        "type": "WCS_JLTV_Unarmed_Olive",
+        "x": 664.6,
+        "z": 2552.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv3",
+        "type": "WCS_JLTV_Unarmed_Woodland",
+        "x": 692.6,
+        "z": 2559.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv4",
+        "type": "WCS_JLTV_OGPK_M2HB",
+        "x": 720.6,
+        "z": 2567,
+        "rotation": 345
+      },
+      {
+        "id": "wv5",
+        "type": "WCS_JLTV_OGPK_M2HB_Olive",
+        "x": 748.6,
+        "z": 2574.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv6",
+        "type": "WCS_JLTV_OGPK_M2HB_Woodland",
+        "x": 776.6,
+        "z": 2581.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv7",
+        "type": "WCS_JLTV_OGPK_M134",
+        "x": 804.6,
+        "z": 2589.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv8",
+        "type": "WCS_JLTV_OGPK_M134_Olive",
+        "x": 832.6,
+        "z": 2596.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv9",
+        "type": "WCS_JLTV_OGPK_M134_Woodland",
+        "x": 860.6,
+        "z": 2604.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv10",
+        "type": "WCS_JLTV_CROWS_M2HB",
+        "x": 888.6,
+        "z": 2611.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv11",
+        "type": "WCS_JLTV_CROWS_M2HB_Olive",
+        "x": 916.6,
+        "z": 2619.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv12",
+        "type": "WCS_JLTV_CROWS_M2HB_Woodland",
+        "x": 944.6,
+        "z": 2626.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv13",
+        "type": "WCS_JLTV_CROWS_M134",
+        "x": 972.6,
+        "z": 2634,
+        "rotation": 345
+      },
+      {
+        "id": "wv14",
+        "type": "WCS_JLTV_CROWS_M134_Olive",
+        "x": 1000.6,
+        "z": 2641.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv15",
+        "type": "WCS_JLTV_CROWS_M134_Woodland",
+        "x": 1028.6,
+        "z": 2648.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv16",
+        "type": "WCS_JLTV_CROWS_II_M230LF",
+        "x": 1056.6,
+        "z": 2656.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv17",
+        "type": "WCS_JLTV_CROWS_II_M230LF_Olive",
+        "x": 1084.6,
+        "z": 2663.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv18",
+        "type": "WCS_JLTV_CROWS_II_M230LF_Woodland",
+        "x": 1112.6,
+        "z": 2671.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv19",
+        "type": "WCS_JLTV_CROWS_II_Javelin",
+        "x": 1140.6,
+        "z": 2678.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv20",
+        "type": "WCS_JLTV_CROWS_II_Javelin_Olive",
+        "x": 1168.6,
+        "z": 2686.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv21",
+        "type": "WCS_JLTV_CROWS_II_Javelin_Woodland",
+        "x": 1196.6,
+        "z": 2693.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv22",
+        "type": "WCS_JLTV_CROWS_II_AIM92",
+        "x": 1224.6,
+        "z": 2701.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv23",
+        "type": "WCS_JLTV_CROWS_II_AIM92_Olive",
+        "x": 1252.6,
+        "z": 2708.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv24",
+        "type": "WCS_JLTV_CROWS_II_AIM92_Woodland",
+        "x": 1280.6,
+        "z": 2716,
+        "rotation": 345
+      },
+      {
+        "id": "wv25",
+        "type": "WCS_JLTV_CROWS_M240",
+        "x": 1308.6,
+        "z": 2723.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv26",
+        "type": "WCS_JLTV_CROWS_M240_Olive",
+        "x": 1336.6,
+        "z": 2730.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv27",
+        "type": "WCS_JLTV_CROWS_M240_Woodland",
+        "x": 1364.6,
+        "z": 2738.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv28",
+        "type": "WCS_JLTV_Unarmed_Black",
+        "x": 1392.6,
+        "z": 2745.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv29",
+        "type": "WCS_JLTV_OGPK_M2HB_Black",
+        "x": 1420.6,
+        "z": 2753.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv30",
+        "type": "WCS_JLTV_OGPK_M134_Black",
+        "x": 1448.6,
+        "z": 2760.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv31",
+        "type": "WCS_JLTV_CROWS_M2HB_Black",
+        "x": 1476.6,
+        "z": 2768.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv32",
+        "type": "WCS_JLTV_CROWS_M134_Black",
+        "x": 1504.6,
+        "z": 2775.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv33",
+        "type": "WCS_JLTV_CROWS_M240_Black",
+        "x": 1532.6,
+        "z": 2783,
+        "rotation": 345
+      },
+      {
+        "id": "wv34",
+        "type": "WCS_JLTV_CROWS_II_M230LF_Black",
+        "x": 1560.6,
+        "z": 2790.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv35",
+        "type": "WCS_JLTV_CROWS_II_Javelin_Black",
+        "x": 1588.6,
+        "z": 2797.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv36",
+        "type": "WCS_JLTV_CROWS_II_AIM92_Black",
+        "x": 1616.6,
+        "z": 2805.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv37",
+        "type": "WCS_M1A1_Olive",
+        "x": 1644.6,
+        "z": 2812.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv38",
+        "type": "WCS_M1A1_Desert",
+        "x": 1672.6,
+        "z": 2820.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv39",
+        "type": "WCS_M1A1_Black",
+        "x": 1700.6,
+        "z": 2827.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv40",
+        "type": "WCS_M1A1_MERDC",
+        "x": 1728.6,
+        "z": 2835.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv41",
+        "type": "WCS_M1A1_Woodland",
+        "x": 1756.6,
+        "z": 2842.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv42",
+        "type": "WCS_M1A1_Camo_Net",
+        "x": 633.5,
+        "z": 2556.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv43",
+        "type": "WCS_M1A1_TUSK_Olive",
+        "x": 661.5,
+        "z": 2563.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv44",
+        "type": "WCS_M1A1_TUSK_Desert",
+        "x": 689.5,
+        "z": 2571.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv45",
+        "type": "WCS_M1A1_TUSK_Black",
+        "x": 717.5,
+        "z": 2578.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv46",
+        "type": "WCS_M1A1_TUSK_MERDC",
+        "x": 745.5,
+        "z": 2586,
+        "rotation": 345
+      },
+      {
+        "id": "wv47",
+        "type": "WCS_M1A1_TUSK_Woodland",
+        "x": 773.5,
+        "z": 2593.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv48",
+        "type": "WCS_M1A2_Olive",
+        "x": 801.5,
+        "z": 2600.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv49",
+        "type": "WCS_M1A2_Desert",
+        "x": 829.5,
+        "z": 2608.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv50",
+        "type": "WCS_M1A2_Black",
+        "x": 857.5,
+        "z": 2615.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv51",
+        "type": "WCS_M1A2_MERDC",
+        "x": 885.5,
+        "z": 2623.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv52",
+        "type": "WCS_M1A2_Woodland",
+        "x": 913.5,
+        "z": 2630.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv53",
+        "type": "WCS_M1A2_TUSK_Olive",
+        "x": 941.5,
+        "z": 2638.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv54",
+        "type": "WCS_M1A2_TUSK_Desert",
+        "x": 969.5,
+        "z": 2645.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv55",
+        "type": "WCS_M1A2_TUSK_Black",
+        "x": 997.5,
+        "z": 2653.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv56",
+        "type": "WCS_M1A2_TUSK_MERDC",
+        "x": 1025.5,
+        "z": 2660.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv57",
+        "type": "WCS_M1A2_TUSK_Woodland",
+        "x": 1053.5,
+        "z": 2668,
+        "rotation": 345
+      },
+      {
+        "id": "wv58",
+        "type": "WCS_M1A2_TUSK_II_Olive",
+        "x": 1081.5,
+        "z": 2675.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv59",
+        "type": "WCS_M1A2_TUSK_II_Desert",
+        "x": 1109.5,
+        "z": 2682.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv60",
+        "type": "WCS_M1A2_TUSK_II_Black",
+        "x": 1137.5,
+        "z": 2690.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv61",
+        "type": "WCS_M1A2_TUSK_II_MERDC",
+        "x": 1165.5,
+        "z": 2697.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv62",
+        "type": "WCS_M1A2_TUSK_II_Woodland",
+        "x": 1193.5,
+        "z": 2705.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv63",
+        "type": "WCS_M1A2_SEP_Olive",
+        "x": 1221.5,
+        "z": 2712.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv64",
+        "type": "WCS_M1A2_SEP_Desert",
+        "x": 1249.5,
+        "z": 2720.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv65",
+        "type": "WCS_M1A2_SEP_Black",
+        "x": 1277.5,
+        "z": 2727.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv66",
+        "type": "WCS_M1A2_SEP_MERDC",
+        "x": 1305.5,
+        "z": 2735,
+        "rotation": 345
+      },
+      {
+        "id": "wv67",
+        "type": "WCS_M1A2_SEP_Woodland",
+        "x": 1333.5,
+        "z": 2742.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv68",
+        "type": "WCS_M1A2_SEP_TUSK_Olive",
+        "x": 1361.5,
+        "z": 2749.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv69",
+        "type": "WCS_M1A2_SEP_TUSK_Desert",
+        "x": 1389.5,
+        "z": 2757.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv70",
+        "type": "WCS_M1A2_SEP_TUSK_Black",
+        "x": 1417.5,
+        "z": 2764.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv71",
+        "type": "WCS_M1A2_SEP_TUSK_MERDC",
+        "x": 1445.5,
+        "z": 2772.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv72",
+        "type": "WCS_M1A2_SEP_TUSK_Woodland",
+        "x": 1473.5,
+        "z": 2779.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv73",
+        "type": "WCS_M1A2_SEP_TUSK_II_Olive",
+        "x": 1501.5,
+        "z": 2787.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv74",
+        "type": "WCS_M1A2_SEP_TUSK_II_Desert",
+        "x": 1529.5,
+        "z": 2794.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv75",
+        "type": "WCS_M1A2_SEP_TUSK_II_Black",
+        "x": 1557.5,
+        "z": 2802.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv76",
+        "type": "WCS_M1A2_SEP_TUSK_II_MERDC",
+        "x": 1585.5,
+        "z": 2809.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv77",
+        "type": "WCS_M1A2_SEP_TUSK_II_Woodland",
+        "x": 1613.5,
+        "z": 2817,
+        "rotation": 345
+      },
+      {
+        "id": "wv78",
+        "type": "WCS_M1A2_SEPv2_Olive",
+        "x": 1641.5,
+        "z": 2824.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv79",
+        "type": "WCS_M1A2_SEPv2_Desert",
+        "x": 1669.5,
+        "z": 2831.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv80",
+        "type": "WCS_M1A2_SEPv2_Black",
+        "x": 1697.5,
+        "z": 2839.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv81",
+        "type": "WCS_M1A2_SEPv2_MERDC",
+        "x": 1725.5,
+        "z": 2846.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv82",
+        "type": "WCS_M1A2_SEPv2_Woodland",
+        "x": 1753.5,
+        "z": 2854.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv83",
+        "type": "WCS_M1A2_SEPv2_TUSK_Olive",
+        "x": 630.5,
+        "z": 2567.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv84",
+        "type": "WCS_M1A2_SEPv2_TUSK_Desert",
+        "x": 658.5,
+        "z": 2575.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv85",
+        "type": "WCS_M1A2_SEPv2_TUSK_Black",
+        "x": 686.5,
+        "z": 2582.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv86",
+        "type": "WCS_M1A2_SEPv2_TUSK_MERDC",
+        "x": 714.5,
+        "z": 2590.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv87",
+        "type": "WCS_M1A2_SEPv2_TUSK_Woodland",
+        "x": 742.5,
+        "z": 2597.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv88",
+        "type": "WCS_M1A2_SEPv2_TUSK_II_Olive",
+        "x": 770.5,
+        "z": 2605,
+        "rotation": 345
+      },
+      {
+        "id": "wv89",
+        "type": "WCS_M1A2_SEPv2_TUSK_II_Desert",
+        "x": 798.5,
+        "z": 2612.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv90",
+        "type": "WCS_M1A2_SEPv2_TUSK_II_Black",
+        "x": 826.5,
+        "z": 2619.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv91",
+        "type": "WCS_M1A2_SEPv2_TUSK_II_MERDC",
+        "x": 854.5,
+        "z": 2627.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv92",
+        "type": "WCS_M1A2_SEPv2_TUSK_II_Woodland",
+        "x": 882.5,
+        "z": 2634.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv93",
+        "type": "WCS_BMP3_Base",
+        "x": 910.5,
+        "z": 2642.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv94",
+        "type": "WCS_BMP1_FIA",
+        "x": 938.5,
+        "z": 2649.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv95",
+        "type": "WCS_BMP1_FIA_Desert",
+        "x": 966.5,
+        "z": 2657.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv96",
+        "type": "WCS_BMP1P_FIA",
+        "x": 994.5,
+        "z": 2664.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv97",
+        "type": "WCS_BMP1P_FIA_Desert",
+        "x": 1022.5,
+        "z": 2672.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv98",
+        "type": "WCS_BMP1_Base",
+        "x": 1050.5,
+        "z": 2679.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv99",
+        "type": "WCS_BMP1_Desert",
+        "x": 1078.5,
+        "z": 2687,
+        "rotation": 345
+      },
+      {
+        "id": "wv100",
+        "type": "WCS_BMP1P_Base",
+        "x": 1106.5,
+        "z": 2694.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv101",
+        "type": "WCS_BMP1P_Desert",
+        "x": 1134.5,
+        "z": 2701.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv102",
+        "type": "WCS_M1083_Transport",
+        "x": 1162.5,
+        "z": 2709.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv103",
+        "type": "WCS_M1083_Transport_Tan",
+        "x": 1190.5,
+        "z": 2716.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv104",
+        "type": "WCS_M1083_Transport_Woodland",
+        "x": 1218.5,
+        "z": 2724.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv105",
+        "type": "WCS_M1083_Transport_Covered",
+        "x": 1246.5,
+        "z": 2731.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv106",
+        "type": "WCS_M1083_Transport_Covered_Tan",
+        "x": 1274.5,
+        "z": 2739.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv107",
+        "type": "WCS_M1083_Transport_Covered_Woodland",
+        "x": 1302.5,
+        "z": 2746.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv108",
+        "type": "WCS_M1083_Arsenal",
+        "x": 1330.5,
+        "z": 2754,
+        "rotation": 345
+      },
+      {
+        "id": "wv109",
+        "type": "WCS_M1083_Arsenal_Tan",
+        "x": 1358.5,
+        "z": 2761.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv110",
+        "type": "WCS_M1083_Arsenal_Woodland",
+        "x": 1386.5,
+        "z": 2768.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv111",
+        "type": "WCS_M1083_Ammo",
+        "x": 1414.5,
+        "z": 2776.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv112",
+        "type": "WCS_M1083_Ammo_Tan",
+        "x": 1442.5,
+        "z": 2783.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv113",
+        "type": "WCS_M1083_Ammo_Woodland",
+        "x": 1470.5,
+        "z": 2791.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv114",
+        "type": "WCS_M1083_Repair",
+        "x": 1498.5,
+        "z": 2798.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv115",
+        "type": "WCS_M1083_Repair_Tan",
+        "x": 1526.5,
+        "z": 2806.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv116",
+        "type": "WCS_M1083_Repair_Woodland",
+        "x": 1554.5,
+        "z": 2813.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv117",
+        "type": "WCS_M1083_Engineer",
+        "x": 1582.5,
+        "z": 2821.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv118",
+        "type": "WCS_M1083_Engineer_Tan",
+        "x": 1610.5,
+        "z": 2828.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv119",
+        "type": "WCS_M1083_Engineer_Woodland",
+        "x": 1638.5,
+        "z": 2836,
+        "rotation": 345
+      },
+      {
+        "id": "wv120",
+        "type": "WCS_M1091_Tanker",
+        "x": 1666.5,
+        "z": 2843.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv121",
+        "type": "WCS_M1091_Tanker_Tan",
+        "x": 1694.5,
+        "z": 2850.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv122",
+        "type": "WCS_M1091_Tanker_Woodland",
+        "x": 1722.5,
+        "z": 2858.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv123",
+        "type": "WCS_M1083_Command",
+        "x": 1750.5,
+        "z": 2865.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv124",
+        "type": "WCS_M1083_Command_Tan",
+        "x": 627.4,
+        "z": 2579.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv125",
+        "type": "WCS_M1083_Command_Woodland",
+        "x": 655.4,
+        "z": 2586.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv126",
+        "type": "WCS_M1083_Transport_Armed",
+        "x": 683.4,
+        "z": 2594.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv127",
+        "type": "WCS_M1083_Transport_Armed_Tan",
+        "x": 711.4,
+        "z": 2601.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv128",
+        "type": "WCS_M1083_Transport_Armed_Woodland",
+        "x": 739.4,
+        "z": 2609.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv129",
+        "type": "WCS_M1083_Transport_Covered_Armed",
+        "x": 767.4,
+        "z": 2616.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv130",
+        "type": "WCS_M1083_Transport_Covered_Armed_Tan",
+        "x": 795.4,
+        "z": 2624.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv131",
+        "type": "WCS_M1083_Transport_Covered_Armed_Woodland",
+        "x": 823.4,
+        "z": 2631.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv132",
+        "type": "WCS_Stryker_APC",
+        "x": 851.4,
+        "z": 2639,
+        "rotation": 345
+      },
+      {
+        "id": "wv133",
+        "type": "WCS_Stryker_APC_MERDC",
+        "x": 879.4,
+        "z": 2646.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv134",
+        "type": "WCS_Stryker_APC_Tan",
+        "x": 907.4,
+        "z": 2653.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv135",
+        "type": "WCS_Stryker_Cage",
+        "x": 935.4,
+        "z": 2661.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv136",
+        "type": "WCS_Stryker_Cage_MERDC",
+        "x": 963.4,
+        "z": 2668.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv137",
+        "type": "WCS_Stryker_Cage_Tan",
+        "x": 991.4,
+        "z": 2676.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv138",
+        "type": "WCS_Stryker_CROWS",
+        "x": 1019.4,
+        "z": 2683.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv139",
+        "type": "WCS_Stryker_CROWS_MERDC",
+        "x": 1047.4,
+        "z": 2691.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv140",
+        "type": "WCS_Stryker_CROWS_Tan",
+        "x": 1075.4,
+        "z": 2698.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv141",
+        "type": "WCS_Stryker_CROWS_Cage",
+        "x": 1103.4,
+        "z": 2706,
+        "rotation": 345
+      },
+      {
+        "id": "wv142",
+        "type": "WCS_Stryker_CROWS_Cage_MERDC",
+        "x": 1131.4,
+        "z": 2713.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv143",
+        "type": "WCS_Stryker_CROWS_Cage_Tan",
+        "x": 1159.4,
+        "z": 2720.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv144",
+        "type": "WCS_Stryker_CROWS_Javelin",
+        "x": 1187.4,
+        "z": 2728.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv145",
+        "type": "WCS_Stryker_CROWS_Javelin_MERDC",
+        "x": 1215.4,
+        "z": 2735.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv146",
+        "type": "WCS_Stryker_CROWS_Javelin_Tan",
+        "x": 1243.4,
+        "z": 2743.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv147",
+        "type": "WCS_Stryker_Dragoon",
+        "x": 1271.4,
+        "z": 2750.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv148",
+        "type": "WCS_Stryker_Dragoon_MERDC",
+        "x": 1299.4,
+        "z": 2758.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv149",
+        "type": "WCS_Stryker_Dragoon_Cage",
+        "x": 1327.4,
+        "z": 2765.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv150",
+        "type": "WCS_Stryker_Dragoon_Cage_MERDC",
+        "x": 1355.4,
+        "z": 2773.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv151",
+        "type": "WCS_Stryker_Dragoon_Tan",
+        "x": 1383.4,
+        "z": 2780.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv152",
+        "type": "WCS_Stryker_Dragoon_Cage_Tan",
+        "x": 1411.4,
+        "z": 2788,
+        "rotation": 345
+      },
+      {
+        "id": "wv153",
+        "type": "WCS_Stryker_MGS",
+        "x": 1439.4,
+        "z": 2795.4,
+        "rotation": 345
+      },
+      {
+        "id": "wv154",
+        "type": "WCS_Stryker_MGS_MERDC",
+        "x": 1467.4,
+        "z": 2802.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv155",
+        "type": "WCS_Stryker_MGS_Tan",
+        "x": 1495.4,
+        "z": 2810.3,
+        "rotation": 345
+      },
+      {
+        "id": "wv156",
+        "type": "WCS_MRZR_D4_Unarmed_Camo",
+        "x": 1523.4,
+        "z": 2817.8,
+        "rotation": 345
+      },
+      {
+        "id": "wv157",
+        "type": "WCS_MRZR_D4_Unarmed_Olive",
+        "x": 1551.4,
+        "z": 2825.2,
+        "rotation": 345
+      },
+      {
+        "id": "wv158",
+        "type": "WCS_MRZR_D4_Unarmed_Tan",
+        "x": 1579.4,
+        "z": 2832.7,
+        "rotation": 345
+      },
+      {
+        "id": "wv159",
+        "type": "WCS_MRZR_D4_M2HB_Camo",
+        "x": 1607.4,
+        "z": 2840.1,
+        "rotation": 345
+      },
+      {
+        "id": "wv160",
+        "type": "WCS_MRZR_D4_M2HB_Olive",
+        "x": 1635.4,
+        "z": 2847.6,
+        "rotation": 345
+      },
+      {
+        "id": "wv161",
+        "type": "WCS_MRZR_D4_M2HB_Tan",
+        "x": 1663.4,
+        "z": 2855,
+        "rotation": 345
+      },
+      {
+        "id": "wv162",
+        "type": "WCS_MRZR_D4_Unarmed_Black",
+        "x": 1691.4,
+        "z": 2862.5,
+        "rotation": 345
+      },
+      {
+        "id": "wv163",
+        "type": "WCS_MRZR_D4_NSV_Black",
+        "x": 1719.4,
+        "z": 2869.9,
+        "rotation": 345
+      },
+      {
+        "id": "wv164",
+        "type": "WCS_MRZR_D4_NSV_SPP_Black",
+        "x": 1747.4,
+        "z": 2877.4,
+        "rotation": 345
+      }
+    ]
+  },
+  "zones": [],
+  "markers": [],
+  "sectors": [],
+  "objectives": [],
+  "props": [],
+  "guids": {
+    "addon": "6AA319942BF4BCE1",
+    "world": "6AA319946F347822",
+    "missionConf": "6AA3199435DA4B33",
+    "thumbnail": "6AA319941829E444"
+  },
+  "guidsName": "My_Mission"
+}

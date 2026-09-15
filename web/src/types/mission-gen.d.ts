@@ -101,6 +101,9 @@ declare module "mission-gen" {
       patrolVehicleKeys: string[];
       /** Unarmed candidates — the zone multiselect's "Unarmed" group */
       transportVehicleKeys: string[];
+      /** Every armed key incl. livery variants (picker Armed/Unarmed chips);
+       * absent = patrolVehicleKeys is the full armed set (Dax). */
+      armedVehicleKeys?: string[];
     }
   >;
   /** Flat modded-vehicle lookup: key -> { ref, label, mod } */
