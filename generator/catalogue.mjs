@@ -20,6 +20,7 @@ import { SFSRF } from "./mods/sfsrf.mjs";
 import { SFSFIA } from "./mods/sfsfia.mjs";
 import { ARMA2 } from "./mods/arma2.mjs";
 import { USDESERT } from "./mods/usdesert.mjs";
+import { BUNDESWEHR } from "./mods/bundeswehr.mjs";
 import { DAXHUMVEES } from "./mods/daxhumvees.mjs";
 import { WCS_JLTV } from "./mods/wcs-jltv.mjs";
 import { WCS_M1A1 } from "./mods/wcs-m1a1.mjs";
@@ -37,12 +38,17 @@ import { ARSENAL_POOL_UK } from "./arsenal-pool-uk.mjs";
 import { ARSENAL_POOL_RHS_AFRF } from "./arsenal-pool-rhs-afrf.mjs";
 import { ARSENAL_POOL_RHS_USAF } from "./arsenal-pool-rhs-usaf.mjs";
 import { ARSENAL_POOL_RHS_ION } from "./arsenal-pool-rhs-ion.mjs";
+import { ARSENAL_POOL_BUNDESWEHR } from "./arsenal-pool-bundeswehr.mjs";
 /** Per-mod arsenal pools keyed by MODS id — merged into the browse list when
  * the mod is enabled; lib.mjs unions a mod's deps when its items are used.
  * RHS is harvested per faction (AFRF + USAF + ION, all done) and concatenated.
  * The shared FFA catalog is NOT harvested: 133/147 of its refs are already in
  * these pools; the 14-item remainder is radio parts + duplicate-GUID copies. */
-export const MOD_ARSENAL_POOLS = { uk: ARSENAL_POOL_UK, rhs: [...ARSENAL_POOL_RHS_AFRF, ...ARSENAL_POOL_RHS_USAF, ...ARSENAL_POOL_RHS_ION] };
+export const MOD_ARSENAL_POOLS = {
+  uk: ARSENAL_POOL_UK,
+  rhs: [...ARSENAL_POOL_RHS_AFRF, ...ARSENAL_POOL_RHS_USAF, ...ARSENAL_POOL_RHS_ION],
+  bundeswehr: ARSENAL_POOL_BUNDESWEHR,
+};
 
 /** Core addons: MANDATORY dependencies of EVERY generated mission, alongside
  * the toolkit — not usage-derived, not gated by a UI checkbox (user decision
@@ -1057,7 +1063,7 @@ export const FACTIONS = {
 // (e.g. MEI = USSR + character/voice overrides): the whole vanilla entry is
 // copied underneath the def, and lib.mjs skips it in the FactionManager
 // emission because the vanilla member covers it.
-export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS, [SFS.id]: SFS, [SFSRF.id]: SFSRF, [SFSFIA.id]: SFSFIA, [ARMA2.id]: ARMA2, [USDESERT.id]: USDESERT };
+export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS, [SFS.id]: SFS, [SFSRF.id]: SFSRF, [SFSFIA.id]: SFSFIA, [ARMA2.id]: ARMA2, [USDESERT.id]: USDESERT, [BUNDESWEHR.id]: BUNDESWEHR };
 for (const mod of Object.values(MODS)) {
   for (const [key, faction] of Object.entries(mod.factions)) {
     const base = faction.aliasOf ? FACTIONS[faction.aliasOf] : undefined;

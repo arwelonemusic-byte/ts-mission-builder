@@ -1,6 +1,6 @@
 // Harvest arsenal item pools (Arsenal Builder browse lists) from unpacked game
 // and mod data. Run manually after a re-extraction:
-//   node generator/tools/harvest-arsenal-pool.mjs
+//   node generator/tools/harvest-arsenal-pool.mjs [--only vanilla,uk,rhs-afrf,rhs-usaf,rhs-ion,bundeswehr]
 //
 // Per source: EntityCatalog .confs decide WHAT exists (catalog-driven rule —
 // never folder-scan); display names resolve through the prefab .et inheritance
@@ -14,6 +14,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const REF = "D:/VSCode_dev/arma-reforger/reference/ReforgerData";
 const BF = "D:/VSCode_dev/arma-reforger/reference/British Forces";
 const RHS = "D:/VSCode_dev/arma-reforger/reference/RHS Status Quo";
+const BW = "D:/VSCode_dev/arma-reforger/reference/Bundeswehr Mod";
 
 // Aircraft/vehicle pylon+ammo items (rocket pods, heli rockets, vehicle ammo
 // boxes): the arsenal crate UI never displays them and they're useless as
@@ -54,6 +55,24 @@ const NAME_OVERRIDES = {
   "{9B6B61BB3FE3DFB0}Prefabs/Items/Equipment/Radios/Radio_ANPRC77.et": { name: "AN/PRC-77 Radio" },
   "{DB41FC7E83B3EFDC}Prefabs/Items/Equipment/Patches/Patch_ION_BlackStatic.et": { name: "Patch" },
   "{711D0B97E5B0B285}Prefabs/Items/Equipment/Patches/Patch_ION_ContrleTheNoise.et": { name: "Patch" },
+  // Bundeswehr (2026-09-15): the PzF3 round prefabs carry NO Name at all and the
+  // magazine pouches point at an RHS pouch key (#RHS-Vest_Blueforce_Pouch_Name)
+  // that no shipped string table defines — names composed from the prefab
+  // basenames (the mod's own naming scheme: "Magazinepouch G36 (3FT)").
+  "{AA735CE9A40FD288}Prefabs/Weapons/Magazines/BWAR_Magazine_PzF3_1rnd_DM32_AS.et": { name: "PzF3 DM32 Bunkerfaust Round", nameRu: "Выстрел PzF3 DM32 (Bunkerfaust)" },
+  "{11ED2DBDE8EECA48}Prefabs/Weapons/Magazines/BWAR_Magazine_PzF3_1rnd_DM72A1_HEAT.et": { name: "PzF3 DM72A1 HEAT Round", nameRu: "Выстрел PzF3 DM72A1 (кумулятивный)" },
+  "{FD65E87014BF84E9}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Dumppouch.et": { name: "Dump Pouch", nameRu: "Сбросная сумка" },
+  "{34FAB4319205A17A}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Dumppouch_3FT.et": { name: "Dump Pouch (3FT)", nameRu: "Сбросная сумка (3FT)" },
+  "{05105613DDB24586}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_2.et": { name: "Magazine Pouch G28 (2)", nameRu: "Подсумок G28 (2)" },
+  "{E5927DABBEBFBDCF}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_2_3FT.et": { name: "Magazine Pouch G28 (2, 3FT)", nameRu: "Подсумок G28 (2, 3FT)" },
+  "{E08C1AEAD157D2ED}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_3.et": { name: "Magazine Pouch G28 (3)", nameRu: "Подсумок G28 (3)" },
+  "{8BDF43F28BDE5347}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_3_3FT.et": { name: "Magazine Pouch G28 (3, 3FT)", nameRu: "Подсумок G28 (3, 3FT)" },
+  "{3D38D85071AC6170}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_2.et": { name: "Magazine Pouch G36 (2)", nameRu: "Подсумок G36 (2)" },
+  "{C21E3B8EB96AA3DF}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_2_3FT.et": { name: "Magazine Pouch G36 (2, 3FT)", nameRu: "Подсумок G36 (2, 3FT)" },
+  "{B4F0A049C18D7935}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_3.et": { name: "Magazine Pouch G36 (3)", nameRu: "Подсумок G36 (3)" },
+  "{AC5305D78C0B4D57}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_3_3FT.et": { name: "Magazine Pouch G36 (3, 3FT)", nameRu: "Подсумок G36 (3, 3FT)" },
+  "{7BA6D0617F64EFB9}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_MP7.et": { name: "Magazine Pouch MP7", nameRu: "Подсумок MP7" },
+  "{DD6F38ADCCFD3CF2}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_MP7_3FT.et": { name: "Magazine Pouch MP7 (3FT)", nameRu: "Подсумок MP7 (3FT)" },
 };
 
 // Complete enums (scripts/Game/Components/Arsenal/SCR_EArsenalItem{Type,Mode}.c) —
@@ -63,6 +82,8 @@ const ITEM_TYPES = new Set([
   "BACKPACK", "SNIPER_RIFLE", "NON_LETHAL_THROWABLE", "HEADWEAR", "TORSO",
   "VEST_AND_WAIST", "LEGS", "FOOTWEAR", "RADIO_BACKPACK", "EQUIPMENT",
   "WEAPON_ATTACHMENT", "EXPLOSIVES", "HANDWEAR", "MORTARS", "HELICOPTER", "VEHICLE",
+  // Mod-extended enum members (script-side `modded enum`): Bundeswehr rank/unit patches
+  "BWAR_PATCHES",
 ]);
 const ITEM_MODES = new Set([
   "DEFAULT", "WEAPON", "WEAPON_VARIANTS", "AMMUNITION", "CONSUMABLE", "ATTACHMENT",
@@ -151,6 +172,24 @@ const SOURCES = [
     catalogs: [[join(RHS, "Configs", "EntityCatalog", "ION", "ION_InventoryItems.conf"), "RHS_ION"]],
     normalizeCategory(cat) {
       if (cat.startsWith("Attachments (Not in arsenal")) return null;
+      return cat === "Others" ? "Other" : cat;
+    },
+  },
+  {
+    // Bundeswehr Mod (2026-09-15): one catalog, faction BWAR. The catalog also
+    // lists ~20 vanilla items (US medical kit, M14/M15 mines, M112, radios…) —
+    // they dedupe against the vanilla pool in the modal by ref. The mod's own
+    // "BWAR_PATCHES" category/type (43 rank + unit patches) folds into Other.
+    key: "bundeswehr",
+    outFile: "arsenal-pool-bundeswehr.mjs",
+    constName: "ARSENAL_POOL_BUNDESWEHR",
+    header: "Bundeswehr Mod arsenal item pool (mod id \"bundeswehr\", faction BWAR).",
+    roots: [BW, REF],
+    stringTables: [join(BW, "Language", "BWAR_Localization"), join(REF, "Language", "localization")],
+    catalogs: [[join(BW, "Configs", "EntityCatalog", "BWAR", "BWAR_InventoryItems_EntityCatalog.conf"), "BWAR"]],
+    normalizeCategory(cat) {
+      if (cat.startsWith("Attachments (Not in arsenal")) return null;
+      if (cat === "BWAR_PATCHES") return "Other";
       return cat === "Others" ? "Other" : cat;
     },
   },
@@ -454,4 +493,8 @@ ${lines.join("\n")}
   console.log(`wrote ${outPath}`);
 }
 
-for (const src of SOURCES) harvestSource(src);
+// `--only <key>[,<key>]` re-harvests just those sources (a mod extraction was
+// refreshed) without touching the other pool files.
+const onlyArg = process.argv.find((a) => a.startsWith("--only"));
+const only = onlyArg ? new Set((onlyArg.includes("=") ? onlyArg.split("=")[1] : process.argv[process.argv.indexOf(onlyArg) + 1]).split(",")) : null;
+for (const src of SOURCES) if (!only || only.has(src.key)) harvestSource(src);

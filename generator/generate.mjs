@@ -34,6 +34,12 @@
 //               SFS_USSR playable vs SFS_FIA enemy — both new packs, both sides)
 //   --a2        build the Arma II Factions variant (TS_WebSpikeA2: CDF playable
 //               vs ChDKZ — exercises both new-faction sides + NAPA availability)
+//   --bw        build the Bundeswehr variant (TS_WebSpikeBW: BWAR "Flecktarn"
+//               playable vs USSR — Dingo + PZG GER reskin spawn vehicles, both
+//               bundled addon GUIDs in addon.gproj)
+//   --bw-enemy  build the Bundeswehr enemy-side variant (TS_WebSpikeBWEnemy:
+//               vanilla US vs BWAR "Tropentarn" — friendliness clearing, GER
+//               groups/officer hvt/crews in reskinned HMMWVs + the Dingo)
 //   --arsenal   build the Arsenal Builder variant (TS_WebSpikeArsenal: US vs
 //               USSR with a mission.arsenal override — pool-resolved modes)
 //   --ai-arty   build the enemy-AI-artillery variant (TS_WebSpikeAiArty:
@@ -47,6 +53,7 @@
 //   --thumbs-rhs-usaf  same for the RHS USAF pool slice (TS_WebSpikeThumbsUSAF)
 //   --thumbs-sfs-us    SFS US pack: baked refs outside every pool (TS_WebSpikeThumbsSFSUS)
 //   --thumbs-sfs-rf    SFS RF+FIA packs: same, both factions (TS_WebSpikeThumbsSFSRF)
+//   --thumbs-bw        Bundeswehr pool items NOT in the vanilla pool (TS_WebSpikeThumbsBW)
 //   --armenhof  build the modded-terrain variant (TS_WebSpikeArmenhof: vanilla
 //               US vs USSR on Armenhof, exercises terrain dependencies + nav refs)
 //   --chernarus same, on ChernarusMinus (terrain with transitive map-addon deps)
@@ -995,6 +1002,100 @@ const THUMBS_SFS_RF_FIA_MISSION = {
   arsenal: sfsOutsidePool("SFS_USSR", "SFS_FIA"),
 };
 
+// Bundeswehr spike: BWAR "Flecktarn" playable vs vanilla USSR. Exercises the
+// mod's entryGuid member + callsign block, the bundled PZG GER reskin vehicles
+// (spawn slots: Dingo heavy + M1025 M2HB light + covered M923A1 heavy) and the
+// two-GUID dependency list. No friendliness clearing (BWAR↔USSR hostile).
+const BW_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeBW",
+  dirName: "TS_WebSpikeBW",
+  addonTitle: "TS Web Spike BW Mission",
+  name: "TS_WebSpikeBW",
+  displayName: "TS Web Spike BW",
+  playableFaction: "BWAR",
+  playableSubfaction: "Flecktarn",
+  enemyFaction: "USSR",
+  enemyGroupSets: ["USSR_Army"],
+  loadouts: FACTIONS.BWAR.loadoutSets.Flecktarn.filter((l) =>
+    ["Rifleman", "Grenadier", "Machine-Gunner", "AT Rifleman", "Medic", "Team Leader", "Squad Leader"].includes(l.name)
+  ),
+  guids: {
+    addon: "BE5D3C2F0D777431",
+    world: "F235B41F00EF5940",
+    missionConf: "17586D1523BC5794",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    extra: [
+      {
+        title: "Support",
+        text: ["- 1x Dingo 2 A3.2B", "- 1x M1025 M2HB (GER)", "- 1x M923A1 Truck (covered, GER)"],
+      },
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    vehicles: [
+      { type: "BWAR_Dingo2A3_2B" },
+      { type: "M1025_armed_M2HB_GER" },
+      { type: "M923A1_transport_covered_GER" },
+    ],
+  },
+};
+
+// Bundeswehr enemy-side spike: vanilla US vs BWAR "Tropentarn" — the US↔BWAR
+// friendly declaration must be cleared on the BWAR member, Tropentarn groups
+// fill the zones, the pistol-only Officer is the hvt, and the mounted patrol
+// mixes an armed reskin HMMWV with the unarmed Tropentarn Dingo (GER crews).
+const BW_ENEMY_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeBWEnemy",
+  dirName: "TS_WebSpikeBWEnemy",
+  addonTitle: "TS Web Spike BW Enemy Mission",
+  name: "TS_WebSpikeBWEnemy",
+  displayName: "TS Web Spike BW Enemy",
+  enemyFaction: "BWAR",
+  enemyGroupSets: ["Tropentarn"],
+  guids: {
+    addon: "9A40A3F6EE41E5E3",
+    world: "5B2DC403C5492552",
+    missionConf: "456B159EDB10633A",
+  },
+  zones: MISSION.zones.map((z, i) =>
+    i === 1
+      ? {
+          ...z,
+          plugins: [
+            { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["M1025_armed_M2HB_GER", "BWAR_Dingo2A3_2B_3FT"] },
+          ],
+        }
+      : z
+  ),
+};
+
+// Bundeswehr thumbnail-harvest mock (see THUMBS_MISSION): every pool item the
+// mod ADDS — refs already in the vanilla pool (US medical kit, M14/M15 mines,
+// M112, vanilla radios…) have thumbnails and are skipped. BWAR playable so the
+// arsenal's mod deps are exercised the same way the real missions do.
+const vanillaRefs = new Set(ARSENAL_POOL.map((i) => i.ref));
+const THUMBS_BW_MISSION = {
+  ...BW_MISSION,
+  addonId: "TSWebSpikeThumbsBW",
+  dirName: "TS_WebSpikeThumbsBW",
+  addonTitle: "TS Web Spike Thumbs BW Mission",
+  name: "TS_WebSpikeThumbsBW",
+  displayName: "TS Web Spike Thumbs BW",
+  guids: {
+    addon: "1D0C34E98CC7D55A",
+    world: "B29BE396008951B8",
+    missionConf: "7A1F9E20888A5942",
+  },
+  arsenal: MOD_ARSENAL_POOLS.bundeswehr
+    .filter((i) => !vanillaRefs.has(i.ref))
+    .map((i) => ({ ref: i.ref, mode: i.mode === "WEAPON_VARIANTS" ? "WEAPON" : i.mode })),
+};
+
 // Arma II Factions spike: CDF playable vs ChDKZ enemy — exercises the mod's
 // conf-ref FactionManager members on both sides (playable/callsign block on
 // the CDF member, ChDKZ group pools + PL hvt + Chedaki crews in reskinned
@@ -1833,6 +1934,10 @@ const BUILT = process.argv.includes("--zagoria")
                 ? MEI_MISSION
                 : process.argv.includes("--a2")
                   ? A2_MISSION
+                : process.argv.includes("--bw-enemy")
+                  ? BW_ENEMY_MISSION
+                : process.argv.includes("--bw")
+                  ? BW_MISSION
                 : process.argv.includes("--sfs-rf-fia")
                   ? SFS_RF_FIA_MISSION
                 : process.argv.includes("--sfs-enemy")
@@ -1855,6 +1960,8 @@ const BUILT = process.argv.includes("--zagoria")
                   ? THUMBS_SFS_US_MISSION
                 : process.argv.includes("--thumbs-sfs-rf")
                   ? THUMBS_SFS_RF_FIA_MISSION
+                : process.argv.includes("--thumbs-bw")
+                  ? THUMBS_BW_MISSION
                 : process.argv.includes("--thumbs-rhs-usaf")
                   ? THUMBS_RHS_USAF_MISSION
                 : process.argv.includes("--thumbs-rhs-ion")

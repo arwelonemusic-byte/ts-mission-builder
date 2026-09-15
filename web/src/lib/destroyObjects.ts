@@ -99,6 +99,29 @@ const THUMB_FALLBACKS: Record<string, string> = {
   UAZ469_UK59_Ses_NAPA: "UAZ469_PKM.png",
   BRDM2_Ses_NAPA: "BRDM2.png",
   BTR70_Ses_NAPA: "BTR70.png",
+  // Bundeswehr (2026-09-15): the Tropentarn Dingo shares the Flecktarn preview;
+  // the bundled PZG GER reskins ship no previews -> their vanilla US parents
+  // (keys = the reskin prefab basenames, which contain spaces — verbatim)
+  BWAR_Dingo2A3_2B_3FT: "BWAR_Dingo2A3_2B.png",
+  "M151A2 PZG GER": "M151A2_MERDC.png",
+  "M151A2 Roof PZG GER": "M151A2_transport.png",
+  "M151A2 armed PZG GER": "M151A2_M2HB.png",
+  "M1025 light PZG GER": "M998_covered.png",
+  "M1025 PZG GER": "M1025_MERDC.png",
+  "M1025 armed PZG GER": "M1025_armed_M2HB.png",
+  M1025_maxi_ambulance_GER: "M997_maxi_ambulance.png",
+  "M923A1 transpo 1 PZG GER": "M923A1_transport.png",
+  "M923A1 covered PZG GER": "M923A1_transport_covered.png",
+  "M923A1 tanker PZG GER": "M923A1_tanker.png",
+  "M923A1 Command PZG GER": "M923A1_command.png",
+  "M923A1 Arsenal PZG GER": "M923A1_arsenal.png",
+  "M923A1 repair PZG GER": "M923A1_repair.png",
+  "M923A1 Engineer PZG GER": "M923A1_engineer.png",
+  "LAV25 PZG GER": "LAV25.png",
+  "UH1H PZG GER": "UH1H.png",
+  "UH1H armed PZG GER": "UH1H_armed.png",
+  "UH1H gunship PZG GER": "UH1H_armed_gunship_HEDP.png",
+  "UH1H Supply PZG GER": "UH1H.png",
 };
 
 export const thumbFromRef = (ref: string) => {

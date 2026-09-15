@@ -212,6 +212,14 @@ them only if the evidence CHANGES:
   `Configs/EntityCatalog/FIA/…`) and no prefab references a group, so the tool can't rank
   them. The registry holds the `EntityCatalog/MEI` GUIDs, Workbench-validated 2026-09-04
   (0 unresolved refs). Re-check only if the diff shows those catalogs changing.
+- **Bundeswehr — 1 REGENERATED** (`Launchers/PzF3/BWAR_Launcher_PzF3.et`): the tool prefers
+  `{AB479EBF284550EC}` because the two AT character prefabs reference the launcher path with
+  that GUID — but `BWAR_Launcher_PzF3.et`'s OWN parent line is
+  `{AB479EBF284550EC}…/BWAR_Launcher_PzF3_Extended.et`, i.e. that GUID belongs to the
+  Extended variant and the characters carry a stale-path ref to it. The registry's
+  `{9BD71AF57C0490C5}` (catalog + the mod's showcase Objects.layer, both Workbench-written)
+  is the plain launcher. Same shape for the two PzF3 round magazines (the `_Extended` mags own
+  the "weaker alternate" GUIDs). Re-check only if the diff shows the PzF3 prefabs changing.
 - **SFS US — 1 NOT_FOUND** (`Milsim_Radios/TUO-HH-163-HP.et`): a dependency-mod item baked
   into the SFS arsenal; the 22-addon SFS dep closure is not in the audit set (and the packs
   are blocked under Reforger 1.8 anyway — see CLAUDE.md "SFS dep-mod thumbnails PARKED").
