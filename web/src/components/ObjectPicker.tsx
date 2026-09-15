@@ -6,7 +6,7 @@
 // and a thumb filename under /icons/prefabs/.
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n";
-import { XButton } from "@/components/ui";
+import { TextInput, XButton } from "@/components/ui";
 
 export type PickerEntry = {
   ref: string;
@@ -81,6 +81,7 @@ export function ObjectPickerModal({
   onPick,
   onClose,
   square,
+  searchable,
 }: {
   pool: PickerEntry[];
   categories: { key: string; label: string }[];
@@ -91,9 +92,14 @@ export function ObjectPickerModal({
   onClose: () => void;
   /** Square tiles (see ObjectThumb) */
   square?: boolean;
+  /** Live text filter over labels (+ refs/keys) above the grid — for pools
+   * too long to scan (the spawn-vehicle picker with vehicle mods enabled).
+   * Autofocused on open; combines with the category chips. */
+  searchable?: { placeholder: string; empty: string };
 }) {
   const t = useT();
   const [cat, setCat] = useState<string>("all");
+  const [query, setQuery] = useState("");
   // Opening on an existing selection scrolls the grid to it (instant — a
   // smooth scroll from the top reads as jank on long pools)
   const currentTileRef = useRef<HTMLButtonElement | null>(null);
@@ -113,7 +119,16 @@ export function ObjectPickerModal({
   }, [onClose]);
 
   const cats = categories.filter((c) => pool.some((e) => e.cat === c.key));
-  const shown = cat === "all" ? pool : pool.filter((e) => e.cat === cat);
+  const byCat = cat === "all" ? pool : pool.filter((e) => e.cat === cat);
+  // Every whitespace-separated token must appear in the translated label or
+  // the ref (vehicle KEY / prefab path) — "jltv m2hb" finds every M2HB JLTV
+  const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const shown = tokens.length
+    ? byCat.filter((e) => {
+        const hay = `${t(e.label)} ${e.ref}`.toLowerCase();
+        return tokens.every((tok) => hay.includes(tok));
+      })
+    : byCat;
 
   return (
     <div
@@ -126,12 +141,34 @@ export function ObjectPickerModal({
         className="bg-[#202427] rounded-[12px] p-4 flex flex-col gap-3 w-full max-w-[720px] max-h-[80dvh] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <h2 className="font-slab text-[16px] font-medium text-white flex-1">{title}</h2>
           <XButton ariaLabel={t("Dismiss")} onClick={onClose} />
         </div>
 
-        <div className={`flex flex-wrap gap-1 ${cats.length <= 1 ? "hidden" : ""}`}>
+        {searchable && (
+          /* shrink-0: the modal is a flex column capped at 80dvh — without it
+             the overflowing grid squeezes the input to a sliver. Plain text
+             input + our own clear button: type="search" renders the browser's
+             native (blue-tinted) clear control. */
+          <div className="relative shrink-0">
+            <TextInput
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={searchable.placeholder}
+              className={`!h-[36px] text-[12px] ${query ? "pr-9" : ""}`}
+              autoFocus
+              type="text"
+            />
+            {query && (
+              <span className="absolute right-[6px] top-1/2 -translate-y-1/2">
+                <XButton ariaLabel={t("Dismiss")} onClick={() => setQuery("")} />
+              </span>
+            )}
+          </div>
+        )}
+
+        <div className={`flex flex-wrap gap-1 shrink-0 ${cats.length <= 1 ? "hidden" : ""}`}>
           {[{ key: "all", label: "All" }, ...cats].map((c) => (
             <button
               key={c.key}
@@ -167,6 +204,9 @@ export function ObjectPickerModal({
               </button>
             );
           })}
+          {searchable && shown.length === 0 && (
+            <div className="col-span-full py-8 text-center text-[12px] text-white/40">{searchable.empty}</div>
+          )}
         </div>
       </div>
     </div>

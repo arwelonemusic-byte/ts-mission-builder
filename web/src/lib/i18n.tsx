@@ -266,6 +266,8 @@ const RU: Record<string, string> = {
   "Get the vehicle to the delivery point intact.": "Доставьте технику в пункт назначения в целости.",
   Vehicle: "Техника",
   "Select vehicle": "Выберите технику",
+  "Search vehicles…": "Поиск техники…",
+  "No vehicles match.": "Техника не найдена.",
   "Place delivery point (click map)": "Разместить пункт назначения (клик по карте)",
   "A delivery point is required to generate the mission.":
     "Для генерации миссии необходимо разместить пункт назначения.",

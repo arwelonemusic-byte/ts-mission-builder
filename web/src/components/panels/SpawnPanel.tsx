@@ -384,6 +384,7 @@ export default function SpawnPanel({
           categories={VEHICLE_PICKER_CATEGORIES}
           glyph={OBJECTIVE_GLYPHS.deliver}
           title={t("Select vehicle")}
+          searchable={{ placeholder: t("Search vehicles…"), empty: t("No vehicles match.") }}
           current={undefined}
           onPick={(key) => {
             setVehicleModalOpen(false);
