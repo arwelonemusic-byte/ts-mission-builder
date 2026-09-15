@@ -62,6 +62,10 @@ const RU: Record<string, string> = {
   Name: "Название",
   Author: "Автор",
   Terrain: "Карта",
+  "Select terrain": "Выберите карту",
+  // Terrain picker chips: vanilla maps vs Workshop maps
+  Official: "Официальные",
+  Workshop: "Мастерская",
   "Changing terrain clears placements.": "Смена карты удаляет всё размещённое.",
   Thumbnail: "Обложка",
   "Loading preview…": "Загрузка превью…",

@@ -49,6 +49,9 @@ say the word if you want that too.
 | Author | Автор |
 | Player count | Количество игроков |
 | Terrain | Карта |
+| Select terrain | Выберите карту |
+| Official *(terrain picker chip — vanilla maps)* | Официальные |
+| Workshop *(terrain picker chip + row tag — Workshop maps)* | Мастерская |
 | Changing terrain clears placements. | Смена карты удаляет всё размещённое. |
 | Thumbnail | Обложка |
 | Loading preview… | Загрузка превью… |

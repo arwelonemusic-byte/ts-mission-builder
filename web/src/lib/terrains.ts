@@ -218,3 +218,17 @@ export const TERRAIN_LIST: TerrainConfig[] = [
 
 export const terrainByKey = (key: string): TerrainConfig =>
   TERRAIN_LIST.find((t) => t.key === key) ?? TERRAIN_LIST[0];
+
+/** Square map thumbnail for the Terrain picker — built from the tile pyramid
+ * by `node generator/tools/build-terrain-thumbs.mjs` (re-run after adding a
+ * terrain or re-capturing its tiles). */
+export const terrainThumb = (key: string) => `/icons/terrains/${key}.jpg`;
+
+/** "13 × 13 km" — one decimal only when the size isn't a whole kilometre */
+export function formatWorldSize([w, h]: [number, number]): string {
+  const km = (m: number) => {
+    const v = Math.round(m / 100) / 10;
+    return Number.isInteger(v) ? String(v) : v.toFixed(1);
+  };
+  return `${km(w)} × ${km(h)} km`;
+}

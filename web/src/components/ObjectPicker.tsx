@@ -12,17 +12,34 @@ export type PickerEntry = {
   ref: string;
   label: string;
   cat: string;
-  /** filename under /icons/prefabs/ */
+  /** filename under /icons/prefabs/ — or an absolute URL (leading "/") used
+   * verbatim (terrain thumbs live under /icons/terrains/) */
   thumb: string;
+  /** Optional second line under the label in the modal grid (e.g. map size) */
+  sub?: string;
 };
+
+const thumbSrc = (thumb: string) => (thumb.startsWith("/") ? thumb : `/icons/prefabs/${thumb}`);
 
 /** Thumbnail tile with glyph placeholder underneath (covers prefabs without
  * a baked EditorPreview — the broken <img> hides itself). glyph = 16x16
  * viewBox inner-SVG markup (an overlayHtml glyph string). */
-export function ObjectThumb({ entry, glyph, size }: { entry: PickerEntry | null; glyph: string; size?: number }) {
-  // Fixed pixel size (card row) or fluid 4:3 (modal grid tiles)
-  const style = size ? { width: size, height: Math.round((size * 3) / 4) } : undefined;
-  const cls = size ? "" : "w-full aspect-[4/3]";
+export function ObjectThumb({
+  entry,
+  glyph,
+  size,
+  square,
+}: {
+  entry: PickerEntry | null;
+  glyph: string;
+  size?: number;
+  /** 1:1 tile instead of the prefab-preview 4:3 (square map thumbnails) */
+  square?: boolean;
+}) {
+  // Fixed pixel size (card row) or fluid (modal grid tiles); 4:3 = the baked
+  // EditorPreview shape, 1:1 = the terrain thumbnails
+  const style = size ? { width: size, height: square ? size : Math.round((size * 3) / 4) } : undefined;
+  const cls = size ? "" : square ? "w-full aspect-square" : "w-full aspect-[4/3]";
   return (
     <span
       className={`relative shrink-0 rounded-[4px] overflow-hidden bg-[#0d0f11] flex items-center justify-center ${cls}`}
@@ -39,7 +56,7 @@ export function ObjectThumb({ entry, glyph, size }: { entry: PickerEntry | null;
       {entry && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={`/icons/prefabs/${entry.thumb}`}
+          src={thumbSrc(entry.thumb)}
           alt=""
           className="absolute inset-0 w-full h-full object-cover"
           loading="lazy"
@@ -63,6 +80,7 @@ export function ObjectPickerModal({
   current,
   onPick,
   onClose,
+  square,
 }: {
   pool: PickerEntry[];
   categories: { key: string; label: string }[];
@@ -71,6 +89,8 @@ export function ObjectPickerModal({
   current: string | undefined;
   onPick: (ref: string) => void;
   onClose: () => void;
+  /** Square tiles (see ObjectThumb) */
+  square?: boolean;
 }) {
   const t = useT();
   const [cat, setCat] = useState<string>("all");
@@ -141,8 +161,9 @@ export function ObjectPickerModal({
                   isCurrent ? "border-[#f4db50]" : "border-transparent hover:border-[#2e3439]"
                 }`}
               >
-                <ObjectThumb entry={e} glyph={glyph} />
+                <ObjectThumb entry={e} glyph={glyph} square={square} />
                 <span className="text-[11px] leading-[14px] text-white/80 line-clamp-2">{t(e.label)}</span>
+                {e.sub && <span className="text-[10px] leading-[12px] text-white/40">{e.sub}</span>}
               </button>
             );
           })}

@@ -1,12 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MODS, VEHICLE_MODS, CORE_ADDONS } from "mission-gen";
-import { TERRAIN_LIST, terrainByKey } from "@/lib/terrains";
+import { TERRAIN_LIST, formatWorldSize, terrainByKey, terrainThumb } from "@/lib/terrains";
 import type { Mission } from "@/lib/mission";
 import { prepareThumbnailSource, thumbnailPreviewUrl } from "@/lib/thumbnail";
 import { useT } from "@/lib/i18n";
-import { CheckRow, Divider, Field, GhostButton, Hint, SelectInput, TextInput } from "../ui";
+import { CheckRow, Divider, Field, GhostButton, Hint, TextInput } from "../ui";
+import { ObjectPickerModal, ObjectThumb, type PickerEntry } from "../ObjectPicker";
+
+/** Picker filter chips — vanilla terrains vs Workshop maps. */
+const TERRAIN_PICKER_CATEGORIES = [
+  { key: "vanilla", label: "Official" },
+  { key: "modded", label: "Workshop" },
+];
+
+/** Placeholder glyph while a thumbnail loads / is missing (map-pin, 16×16). */
+const TERRAIN_GLYPH =
+  '<path d="M8 1.5a4.5 4.5 0 0 0-4.5 4.5c0 3.4 4.5 8.5 4.5 8.5s4.5-5.1 4.5-8.5A4.5 4.5 0 0 0 8 1.5z" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="6" r="1.6" fill="currentColor"/>';
 
 function ChevronDown({ open }: { open?: boolean }) {
   return (
@@ -46,6 +57,25 @@ export default function MissionPanel({
   // the old one revoked) only once a render actually completes.
   const [factionModsOpen, setFactionModsOpen] = useState(false);
   const [vehicleModsOpen, setVehicleModsOpen] = useState(false);
+  const [terrainModalOpen, setTerrainModalOpen] = useState(false);
+  // Vanilla first, then Workshop maps alphabetically (the old dropdown's
+  // order); thumbs are the square map renders under /icons/terrains/.
+  const terrainPool = useMemo<PickerEntry[]>(() => {
+    const toEntry = (tn: (typeof TERRAIN_LIST)[number]): PickerEntry => ({
+      ref: tn.key,
+      label: tn.label,
+      cat: tn.modded ? "modded" : "vanilla",
+      thumb: terrainThumb(tn.key),
+      sub: formatWorldSize(tn.worldSize),
+    });
+    return [
+      ...TERRAIN_LIST.filter((tn) => !tn.modded).map(toEntry),
+      ...TERRAIN_LIST.filter((tn) => tn.modded)
+        .sort((a, b) => a.label.localeCompare(b.label))
+        .map(toEntry),
+    ];
+  }, []);
+  const terrainEntry = terrainPool.find((e) => e.ref === mission.terrain) ?? null;
   const [preview, setPreview] = useState<string | null>(null);
   const previewRef = useRef<string | null>(null);
   const [thumbBusy, setThumbBusy] = useState(false);
@@ -189,44 +219,28 @@ export default function MissionPanel({
         setVehicleModsOpen((v) => !v)
       )}
       <Divider />
-      <Field label={t("Terrain")}>
-        <SelectInput
-          value={mission.terrain}
-          onChange={(e) =>
-            // Every map-positioned thing goes — coordinates from one world
-            // land in the sea / on the wrong hill of another. Non-spatial
-            // settings (factions, loadouts, briefing, arsenal…) survive.
-            update({
-              terrain: e.target.value,
-              spawn: { ...mission.spawn, placed: false },
-              zones: [],
-              markers: [],
-              sectors: [],
-              objectives: [],
-              props: [],
-              aiArty: { ...mission.aiArty, stopTrigger: null },
-            })
-          }
+      {/* Terrain = thumbnail row → full-screen picker modal (the spawn-vehicle
+          picker pattern): square map renders beat a name-only dropdown when
+          most entries are Workshop maps nobody knows by name. */}
+      <div className="flex flex-col gap-2">
+        <span className="text-[12px] text-white">{t("Terrain")}</span>
+        <button
+          type="button"
+          onClick={() => setTerrainModalOpen(true)}
+          className="bg-[#14181a] rounded-[8px] p-2 flex items-center gap-3 border border-[#2e3439] hover:border-[#f4db50] transition-colors text-left"
         >
-          {TERRAIN_LIST.filter((tn) => !tn.modded).map((tn) => (
-            <option key={tn.key} value={tn.key}>
-              {tn.label}
-            </option>
-          ))}
-          {TERRAIN_LIST.some((tn) => tn.modded) && (
-            <option disabled aria-hidden value="">
-              ──────────
-            </option>
-          )}
-          {TERRAIN_LIST.filter((tn) => tn.modded)
-            .sort((a, b) => a.label.localeCompare(b.label))
-            .map((tn) => (
-              <option key={tn.key} value={tn.key}>
-                {tn.label}
-              </option>
-            ))}
-        </SelectInput>
-      </Field>
+          <ObjectThumb entry={terrainEntry} glyph={TERRAIN_GLYPH} size={64} square />
+          <span className="flex-1 min-w-0 flex flex-col gap-[2px]">
+            <span className="text-[12px] text-white truncate">{terrainEntry?.label ?? mission.terrain}</span>
+            {terrainEntry && (
+              <span className="text-[11px] text-white/40 truncate">
+                {terrainEntry.sub}
+                {terrainEntry.cat === "modded" ? ` · ${t("Workshop")}` : ""}
+              </span>
+            )}
+          </span>
+        </button>
+      </div>
       <Hint>{t("Changing terrain clears placements.")}</Hint>
       <Divider />
       <Field label={t("Name")}>
@@ -310,6 +324,37 @@ export default function MissionPanel({
       <GhostButton destructive onClick={onReset}>
         {t("Reset mission")}
       </GhostButton>
+
+      {terrainModalOpen && (
+        <ObjectPickerModal
+          pool={terrainPool}
+          categories={TERRAIN_PICKER_CATEGORIES}
+          glyph={TERRAIN_GLYPH}
+          title={t("Select terrain")}
+          current={mission.terrain}
+          square
+          onPick={(key) => {
+            setTerrainModalOpen(false);
+            // Re-picking the current map must NOT wipe placements (the old
+            // <select> only fired on an actual change)
+            if (key === mission.terrain) return;
+            // Every map-positioned thing goes — coordinates from one world
+            // land in the sea / on the wrong hill of another. Non-spatial
+            // settings (factions, loadouts, briefing, arsenal…) survive.
+            update({
+              terrain: key,
+              spawn: { ...mission.spawn, placed: false },
+              zones: [],
+              markers: [],
+              sectors: [],
+              objectives: [],
+              props: [],
+              aiArty: { ...mission.aiArty, stopTrigger: null },
+            });
+          }}
+          onClose={() => setTerrainModalOpen(false)}
+        />
+      )}
     </>
   );
 }
