@@ -38,8 +38,17 @@ def tile_box(img, name):
         tw, th = int(m.group(1)), int(m.group(2))
         if name.startswith("wcs-"):
             return wcs_tile_box(img, tw)
+        if name.startswith("ts-"):
+            # TS Capture Arsenal UI (ts-arsenal-capture.py): the WHOLE black
+            # square incl. the top-left name, inset 2 px against edge bleed
+            return (8, 8, min(img.width, 6 + tw - 2), min(img.height, 6 + th - 2))
         return (6, 6, min(img.width, 6 + tw), min(img.height, 6 + th))
     return crop_tile(img)
+
+
+def fits(name):
+    """Shots whose thumb is content-fitted rather than letterboxed whole."""
+    return name.startswith("wcs-") or name.startswith("ts-")
 
 
 def wcs_tile_box(img, tw):
@@ -172,7 +181,7 @@ def main():
                 print(f"unmapped, skipped: {p.name}")
                 continue
             img = Image.open(p)
-            norm_thumb(img, tile_box(img, p.name), fit=p.name.startswith("wcs-")).save(ICONS_DIR / f"{base}.png")
+            norm_thumb(img, tile_box(img, p.name), fit=fits(p.name)).save(ICONS_DIR / f"{base}.png")
             n += 1
         print(f"wrote {n} thumbnails -> {ICONS_DIR}")
         return
@@ -188,14 +197,19 @@ def main():
             img = Image.open(p)
             box = tile_box(img, p.name)
             y = i * row_h
-            sheet.paste(norm_thumb(img, box, fit=p.name.startswith("wcs-")), (40, y + 4))
+            sheet.paste(norm_thumb(img, box, fit=fits(p.name)), (40, y + 4))
             # tooltip band: below the tile, full capture width (WCS tiles: the
-            # in-tile name band, since the thumb box spans the whole tile)
+            # in-tile name band, since the thumb box spans the whole tile; TS
+            # capture tiles: the top strip where the name is printed)
             band_top = box[3]
+            band_bottom = img.height
             if p.name.startswith("wcs-"):
                 m = re.search(r"-w(\d+)h", p.name)
                 band_top = wcs_band_top(img, int(m.group(1))) if m else box[3]
-            band = img.convert("RGB").crop((0, band_top, img.width, img.height))
+            elif p.name.startswith("ts-"):
+                band_top = box[1]
+                band_bottom = box[1] + max(24, int((box[3] - box[1]) * 0.18))
+            band = img.convert("RGB").crop((0, band_top, img.width, band_bottom))
             if band.height > 0:
                 scale = min(480 / band.width, (row_h - 8) / band.height, 1.5)
                 band = band.resize((max(1, int(band.width * scale)), max(1, int(band.height * scale))))

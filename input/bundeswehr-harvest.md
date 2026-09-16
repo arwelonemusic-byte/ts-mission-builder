@@ -196,18 +196,20 @@ None shipped (only arsenal-box props + a mortar pit) → vanilla US road/roadsid
   personal belongings) that dedupe against the vanilla pool in the modal. NAME_OVERRIDES: the 2
   PzF3 round prefabs carry no Name at all, and the 14 magazine pouches point at
   `#RHS-Vest_Blueforce_Pouch_Name` (an RHS key no shipped table defines).
-- Thumbnails: CAPTURED 2026-09-16 — 195 PNGs in `web/public/icons/items/BWAR_*.png` from the
-  `--thumbs-bw` spike (`TS_WebSpikeThumbsBW`, the 219 pool items outside the vanilla pool,
-  WEAPON_VARIANTS forced flat) shot through the **WCS Arsenal / WCS Loadout Editor inventory
-  UI** with the new `generator/tools/wcs-arsenal-capture.py` (per-page tile slicing, no
-  hovering — the WCS tiles print the item name in a band; thumbs keep that label by user
-  decision). Crate order = pool order EXCEPT (a) the 24 one-cell pouches (Dump, Handgrenade,
-  Magazine G28/G36/MP7/P8, Smokegrenade — both camos) are NEVER displayed by that UI → no
-  thumbnail, glyph fallback; (b) the remaining 2x1 pouches/helmets follow the holsters
-  directly. 22 pages, 4x4 cells of ~181x178 px, items span 1x1 / 2x1 / 2x2 cells; raw page
-  grabs + review sheets + `mapping.py` stay under `input/thumb-shots/Bundeswehr/` (gitignored).
-  Every crate tile resolved → the 195 captured GUIDs are also runtime-validated (incl. the
-  plain PzF3 launcher `{9BD71AF57C0490C5}` and both rounds).
+- Thumbnails: 195 PNGs in `web/public/icons/items/BWAR_*.png` from the `--thumbs-bw` spike
+  (`TS_WebSpikeThumbsBW`, the 219 pool items outside the vanilla pool, WEAPON_VARIANTS forced
+  flat). First captured 2026-09-16 through the WCS Arsenal inventory UI
+  (`wcs-arsenal-capture.py`), then RE-CAPTURED the same day through the **TS Capture Arsenal
+  UI** addon (`7292A2E8E26226E4`, `extraDependencies` of the spike) with
+  `generator/tools/ts-arsenal-capture.py`: 4 black square tiles per page, item auto-fitted to
+  88 % of the tile, name top-left (thumbs keep the label — user decision) → 49 pages, one grab
+  each, 195/195 tiles, every label verified against the expected order. Crate order = pool
+  order minus the 24 one-cell pouches (Dump, Handgrenade, Magazine G28/G36/MP7/P8,
+  Smokegrenade — both camos; pool indices 95-98, 103-120, 123-124) that the arsenal storage
+  never shows in EITHER UI → no thumbnail, glyph fallback. Raw page grabs + review sheets +
+  `mapping.py` + `order.tsv` under `input/thumb-shots/Bundeswehr-ts/` (gitignored; the WCS
+  run's under `Bundeswehr/`). Every crate tile resolved → the 195 captured GUIDs are also
+  runtime-validated (incl. the plain PzF3 launcher `{9BD71AF57C0490C5}` and both rounds).
 - Baked default set (registry `arsenalItems`, 32 entries): PzF3 + Bunkerfaust launchers and
   their DM32/DM72A1 rounds; G36 (DM11/DM21), G28 (DM111/DM41/DM21A2), MG5 (4B1T/AP), P8 mags;
   DM42 40 mm HE; DM51 frag + HE; DM45/DM21/DM23/DM26 smokes; M112 + M34, M14 + M15AT; vanilla
