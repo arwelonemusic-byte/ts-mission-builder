@@ -219,6 +219,8 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/novka.json",
     tilePattern: "/tiles/novka/{z}/{x}/{y}.jpg",
     tileMaxZoom: 4,
+    // 2026-09-16: 196 nadir frames (step 200), ortho-stitched, 4 px/m → 11264 px → max_z 6.
+    sat: { tilePattern: "/tiles/novka-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 6, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/6550CDE61DD51E14-Novka",
   },
