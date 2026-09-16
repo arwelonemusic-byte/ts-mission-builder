@@ -79,6 +79,8 @@ declare module "mission-gen" {
       label: string;
       workshopUrl: string;
       dependencies: string[];
+      /** Bundled companion addons players must also install (listed in the Important! callout) */
+      extraAddons?: { label: string; workshopUrl: string }[];
       /** Not offered in the UI (broken dep chain etc.); saves using it fall back to vanilla */
       hidden?: boolean;
       factions: Record<string, unknown>;
@@ -94,6 +96,7 @@ declare module "mission-gen" {
       label: string;
       workshopUrl: string;
       dependencies: string[];
+      extraAddons?: { label: string; workshopUrl: string }[];
       hidden?: boolean;
       vehicles: Record<string, string>;
       vehicleLabels: Record<string, string>;

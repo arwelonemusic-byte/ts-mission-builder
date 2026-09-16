@@ -139,7 +139,11 @@ export default function MissionPanel({
     ...mission.mods
       .map((id) => MODS[id] ?? VEHICLE_MODS[id])
       .filter(Boolean)
-      .map((mod) => ({ label: mod.label, url: mod.workshopUrl })),
+      .flatMap((mod) => [
+        { label: mod.label, url: mod.workshopUrl },
+        // bundled companion addons (Bundeswehr → PZG GER Vanilla Reskins)
+        ...(mod.extraAddons ?? []).map((a) => ({ label: a.label, url: a.workshopUrl })),
+      ]),
   ];
   const modCheckRow = (mod: { id: string; label: string }) => {
     const on = mission.mods.includes(mod.id);

@@ -162,6 +162,14 @@ export const BUNDESWEHR = {
   workshopUrl: "https://reforger.armaplatform.com/workshop/59673B087BFF710C",
   // Bundeswehr Mod + PZG GER Vanilla Reskin (bundled vehicle pool — see header)
   dependencies: ["59673B087BFF710C", "685EC277A4031C83"],
+  // the bundled second addon players must ALSO install — the builder lists it
+  // next to the mod in the Important! callout (user request 2026-09-16)
+  extraAddons: [
+    {
+      label: "PZG GER Vanilla Reskins",
+      workshopUrl: "https://reforger.armaplatform.com/workshop/685EC277A4031C83",
+    },
+  ],
   factions: {
     BWAR: {
       label: "Bundeswehr",
