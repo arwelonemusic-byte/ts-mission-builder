@@ -11,7 +11,8 @@ export function vehicleSizeClass(key) {
   if (/^(UH1H|Mi8MT)/.test(key)) return "heli";
   // WCS vehicle mods (2026-09-10): Abrams/BMP/Stryker/FMTV hulls are 6.7-8.5 m long -> heavy slot; JLTV/MRZR stay light.
   // Bundeswehr Dingo 2 (2026-09-15): 2.9 x 6.2 m hull overflows the 4 x 6 m light slot.
-  if (/^(M923A1|Ural4320|BTR70|BRDM2|LAV25|M998_covered_long|WCS_M1A[12]_|WCS_BMP[13]P?_|WCS_Stryker_|WCS_M108[0-9]_|WCS_M109[0-9]_|BWAR_Dingo2)/.test(key)) return "heavy";
+  // Marder Bundeswehr (2026-09-16): 3.9 x 7.1 m IFV hull -> heavy; the Fennek (2.8 x 5.7 m) stays light.
+  if (/^(M923A1|Ural4320|BTR70|BRDM2|LAV25|M998_covered_long|WCS_M1A[12]_|WCS_BMP[13]P?_|WCS_Stryker_|WCS_M108[0-9]_|WCS_M109[0-9]_|BWAR_Dingo2|MARDER_)/.test(key)) return "heavy";
   return "light";
 }
 

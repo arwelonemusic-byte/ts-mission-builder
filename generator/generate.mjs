@@ -40,6 +40,11 @@
 //   --bw-enemy  build the Bundeswehr enemy-side variant (TS_WebSpikeBWEnemy:
 //               vanilla US vs BWAR "Tropentarn" — friendliness clearing, GER
 //               groups/officer hvt/crews in reskinned HMMWVs + the Dingo)
+//   --bwv       build the Bundeswehr VEHICLE-mods variant (TS_WebSpikeBWV:
+//               BWAR playable vs USSR with Fennek (light) + CIE Marder 1A3
+//               (heavy) spawn slots, a Marder/Fennek mounted patrol (USSR
+//               crews) and a Fennek deliver target — both mod GUIDs
+//               usage-derived, the Marder's 3-addon dep chain is transitive)
 //   --arsenal   build the Arsenal Builder variant (TS_WebSpikeArsenal: US vs
 //               USSR with a mission.arsenal override — pool-resolved modes)
 //   --ai-arty   build the enemy-AI-artillery variant (TS_WebSpikeAiArty:
@@ -1074,6 +1079,72 @@ const BW_ENEMY_MISSION = {
   ),
 };
 
+// Bundeswehr vehicle-mods spike (2026-09-16): the two companion VEHICLE mods
+// of the BWAR faction — Fennek 631D7B00C9DC049E (light slot) and CIE Marder
+// 1A3 6446DDF41914A293 (heavy slot; its own deps Tracked Core / ATGM /
+// Thermal arrive transitively) — through all three usage-derived dep paths:
+// spawn vehicles, a mounted patrol (armed Marder + unarmed Fennek scout, USSR
+// crews via the crew rule) and a Fennek deliver target parked in the AO.
+const BWV_MISSION = {
+  ...BW_MISSION,
+  addonId: "TSWebSpikeBWV",
+  dirName: "TS_WebSpikeBWV",
+  addonTitle: "TS Web Spike BWV Mission",
+  name: "TS_WebSpikeBWV",
+  displayName: "TS Web Spike BWV",
+  guids: {
+    addon: "2EB7B7A08D205227",
+    world: "B4180730715B3D01",
+    missionConf: "9AD5544328B6E75B",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    extra: [
+      {
+        title: "Support",
+        text: ["- 1x Fennek .50cal", "- 1x Fennek Scout", "- 1x Marder 1A3", "- 1x Dingo 2 A3.2B"],
+      },
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    vehicles: [
+      { type: "FENNEK_MCR_50cal" },
+      { type: "FENNEK_MCR_Scout" },
+      { type: "MARDER_1A3" },
+      { type: "BWAR_Dingo2A3_2B" },
+    ],
+  },
+  zones: MISSION.zones.map((z, i) =>
+    i === 0
+      ? {
+          ...z,
+          plugins: [
+            { type: "DefenseGroup" },
+            { type: "TS_ScenarioFrameworkPluginAIPatrol", attrs: { m_iBudget: 2 } },
+            {
+              type: "TS_ScenarioFrameworkPluginMountedPatrol",
+              attrs: { m_iBudget: 2 },
+              vehicles: ["MARDER_1A3_NoSlat", "FENNEK_Tan_Scout"],
+            },
+          ],
+        }
+      : z
+  ),
+  objectives: [
+    {
+      type: "deliver",
+      pos: [2836.2, 72.96, 1620.4],
+      delivery: [1380.5, 36.3, 2378.9],
+      deliveryRadius: 30,
+      objectRef: "{968CB20CFBF7DA9B}Prefabs/Vehicles/Core/FennekTan.et",
+      taskTitle: "Угнать Fennek",
+      taskDesc: "В лагере противника стоит трофейный Fennek. Угоните его и доставьте на базу.",
+    },
+  ],
+  props: [],
+};
+
 // "TS Capture Arsenal UI" (Workbench addons dir, GUID below; not published):
 // capture-only inventory layout — 4 equal black tiles per crate page with the
 // item name printed top-left. Thumbs spikes list it in `extraDependencies`.
@@ -1942,6 +2013,8 @@ const BUILT = process.argv.includes("--zagoria")
                   ? A2_MISSION
                 : process.argv.includes("--bw-enemy")
                   ? BW_ENEMY_MISSION
+                : process.argv.includes("--bwv")
+                  ? BWV_MISSION
                 : process.argv.includes("--bw")
                   ? BW_MISSION
                 : process.argv.includes("--sfs-rf-fia")
