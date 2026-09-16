@@ -58,6 +58,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/kolguyev.json",
     tilePattern: "/tiles/kolguyev/{z}/{x}/{y}.jpg",
     tileMaxZoom: 6,
+    // 2026-09-16: 4096 EnfusionMapMaker frames (step 200, ortho-stitched against
+    // the heightmap), rendered at exactly 4 px/m → 52000 px → pyramid max_z 8.
+    sat: { tilePattern: "/tiles/kolguyev-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 8, nativeZoom: 2 },
   },
   // Modded terrains (assets calibrated in ts-ops-planner; generator side in
   // generator/catalogue.mjs TERRAINS carries the addon dependency GUIDs).
