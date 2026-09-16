@@ -39,7 +39,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     tileMaxZoom: 5,
     // Pilot (2026-09-16): 1521 EnfusionMapMaker frames at 6.05 px/m, mosaic
     // resampled to exactly 4 px/m (16400 px) so it aligns with the CRS.
-    sat: { tilePattern: "/tiles/arland-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
+    // PARKED 2026-09-16: the pilot was shot at 950 m / step 100 before the exposure
+    // lock; re-capture with the settled recipe, then restore this line (tiles still ship).
+    // sat: { tilePattern: "/tiles/arland-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
   },
   {
     key: "eden",
@@ -219,7 +221,8 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/novka.json",
     tilePattern: "/tiles/novka/{z}/{x}/{y}.jpg",
     tileMaxZoom: 4,
-    // 2026-09-16: 196 nadir frames (step 200), ortho-stitched, 4 px/m → 11264 px → max_z 6.
+    // 2026-09-16: 841 nadir frames (step 100 / 1200 m — seams 1.0 m median vs 2.7 m at
+    // step 200 / 950 m), ortho-stitched, 4 px/m → 11264 px → max_z 6.
     sat: { tilePattern: "/tiles/novka-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 6, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/6550CDE61DD51E14-Novka",
