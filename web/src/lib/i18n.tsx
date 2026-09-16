@@ -568,6 +568,13 @@ export function coordsText(lang: Lang, x: string | number, z: string | number): 
   return `${x} E · ${z} N`;
 }
 
+/** Second line of the cursor badge: terrain elevation under the cursor ("▲ 123 m" / "▲ 123 м").
+ * The heightmap continues below sea level (seabed); water reads as 0. */
+export function elevText(lang: Lang, elev?: number): string {
+  const v = elev !== undefined && Number.isFinite(elev) ? String(Math.max(0, Math.round(elev))) : "—";
+  return `▲ ${v} ${lang === "ru" ? "м" : "m"}`;
+}
+
 const LangContext = createContext<Lang>("en");
 export const LangProvider = LangContext.Provider;
 

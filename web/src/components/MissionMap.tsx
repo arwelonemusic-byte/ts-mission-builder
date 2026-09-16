@@ -5,6 +5,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { spawnElements, itemWorldCorners, rotateLocal, vehicleWorldOutline, FACTIONS, FARP_DETAIL } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
+import { getSampler } from "@/lib/terrainSampler";
+import type { HeightmapSampler } from "@/lib/heightmap";
 import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
 import {
@@ -24,7 +26,7 @@ import {
   zoneTooltipHtml,
 } from "@/lib/overlayHtml";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
-import { coordsText, scaleLabel, tr, zoneName, type Lang } from "@/lib/i18n";
+import { coordsText, elevText, scaleLabel, tr, zoneName, type Lang } from "@/lib/i18n";
 import MapViewControls from "@/components/MapViewControls";
 
 // Coordinate mapping (same convention as ts-ops-planner): lat = world Z
@@ -118,10 +120,14 @@ export default function MissionMap(props: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.LayerGroup | null>(null);
   const satLayerRef = useRef<L.TileLayer | null>(null);
+  // Heightmap sampler for the elevation readout (shared cache with export/3D;
+  // null until the fetch resolves, so the readout simply omits the metres).
+  const samplerRef = useRef<HeightmapSampler | null>(null);
   const worldRef = useRef<[number, number]>([0, 0]); // [w, h]
   const scaleBarRef = useRef<HTMLDivElement>(null);
   const scaleLabelRef = useRef<HTMLSpanElement>(null);
   const coordsRef = useRef<HTMLSpanElement>(null);
+  const elevRef = useRef<HTMLSpanElement>(null);
   const propsRef = useRef(props);
   propsRef.current = props;
   // Rerun the scale-bar label when the language changes (set by the creation effect)
@@ -233,12 +239,21 @@ export default function MissionMap(props: MapProps) {
     updateScale();
     updateScaleRef.current = updateScale;
 
+    samplerRef.current = null;
+    let samplerStale = false;
+    getSampler(t.key)
+      .then((s) => {
+        if (!samplerStale) samplerRef.current = s;
+      })
+      .catch(() => {});
     map.on("mousemove", (e: L.LeafletMouseEvent) => {
       const el = coordsRef.current;
       if (!el) return;
       const cx = Math.round(Math.min(w, Math.max(0, e.latlng.lng)));
       const cz = Math.round(Math.min(h, Math.max(0, e.latlng.lat)));
       el.textContent = coordsText(propsRef.current.lang, cx, cz);
+      const ev = elevRef.current;
+      if (ev) ev.textContent = elevText(propsRef.current.lang, samplerRef.current?.sample(e.latlng.lng, e.latlng.lat));
     });
 
     // --- imperative API for the page (pings, drag-drop conversion, fit) ---
@@ -290,6 +305,8 @@ export default function MissionMap(props: MapProps) {
     });
 
     return () => {
+      samplerStale = true;
+      samplerRef.current = null;
       ro.disconnect();
       map.remove();
       mapRef.current = null;
@@ -894,9 +911,12 @@ export default function MissionMap(props: MapProps) {
           />
           <span ref={scaleLabelRef} className="font-mono text-[10px] leading-none font-medium text-white/60" />
         </div>
-        <div className="bg-[rgba(32,36,39,0.9)] rounded-[8px] px-[10px] py-[6px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.4)]">
+        <div className="flex flex-col items-end gap-[4px] bg-[rgba(32,36,39,0.9)] rounded-[8px] px-[10px] py-[6px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.4)]">
           <span ref={coordsRef} className="font-mono text-[11px] leading-none font-medium text-white/75">
             {coordsText(props.lang, "—", "—")}
+          </span>
+          <span ref={elevRef} className="font-mono text-[10px] leading-none font-medium text-white/50">
+            {elevText(props.lang)}
           </span>
         </div>
       </div>

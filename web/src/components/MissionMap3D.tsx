@@ -54,7 +54,7 @@ import {
   zoneDotHtml,
 } from "@/lib/overlayHtml";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
-import { coordsText } from "@/lib/i18n";
+import { coordsText, elevText } from "@/lib/i18n";
 import MapViewControls from "@/components/MapViewControls";
 import type { MapProps } from "@/components/MissionMap";
 
@@ -461,6 +461,9 @@ export default function MissionMap3D(props: Map3DProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<World | null>(null);
   const coordsRef = useRef<HTMLSpanElement>(null);
+  const elevRef = useRef<HTMLSpanElement>(null);
+  // Heightmap sampler for the elevation readout (set once the terrain build resolves it).
+  const samplerRef = useRef<Awaited<ReturnType<typeof getSampler>> | null>(null);
   const propsRef = useRef(props);
   propsRef.current = props;
   // Consume any focus seq that predates this mount (stale 2D focus).
@@ -642,6 +645,7 @@ export default function MissionMap3D(props: Map3DProps) {
     getSampler(props.terrainKey)
       .then((sampler) => {
         if (disposed) return;
+        samplerRef.current = sampler;
         buildTerrain(sampler);
         // The camera was framed against a flat y=0 world — lift the whole
         // rig by the terrain height at the target so a close-in initial
@@ -1534,7 +1538,11 @@ export default function MissionMap3D(props: Map3DProps) {
         const el = coordsRef.current;
         if (!el || disposed) return;
         const hit = pickTerrain(world, e.clientX, e.clientY);
-        if (hit) el.textContent = coordsText(propsRef.current.lang, Math.round(hit.x), Math.round(hit.z));
+        if (hit) {
+          el.textContent = coordsText(propsRef.current.lang, Math.round(hit.x), Math.round(hit.z));
+          const ev = elevRef.current;
+          if (ev) ev.textContent = elevText(propsRef.current.lang, samplerRef.current?.sample(hit.x, hit.z));
+        }
       });
     };
 
@@ -1740,9 +1748,12 @@ export default function MissionMap3D(props: Map3DProps) {
 
       {/* coordinate readout (no scale bar — perspective has no single scale) */}
       <div className="max-md:hidden absolute right-4 bottom-4 z-[1000] pointer-events-none">
-        <div className="bg-[rgba(32,36,39,0.9)] rounded-[8px] px-[10px] py-[6px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.4)]">
+        <div className="flex flex-col items-end gap-[4px] bg-[rgba(32,36,39,0.9)] rounded-[8px] px-[10px] py-[6px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.4)]">
           <span ref={coordsRef} className="font-mono text-[11px] leading-none font-medium text-white/75">
             {coordsText(props.lang, "—", "—")}
+          </span>
+          <span ref={elevRef} className="font-mono text-[10px] leading-none font-medium text-white/50">
+            {elevText(props.lang)}
           </span>
         </div>
       </div>
