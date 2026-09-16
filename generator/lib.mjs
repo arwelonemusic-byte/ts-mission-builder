@@ -185,6 +185,9 @@ export function buildMissionFiles(mission, options = {}) {
       ...arsenalMods.flatMap((id) => MODS[id].dependencies),
       ...vehicleMods.flatMap((id) => VEHICLE_MODS[id].dependencies),
       ...(TERRAIN.dependencies ?? []),
+      // CLI-only escape hatch (thumbnail spikes): extra addon GUIDs the
+      // mission should depend on, e.g. the TS Capture Arsenal UI addon
+      ...(mission.extraDependencies ?? []),
     ]),
   ];
   // Alias factions (aliasOf) are vanilla reskins — their vanilla member is

@@ -1074,6 +1074,11 @@ const BW_ENEMY_MISSION = {
   ),
 };
 
+// "TS Capture Arsenal UI" (Workbench addons dir, GUID below; not published):
+// capture-only inventory layout — 4 equal black tiles per crate page with the
+// item name printed top-left. Thumbs spikes list it in `extraDependencies`.
+const CAPTURE_UI_ADDON = "7292A2E8E26226E4";
+
 // Bundeswehr thumbnail-harvest mock (see THUMBS_MISSION): every pool item the
 // mod ADDS — refs already in the vanilla pool (US medical kit, M14/M15 mines,
 // M112, vanilla radios…) have thumbnails and are skipped. BWAR playable so the
@@ -1094,6 +1099,7 @@ const THUMBS_BW_MISSION = {
   arsenal: MOD_ARSENAL_POOLS.bundeswehr
     .filter((i) => !vanillaRefs.has(i.ref))
     .map((i) => ({ ref: i.ref, mode: i.mode === "WEAPON_VARIANTS" ? "WEAPON" : i.mode })),
+  extraDependencies: [CAPTURE_UI_ADDON],
 };
 
 // Arma II Factions spike: CDF playable vs ChDKZ enemy — exercises the mod's
