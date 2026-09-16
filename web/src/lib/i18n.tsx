@@ -520,6 +520,8 @@ const RU: Record<string, string> = {
   "Fit whole map": "Показать всю карту",
   "3D view": "3D-вид",
   "2D view": "2D-вид",
+  "Satellite imagery": "Спутниковый снимок",
+  "Topographic map": "Топографическая карта",
 };
 
 /** Pure lookup — usable outside React (Leaflet HTML, event closures). */

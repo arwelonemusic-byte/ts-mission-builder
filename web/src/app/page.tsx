@@ -98,6 +98,9 @@ const DEFAULT_MARKER_DRAFT: MarkerDraft = {
 type Status = { msg: string; kind: "warn" | "info"; n: number } | null;
 type Ghost = { x: number; y: number; over: boolean } | null;
 
+/** Satellite-basemap preference (browser-local, not part of the mission) */
+const SAT_STORAGE_KEY = "ts-mission-builder-sat";
+
 export default function Editor() {
   const [mission, setMission] = useState<Mission | null>(null);
   const [lang, setLangState] = useState<Lang>("en");
@@ -157,6 +160,20 @@ export default function Editor() {
     view3DRef.current = v;
     setView3DState(v);
   };
+  // Satellite basemap preference (per browser, not part of the mission).
+  const [satLayer, setSatLayer] = useState(false);
+  useEffect(() => {
+    try {
+      setSatLayer(localStorage.getItem(SAT_STORAGE_KEY) === "1");
+    } catch {}
+  }, []);
+  const toggleSat = () =>
+    setSatLayer((v) => {
+      try {
+        localStorage.setItem(SAT_STORAGE_KEY, v ? "0" : "1");
+      } catch {}
+      return !v;
+    });
   const genRef = useRef<GenState>(null);
   genRef.current = gen;
 
@@ -1076,6 +1093,8 @@ export default function Editor() {
           const shared = {
             terrainKey: mission.terrain,
             lang,
+            satLayer,
+            onToggleSat: toggleSat,
             playableFaction: mission.playableFaction,
             spawn: mission.spawn,
             zones: mission.zones,

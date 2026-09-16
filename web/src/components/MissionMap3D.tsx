@@ -624,7 +624,7 @@ export default function MissionMap3D(props: Map3DProps) {
     buildTerrain(null);
 
     let texture: THREE.CanvasTexture | null = null;
-    compositeTerrainTexture(t)
+    compositeTerrainTexture(t, propsRef.current.satLayer)
       .then((canvas) => {
         if (disposed) return;
         texture = new THREE.CanvasTexture(canvas);
@@ -1623,6 +1623,31 @@ export default function MissionMap3D(props: Map3DProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.terrainKey]);
 
+  // Satellite/topo basemap switch while 3D is up: re-composite (cached per
+  // terrain+mode) and swap the terrain material's map in place.
+  useEffect(() => {
+    const world = worldRef.current;
+    const mesh = world?.terrain;
+    if (!world || !mesh) return;
+    let stale = false;
+    const t = terrainByKey(props.terrainKey);
+    compositeTerrainTexture(t, props.satLayer)
+      .then((canvas) => {
+        if (stale) return;
+        const mat = mesh.material as THREE.Material & { map: THREE.Texture | null };
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        mat.map?.dispose();
+        mat.map = texture;
+        mat.needsUpdate = true;
+        world.render();
+      })
+      .catch(() => {});
+    return () => {
+      stale = true;
+    };
+  }, [props.satLayer]);
+
   // ===== Overlay sync — same dep list as the 2D redraw effect ==============
   useEffect(() => {
     worldRef.current?.syncOverlays();
@@ -1708,6 +1733,9 @@ export default function MissionMap3D(props: Map3DProps) {
         }}
         view3D={props.view3D}
         onToggleView={props.onToggleView}
+        satAvailable={!!terrainByKey(props.terrainKey).sat}
+        satLayer={props.satLayer}
+        onToggleSat={props.onToggleSat}
       />
 
       {/* coordinate readout (no scale bar — perspective has no single scale) */}

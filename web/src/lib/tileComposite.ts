@@ -4,6 +4,8 @@
 // stitched size stays within MAX_TEXTURE_PX, then draw every available tile.
 // Tiles beyond the world's data extent don't exist (404) — the pre-filled
 // page-background color shows there instead, matching the 2D donut mask.
+// `sat` picks the terrain's satellite pyramid (when it ships one) instead of
+// the topo pyramid; both are cached separately.
 import type { TerrainConfig } from "./terrains";
 
 const MAX_TEXTURE_PX = 6144;
@@ -14,24 +16,32 @@ const CACHE_CAP = 3;
 
 const cache = new Map<string, Promise<HTMLCanvasElement>>();
 
-export function compositeTerrainTexture(t: TerrainConfig): Promise<HTMLCanvasElement> {
-  const hit = cache.get(t.key);
+export function compositeTerrainTexture(t: TerrainConfig, sat = false): Promise<HTMLCanvasElement> {
+  const useSat = sat && !!t.sat;
+  const key = `${t.key}:${useSat ? "sat" : "topo"}`;
+  const hit = cache.get(key);
   if (hit) return hit;
-  const p = build(t);
-  cache.set(t.key, p);
-  for (const key of cache.keys()) {
+  const p = build(t, useSat);
+  cache.set(key, p);
+  for (const k of cache.keys()) {
     if (cache.size <= CACHE_CAP) break;
-    if (key !== t.key) cache.delete(key);
+    if (k !== key) cache.delete(k);
   }
   return p;
 }
 
-async function build(t: TerrainConfig): Promise<HTMLCanvasElement> {
+async function build(t: TerrainConfig, useSat: boolean): Promise<HTMLCanvasElement> {
   const [w, h] = t.worldSize;
-  // Meters-per-pixel doubles per level up from the native tileMaxZoom.
-  let z = t.tileMaxZoom;
-  while (z > 0 && Math.max(w, h) / 2 ** (t.tileMaxZoom - z) > MAX_TEXTURE_PX) z--;
-  const mpp = 2 ** (t.tileMaxZoom - z);
+  const pattern = useSat && t.sat ? t.sat.tilePattern : t.tilePattern;
+  const maxZoom = useSat && t.sat ? t.sat.tileMaxZoom : t.tileMaxZoom;
+  // Pixels per metre at the pyramid's deepest level: 1 for the topo pyramid,
+  // 2^nativeZoom for a satellite pyramid.
+  const nativePpm = useSat && t.sat ? 2 ** t.sat.nativeZoom : 1;
+  // Meters-per-pixel doubles per level up from the native maxZoom.
+  let z = maxZoom;
+  const mppAt = (zz: number) => 2 ** (maxZoom - zz) / nativePpm;
+  while (z > 0 && Math.max(w, h) / mppAt(z) > MAX_TEXTURE_PX) z--;
+  const mpp = mppAt(z);
   const cw = Math.ceil(w / mpp);
   const ch = Math.ceil(h / mpp);
 
@@ -47,7 +57,7 @@ async function build(t: TerrainConfig): Promise<HTMLCanvasElement> {
   const jobs: Promise<void>[] = [];
   for (let ty = 0; ty * TILE_PX < ch; ty++) {
     for (let tx = 0; tx * TILE_PX < cw; tx++) {
-      const url = t.tilePattern
+      const url = pattern
         .replace("{z}", String(z))
         .replace("{x}", String(tx))
         .replace("{y}", String(ty));

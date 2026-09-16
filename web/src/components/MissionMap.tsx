@@ -108,12 +108,16 @@ export type MapProps = {
   /** 2D/3D view toggle state + handler (rendered in the HUD cluster) */
   view3D: boolean;
   onToggleView: () => void;
+  /** Satellite basemap on/off (only honoured when the terrain ships one) */
+  satLayer: boolean;
+  onToggleSat: () => void;
 };
 
 export default function MissionMap(props: MapProps) {
   const divRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.LayerGroup | null>(null);
+  const satLayerRef = useRef<L.TileLayer | null>(null);
   const worldRef = useRef<[number, number]>([0, 0]); // [w, h]
   const scaleBarRef = useRef<HTMLDivElement>(null);
   const scaleLabelRef = useRef<HTMLSpanElement>(null);
@@ -294,6 +298,37 @@ export default function MissionMap(props: MapProps) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.terrainKey]);
+
+  // Satellite basemap: a second tile layer stacked above the topo tiles
+  // (tile pane, higher zIndex) so toggling never rebuilds the map. Declared
+  // after the creation effect so it always sees the current map on a terrain
+  // switch. The satellite pyramid holds 2^nativeZoom px/m at its deepest
+  // level, hence the zoomOffset/native-zoom arithmetic differs from the topo
+  // layer's (which is 1 px = 1 m).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    satLayerRef.current?.remove();
+    satLayerRef.current = null;
+    const t = terrainByKey(props.terrainKey);
+    if (!props.satLayer || !t.sat) return;
+    const [w, h] = t.worldSize;
+    const offset = t.sat.tileMaxZoom - t.sat.nativeZoom;
+    satLayerRef.current = L.tileLayer(t.sat.tilePattern, {
+      tileSize: 256,
+      minZoom: -offset,
+      maxZoom: 4,
+      minNativeZoom: -offset,
+      maxNativeZoom: t.sat.nativeZoom,
+      zoomOffset: offset,
+      noWrap: true,
+      zIndex: 2,
+      bounds: L.latLngBounds([
+        [0, 0],
+        [h, w],
+      ]),
+    }).addTo(map);
+  }, [props.terrainKey, props.satLayer]);
 
   // Refresh the imperative scale-bar label when the language changes
   useEffect(() => {
@@ -839,6 +874,9 @@ export default function MissionMap(props: MapProps) {
         }}
         view3D={props.view3D}
         onToggleView={props.onToggleView}
+        satAvailable={!!terrainByKey(props.terrainKey).sat}
+        satLayer={props.satLayer}
+        onToggleSat={props.onToggleSat}
       />
 
       {/* scale bar + coordinate readout (desktop only) */}

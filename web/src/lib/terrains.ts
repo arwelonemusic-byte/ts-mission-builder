@@ -9,10 +9,23 @@ export type TerrainConfig = {
   /** XYZ tile pyramid (from ts-ops-planner tooling) */
   tilePattern: string;
   tileMaxZoom: number;
+  /** Optional satellite-style pyramid (nadir World Editor captures stitched by
+   * ts-ops-planner `nadir_mosaic.py`, then `tile_pyramid.py`). Unlike the topo
+   * pyramid (1 px = 1 m at its deepest level) this one is sharper: its deepest
+   * level holds 2^nativeZoom px per metre, so the map serves it up to Leaflet
+   * zoom `nativeZoom` before upscaling. */
+  sat?: SatTiles;
   /** Terrain comes from a workshop mod (rendered below vanilla in the dropdown) */
   modded?: boolean;
   /** Workshop page of the map addon (modded terrains only) — shown in the required-addons callout */
   workshopUrl?: string;
+};
+
+export type SatTiles = {
+  tilePattern: string;
+  tileMaxZoom: number;
+  /** log2 of the pixels-per-metre at tileMaxZoom (2 = 4 px/m) */
+  nativeZoom: number;
 };
 
 export const TERRAIN_LIST: TerrainConfig[] = [
@@ -24,6 +37,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/arland.json",
     tilePattern: "/tiles/arland/{z}/{x}/{y}.jpg",
     tileMaxZoom: 5,
+    // Pilot (2026-09-16): 1521 EnfusionMapMaker frames at 6.05 px/m, mosaic
+    // resampled to exactly 4 px/m (16400 px) so it aligns with the CRS.
+    sat: { tilePattern: "/tiles/arland-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
   },
   {
     key: "eden",
