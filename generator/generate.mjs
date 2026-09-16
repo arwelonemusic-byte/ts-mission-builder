@@ -75,6 +75,7 @@
 //   --alhadra   same, on Al Hadra
 //   --novka     same, on Novka (parent bakes in AIWorld + RadioManager)
 //   --zagoria   same, on West Zagoria
+//   --seitenbuch same, on Seitenbuch (first non-square terrain, 4000x2000 m)
 
 import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -1967,7 +1968,61 @@ const ZAGORIA_MISSION = {
   props: [],
 };
 
-const BUILT = process.argv.includes("--zagoria")
+// Seitenbuch: 4000x2000 m German countryside (2:1 world — exercises the
+// non-square path end to end); nav refs from the addon's custom AIWorld
+// prefab, managers ours (the bare world bakes in only a MapEntity).
+const SEITENBUCH_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeSeitenbuch",
+  dirName: "TS_WebSpikeSeitenbuch",
+  addonTitle: "TS Web Spike Seitenbuch Mission",
+  name: "TS_WebSpikeSeitenbuch",
+  displayName: "TS Web Spike Seitenbuch",
+  terrain: "seitenbuch",
+  guids: {
+    addon: "6AC9F1B24D07A3E1",
+    world: "6AC9F1B29A6C5B72",
+    missionConf: "6AC9F1B2C3E84F19",
+  },
+  briefing: {
+    ...MISSION.briefing,
+    situation: [
+      "Soviet forces have occupied the villages east of Seitenbuch.",
+      "",
+      "Friendly forces are staging in the western woods. Enemy patrols, mounted elements and garrisoned positions are reported around the objective area.",
+    ],
+  },
+  spawn: {
+    ...MISSION.spawn,
+    pos: "900 445.38 700",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      pos: "2300 413.16 1000",
+    },
+    {
+      ...MISSION.zones[1],
+      pos: "2700 432.69 1250",
+    },
+  ],
+  markers: [
+    { kind: "military", pos: [2300, 413.2, 1000], text: "Enemy armor", faction: "OPFOR", type: "ARMOR" },
+    { kind: "military", pos: [950, 450.6, 750], text: "", faction: "BLUFOR", type: "INFANTRY" },
+    { kind: "custom", pos: [2700, 432.7, 1250], text: "Лагерь", icon: "DOT", color: "OPFOR", rotation: 45 },
+  ],
+  sectors: [
+    { kind: "ao", pos: [2500, 423.0, 1100], length: 1200, width: 800, rotation: 0 },
+    { kind: "objective", pos: [2300, 413.2, 1000], length: 300, width: 200, rotation: 30 },
+  ],
+  // Terrain spike: drop the base MISSION's Arland-coord props/objectives.
+  objectives: [],
+  props: [],
+};
+
+const BUILT = process.argv.includes("--seitenbuch")
+  ? SEITENBUCH_MISSION
+  : process.argv.includes("--zagoria")
   ? ZAGORIA_MISSION
   : process.argv.includes("--novka")
   ? NOVKA_MISSION

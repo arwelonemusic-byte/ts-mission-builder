@@ -63,7 +63,9 @@ async function build(t) {
   const out = join(OUT_DIR, `${t.key}.jpg`);
   await sharp(stitched)
     .extract({ left: 0, top: 0, width: worldPx[0], height: worldPx[1] })
-    .resize(THUMB, THUMB, { fit: "cover", kernel: "lanczos3" })
+    // contain: a non-square world (Seitenbuch 2:1) letterboxes on the void
+    // colour instead of losing its ends to a square crop
+    .resize(THUMB, THUMB, { fit: "contain", background: BG, kernel: "lanczos3" })
     .jpeg({ quality: 82, mozjpeg: true })
     .toFile(out);
   console.log(`${t.key.padEnd(12)} z${z} ${worldPx[0]}x${worldPx[1]} px of map, ${layers.length} tiles → ${out}`);

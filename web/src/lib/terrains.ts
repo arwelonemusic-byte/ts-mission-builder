@@ -238,6 +238,18 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/6044F5AB4E6F9D5A-WestZagoria",
   },
+  {
+    key: "seitenbuch",
+    label: "Seitenbuch",
+    // First non-square terrain (4096x2048 tile extent, 1 px = 1 m at z4)
+    worldSize: [4000, 2000],
+    heightmapBin: "/heightmaps/seitenbuch.bin",
+    heightmapMeta: "/heightmaps/seitenbuch.json",
+    tilePattern: "/tiles/seitenbuch/{z}/{x}/{y}.jpg",
+    tileMaxZoom: 4,
+    modded: true,
+    workshopUrl: "https://reforger.armaplatform.com/workshop/5F031E702D6FAAB1-Seitenbuch-Germany",
+  },
 ];
 
 export const terrainByKey = (key: string): TerrainConfig =>

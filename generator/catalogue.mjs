@@ -346,6 +346,20 @@ export const TERRAINS = {
     ],
     dependencies: ["6044F5AB4E6F9D5A"],
   },
+  // Seitenbuch (Germany, 4000x2000 m — the first non-square terrain; no
+  // external deps). Nav refs from the addon's custom SCR_AIWorld_Seitenbuch.et
+  // prefab (Kunar pattern); the GM world's PerceptionManager lives in the GM
+  // layer, the bare world bakes in only a MapEntity → managers stay ours.
+  seitenbuch: {
+    label: "Seitenbuch",
+    parent: "{8586AA7949973F06}worlds/Seitenbuch/Seitenbuch.ent",
+    nav: [
+      "{AE0DE68814EDE3E4}worlds/GameMaster/Navmeshes/GM_Seitenbuch.nmn",
+      "{3A5E073879F6BCB1}worlds/GameMaster/Navmeshes/GM_Seitenbuch_vehicles.nmn",
+      "{287F5B4D8EB4AD96}worlds/GameMaster/Navmeshes/GM_Seitenbuch_LowRes.nmn",
+    ],
+    dependencies: ["5F031E702D6FAAB1"],
+  },
 };
 
 const P_OPFOR = "Prefabs/Groups/OPFOR";
