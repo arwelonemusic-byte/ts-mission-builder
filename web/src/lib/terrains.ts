@@ -74,6 +74,8 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/armenhof.json",
     tilePattern: "/tiles/armenhof/{z}/{x}/{y}.jpg",
     tileMaxZoom: 4,
+    // 2026-09-16: 1369 nadir frames (step 100 / 1200 m), ortho-stitched, 4 px/m -> 15360 px -> max_z 6.
+    sat: { tilePattern: "/tiles/armenhof-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 6, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/656514EAA451A2B2-Armenhof",
   },
