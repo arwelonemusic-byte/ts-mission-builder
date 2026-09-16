@@ -25,6 +25,36 @@ const EXCLUDED_TYPES = new Set(["HELICOPTER", "VEHICLE"]);
 const EXCLUDED_REFS = new Set([
   "{34B3B2E5CC452F8A}Prefabs/Characters/Uniforms/VKPO/Undershirt_Demiseason_VKPO.et",
   "{C4D2963435559DD6}Prefabs/Characters/Uniforms/VKPO/Undershirt_Summer_VKPO.et",
+  // Bundeswehr: 24 magazine/grenade/dump pouch SHELLS — mesh + worn-model
+  // cloth component only (no storage, no item attributes, no name, no size);
+  // vest attachments the arsenal storage never lists (hidden in both the WCS
+  // and the TS capture UI, 2026-09-16) → useless as crate content (user
+  // decision 2026-09-16). The 8 real pouches (Hydration/IFAK/MG/Utility ×2
+  // camos) carry SCR_UniversalInventoryStorageComponent and stay.
+  "{FD65E87014BF84E9}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Dumppouch.et",
+  "{34FAB4319205A17A}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Dumppouch_3FT.et",
+  "{22AF156120D62B82}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Grenade.et",
+  "{DF62CB4F879FC858}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Grenade_3FT.et",
+  "{0C3D787B8EE34AB7}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_1.et",
+  "{57453F40E11D8E57}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_1_3FT.et",
+  "{05105613DDB24586}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_2.et",
+  "{E5927DABBEBFBDCF}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_2_3FT.et",
+  "{E08C1AEAD157D2ED}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_3.et",
+  "{8BDF43F28BDE5347}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G28_3_3FT.et",
+  "{F8B236D94FD315AB}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_1.et",
+  "{70C97965E6C89047}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_1_3FT.et",
+  "{3D38D85071AC6170}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_2.et",
+  "{C21E3B8EB96AA3DF}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_2_3FT.et",
+  "{B4F0A049C18D7935}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_3.et",
+  "{AC5305D78C0B4D57}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_G36_3_3FT.et",
+  "{7BA6D0617F64EFB9}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_MP7.et",
+  "{DD6F38ADCCFD3CF2}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_MP7_3FT.et",
+  "{2FC8BC8C7B23F390}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_Pistol_1.et",
+  "{77CB40E72BFDBF47}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_Pistol_1_3FT.et",
+  "{723867C5FEAAAD12}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_Pistol_2.et",
+  "{C51C020C745F8CDF}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Magazine_Pistol_2_3FT.et",
+  "{F52277291EAAD087}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Smokegrenade.et",
+  "{5EFC73E05CDD7D76}Prefabs/Items/Equipment/Accessoires/BWAR_Pouches_Smokegrenade_3FT.et",
 ]);
 
 // Hand-curated name fixes for author-data quirks (applied after resolution,

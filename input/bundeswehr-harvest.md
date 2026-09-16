@@ -206,7 +206,11 @@ None shipped (only arsenal-box props + a mortar pit) → vanilla US road/roadsid
   each, 195/195 tiles, every label verified against the expected order. Crate order = pool
   order minus the 24 one-cell pouches (Dump, Handgrenade, Magazine G28/G36/MP7/P8,
   Smokegrenade — both camos; pool indices 95-98, 103-120, 123-124) that the arsenal storage
-  never shows in EITHER UI → no thumbnail, glyph fallback. Raw page grabs + review sheets +
+  never shows in EITHER UI. Their prefabs explain it: mesh + RigidBody + worn-model cloth
+  component ONLY (no storage component, no item attributes/name/size/preview) — vest
+  attachment shells, not standalone items → EXCLUDED from the pool 2026-09-16
+  (`EXCLUDED_REFS` in harvest-arsenal-pool.mjs, user decision; pool 242 → 218, full thumbnail
+  coverage; `sanitizeArsenal()` drops them from old saves). Raw page grabs + review sheets +
   `mapping.py` + `order.tsv` under `input/thumb-shots/Bundeswehr-ts/` (gitignored; the WCS
   run's under `Bundeswehr/`). Every crate tile resolved → the 195 captured GUIDs are also
   runtime-validated (incl. the plain PzF3 launcher `{9BD71AF57C0490C5}` and both rounds).
