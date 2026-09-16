@@ -26,8 +26,10 @@ export type HeightmapSampler = {
 };
 
 /**
- * Row 0 of the source grid corresponds to the NORTH edge of the world
- * (max worldY); row (h-1) = the SOUTH edge (worldY = 0).
+ * Row 0 of the source grid corresponds to the SOUTH edge of the world
+ * (worldY = 0); row (h-1) = the NORTH edge (max worldY). (The code below
+ * always did this; the docstring said the opposite until 2026-09-17 and
+ * misled the ts-ops-planner nadir_mosaic.py Heightmap class.)
  */
 export async function loadHeightmap(
   binUrl: string,
