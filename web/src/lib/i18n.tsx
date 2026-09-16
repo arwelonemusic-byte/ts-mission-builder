@@ -63,6 +63,8 @@ const RU: Record<string, string> = {
   Author: "Автор",
   Terrain: "Карта",
   "Select terrain": "Выберите карту",
+  "Search terrains…": "Поиск карт…",
+  "No terrains match.": "Карты не найдены.",
   // Terrain picker chips: vanilla maps vs Workshop maps
   Official: "Официальные",
   Workshop: "Мастерская",

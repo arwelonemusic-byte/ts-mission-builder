@@ -50,6 +50,8 @@ say the word if you want that too.
 | Player count | Количество игроков |
 | Terrain | Карта |
 | Select terrain | Выберите карту |
+| Search terrains… | Поиск карт… |
+| No terrains match. | Карты не найдены. |
 | Official *(terrain picker chip — vanilla maps)* | Официальные |
 | Workshop *(terrain picker chip + row tag — Workshop maps)* | Мастерская |
 | Changing terrain clears placements. | Смена карты удаляет всё размещённое. |

@@ -335,6 +335,7 @@ export default function MissionPanel({
           categories={TERRAIN_PICKER_CATEGORIES}
           glyph={TERRAIN_GLYPH}
           title={t("Select terrain")}
+          searchable={{ placeholder: t("Search terrains…"), empty: t("No terrains match.") }}
           current={mission.terrain}
           square
           onPick={(key) => {
