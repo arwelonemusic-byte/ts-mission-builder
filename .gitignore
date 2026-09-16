@@ -14,3 +14,6 @@ input/addon-audit/_junctions.json
 
 # Junction to the TS Mission Toolkit addon (own git repo) - see CLAUDE.md "Working on the toolkit from here"
 toolkit
+
+# Raw EnfusionMapMaker nadir captures (hundreds of GB, never committed)
+satellite-raw-capture/
