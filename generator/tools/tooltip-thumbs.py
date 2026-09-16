@@ -36,8 +36,38 @@ def tile_box(img, name):
     m = re.search(r"-w(\d+)h(\d+)", name)
     if m:
         tw, th = int(m.group(1)), int(m.group(2))
+        if name.startswith("wcs-"):
+            return wcs_tile_box(img, tw)
         return (6, 6, min(img.width, 6 + tw), min(img.height, 6 + th))
     return crop_tile(img)
+
+
+def wcs_tile_box(img, tw):
+    """WCS Arsenal shots (wcs-arsenal-capture.py) hold the WHOLE tile at (6,6)
+    with the item name printed in a band at its bottom. The thumb keeps the
+    name text (user decision 2026-09-16) -> box = the full tile, inset 3 px so
+    the gray/yellow frame never enters the thumb; content_fit then frames
+    item + label together."""
+    return (9, 9, 6 + tw - 3, img.height - 9)
+
+
+def wcs_band_top(img, tw):
+    """Top of the name band inside a WCS tile (for the review sheet's name
+    strip): a flat strip ~8-10 lum darker than the image area; walk up from
+    the rows above the bottom frame while the row median stays within 3."""
+    a = np.asarray(img.convert("RGB")).astype(int)
+    tile_bottom = img.height - 6
+    lum = a[6:tile_bottom, 6 : 6 + tw].mean(axis=2)
+    th = lum.shape[0]
+    med = np.array([np.median(lum[y]) for y in range(th)])
+    ref = np.median(med[th - 12 : th - 6])
+    y = th - 7
+    while y > th * 0.6 and abs(med[y] - ref) <= 3:
+        y -= 1
+    top = y + 1
+    if top > th * 0.95 or top < th * 0.6:
+        top = int(th * 0.85)
+    return 6 + top
 
 
 def crop_tile(img):
@@ -85,8 +115,33 @@ def crop_tile(img):
     return (x0, y0, x1, y1)
 
 
-def norm_thumb(img, box):
+def content_fit(crop):
+    """WCS Arsenal tiles (wcs-arsenal-capture.py): the image area is a wide
+    362x150 strip with the item centred on a dark gradient — letterboxing it
+    into 160x120 leaves a 66 px sliver. Crop to the item's own bounding box
+    (pixels that differ from the tile's corner colour) plus a margin, kept at
+    least 4:3 so small items don't blow up beyond the vanilla look."""
+    px = np.asarray(crop).astype(int)
+    bg = np.median(px[2:8, 2:8].reshape(-1, 3), axis=0)
+    diff = np.abs(px - bg).sum(axis=2) > 45
+    ys, xs = np.where(diff)
+    if len(xs) < 50:
+        return crop
+    x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+    cw, ch = x1 - x0, y1 - y0
+    # expand to 4:3 around the content, with a 6 % margin, clamped to the tile
+    tw = max(cw * 1.12, ch * 1.12 * 4 / 3, crop.width * 0.45)
+    th = tw * 3 / 4
+    cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    bx0 = int(max(0, min(crop.width - tw, cx - tw / 2)))
+    by0 = int(max(0, min(crop.height - th, cy - th / 2)))
+    return crop.crop((bx0, by0, int(min(crop.width, bx0 + tw)), int(min(crop.height, by0 + th))))
+
+
+def norm_thumb(img, box, fit=False):
     crop = img.convert("RGB").crop(box)
+    if fit:
+        crop = content_fit(crop)
     scale = min(THUMB_W / crop.width, THUMB_H / crop.height)
     rs = crop.resize((max(1, int(crop.width * scale)), max(1, int(crop.height * scale))), Image.LANCZOS)
     px = np.asarray(crop)
@@ -117,7 +172,7 @@ def main():
                 print(f"unmapped, skipped: {p.name}")
                 continue
             img = Image.open(p)
-            norm_thumb(img, tile_box(img, p.name)).save(ICONS_DIR / f"{base}.png")
+            norm_thumb(img, tile_box(img, p.name), fit=p.name.startswith("wcs-")).save(ICONS_DIR / f"{base}.png")
             n += 1
         print(f"wrote {n} thumbnails -> {ICONS_DIR}")
         return
@@ -133,9 +188,14 @@ def main():
             img = Image.open(p)
             box = tile_box(img, p.name)
             y = i * row_h
-            sheet.paste(norm_thumb(img, box), (40, y + 4))
-            # tooltip band: below the tile, full capture width
-            band = img.convert("RGB").crop((0, box[3], img.width, img.height))
+            sheet.paste(norm_thumb(img, box, fit=p.name.startswith("wcs-")), (40, y + 4))
+            # tooltip band: below the tile, full capture width (WCS tiles: the
+            # in-tile name band, since the thumb box spans the whole tile)
+            band_top = box[3]
+            if p.name.startswith("wcs-"):
+                m = re.search(r"-w(\d+)h", p.name)
+                band_top = wcs_band_top(img, int(m.group(1))) if m else box[3]
+            band = img.convert("RGB").crop((0, band_top, img.width, img.height))
             if band.height > 0:
                 scale = min(480 / band.width, (row_h - 8) / band.height, 1.5)
                 band = band.resize((max(1, int(band.width * scale)), max(1, int(band.height * scale))))
