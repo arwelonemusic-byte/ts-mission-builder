@@ -136,6 +136,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/ruha.json",
     tilePattern: "/tiles/ruha/{z}/{x}/{y}.jpg",
     tileMaxZoom: 5,
+    // 2026-09-18: 3200 nadir frames (step 100 / column 200 / 1200 m), ortho-stitched against
+    // the re-shipped 1.0.7 heightmap, 4 px/m -> 32000 px -> max_z 7.
+    sat: { tilePattern: "/tiles/ruha-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/653CB36244ADBE0F-Ruha",
   },
