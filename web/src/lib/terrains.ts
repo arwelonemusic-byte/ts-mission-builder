@@ -193,6 +193,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/merak.json",
     tilePattern: "/tiles/merak/{z}/{x}/{y}.jpg",
     tileMaxZoom: 6,
+    // 2026-09-17: 10609 nadir frames (step 100 / 1200 m), ortho-stitched against the
+    // re-shipped 1.0.28 heightmap, 2 px/m (20480 px -> max_z 7, nativeZoom 1).
+    sat: { tilePattern: "/tiles/merak-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 1 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/6047000574D60BF9-MerakIsland",
   },
