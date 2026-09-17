@@ -140,3 +140,29 @@ Categories: Clothing 513, Equipment 538, Weapons 347, Backpacks/Vests 272, Ammun
 Attachments 196, Throwables 36, Helicopter 22. Full curation should go through
 `input/arsenal-items.md` + `harvest-arsenal.mjs` (needs `## RHS_*` section support +
 pointing mode lookups at `data/rhs/items.json` — not done yet).
+
+## Audit log
+
+- **2026-09-17 — 0.16.5150 → 0.16.5208** (`/addon-audit`, all three GUIDs re-downloaded and
+  re-extracted; the `_prev` copies were the 2026-09-08 sweep's 0.16.5150 extractions). Content
+  Pack 01/02: binary-only churn (anims/materials), NO CHANGE — baselines advanced. Main mod:
+  `check rhs` = 0 breaks (every group/character/vehicle/spawn/fortification ref OK, all bare
+  GUIDs OK). Changes that matter: (1) USAF + ION factions now reference the VANILLA
+  `{CB7824D572DD0D5C}Configs/Callsigns/Callsigns_US.conf` instead of RHS's own
+  `CallsignInfo_US.conf` copy (deleted) — the inline callsign instance `{5CC8BB97E017CDBC}` and
+  the four vanilla squad-name GUIDs the registry overrides are unchanged, nothing to do; (2) a
+  NEW FactionManager member `{607AA5C7A94496DA}` → `Configs/Factions/RHS_CIV.conf` (RHS civilians;
+  left untouched like MEI's MEC member); (3) arsenal catalogs grew — vs the harvested pools:
+  MSV +23 real items (AA A18 / AVS / AACPC protection-tier vest variants, Telnyashka, VKPO VDV
+  field jacket; the 2 VKPO undershirts stay EXCLUDED) + 17 `Vest_6Sh117*` → `RHS_Vest_6Sh117*`
+  path renames (same GUIDs) + 1 now-disabled (`Rifle_AK74M_npz_rail_camo`); USMC +5 (RHS Matech
+  sight, FILBE radio backpack, LBT1961, Shaw ARC MC/OD) + 1 disabled (`Helmet_ECH_lc_cwd`); ION +3
+  (LBT1961 ×2, TT MK2) → re-run `harvest-arsenal-pool.mjs --only rhs-afrf,rhs-usaf,rhs-ion` +
+  thumbnails for the 31 new items + decide how `sanitizeArsenal()` treats the 17 moved-path refs
+  (OPEN, carried over from the 5150 sweep); (4) 10 new M4A1 Army variants + a Matech optic are
+  NOT in any arsenal catalog (catalog-driven rule → out of scope); (5) RHS now ships
+  `modded class SCR_InventoryStorageLootUI` (adds cloth-node pouch contents to the loot list) —
+  no method overlap with the TS Capture Arsenal UI addon's SortSlots/ShowPage override, both
+  chain; (6) removed prefabs = BMPT-2/T-90M turret parts, Ataka missiles, UH-1Y cockpit bits,
+  AOR2 Crye pants, a 2000-rnd PK box — none referenced by the Builder. Main-mod baseline left
+  STALE until the pool re-harvest lands.
