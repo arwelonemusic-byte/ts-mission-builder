@@ -37,11 +37,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/arland.json",
     tilePattern: "/tiles/arland/{z}/{x}/{y}.jpg",
     tileMaxZoom: 5,
-    // Pilot (2026-09-16): 1521 EnfusionMapMaker frames at 6.05 px/m, mosaic
-    // resampled to exactly 4 px/m (16400 px) so it aligns with the CRS.
-    // PARKED 2026-09-16: the pilot was shot at 950 m / step 100 before the exposure
-    // lock; re-capture with the settled recipe, then restore this line (tiles still ship).
-    // sat: { tilePattern: "/tiles/arland-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
+    // 2026-09-17: re-captured with the settled recipe (step 100 / column step 200 / 1200 m,
+    // 882 frames), ortho-stitched, exactly 4 px/m (16400 px) so it aligns with the CRS.
+    sat: { tilePattern: "/tiles/arland-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
   },
   {
     key: "eden",
