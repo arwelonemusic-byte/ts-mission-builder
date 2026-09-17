@@ -91,6 +91,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/chernarus.json",
     tilePattern: "/tiles/chernarus/{z}/{x}/{y}.jpg?v=2",
     tileMaxZoom: 6,
+    // 2026-09-17: 23716 nadir frames (step 100 / 1200 m), ortho-stitched, shipped at
+    // 2 px/m (30720 px -> max_z 7, nativeZoom 1) to keep the repo size sane on a 15 km map.
+    sat: { tilePattern: "/tiles/chernarus-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 1 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/665D1AA55B5D8076-ChernarusMinus",
   },
