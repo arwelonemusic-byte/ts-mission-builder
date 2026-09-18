@@ -245,13 +245,13 @@ export default function ZonesPanel({
                           const fresh: ZoneModule = wantsVehicles
                             ? {
                                 type: def.type,
-                                budget: isQrf ? 1 : 2,
+                                budget: 1,
                                 vehicles: enemy?.patrolVehicleKeys.slice(0, 1) ?? [],
                                 ...(isQrf ? { origins: [] } : {}),
                               }
                             : {
                                 type: def.type,
-                                budget: def.noBudget || isQrf ? 1 : 2,
+                                budget: 1,
                                 ...(isQrf ? { origins: [] } : {}),
                               };
                           const modules = on
