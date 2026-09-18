@@ -183,6 +183,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/zarichne.json",
     tilePattern: "/tiles/zarichne/{z}/{x}/{y}.jpg",
     tileMaxZoom: 5,
+    // 2026-09-18: 1058 nadir frames (step 100 / column 200 / camera 1000 m — the first
+    // capture at 1000 m, native 5.72 px/m), ortho-stitched, 4 px/m -> 18400 px -> max_z 7.
+    sat: { tilePattern: "/tiles/zarichne-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/61732D4F7D980E9A-Zarichne",
   },
