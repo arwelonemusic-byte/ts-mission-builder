@@ -216,6 +216,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/mogadishu.json",
     tilePattern: "/tiles/mogadishu/{z}/{x}/{y}.jpg",
     tileMaxZoom: 5,
+    // 2026-09-18: 1800 nadir frames (step 100 / column 200 / 1000 m), ortho-stitched,
+    // 4 px/m -> 24000 px -> max_z 7.
+    sat: { tilePattern: "/tiles/mogadishu-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/5F1D02080409E128-Mogadishu",
   },
