@@ -103,6 +103,10 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/faircroft.json",
     tilePattern: "/tiles/faircroft/{z}/{x}/{y}.jpg",
     tileMaxZoom: 6,
+    // 2026-09-18: 8192 nadir frames (step 100 / column 200 / 1200 m), ortho-stitched against the
+    // re-shipped 1.0.86 heightmap; 4 px/m despite 12.8 km (user: 68 % water, sea tiles are tiny)
+    // -> 51200 px -> max_z 8.
+    sat: { tilePattern: "/tiles/faircroft-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 8, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/614B62005CBB8057-FaircroftIslands",
   },
