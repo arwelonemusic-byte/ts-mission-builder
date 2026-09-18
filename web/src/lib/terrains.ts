@@ -49,6 +49,10 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/everon.json",
     tilePattern: "/tiles/everon/{z}/{x}/{y}.jpg",
     tileMaxZoom: 6,
+    // 2026-09-19: 8450 EnfusionMapMaker frames (step 100 / column 200 / camera
+    // 1000 m, ortho-stitched against the heightmap), 4 px/m → 52000 px → max_z 8
+    // (12.8 km but 69 % water, so the 2 px/m size rule is waived like Faircroft).
+    sat: { tilePattern: "/tiles/everon-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 8, nativeZoom: 2 },
   },
   {
     key: "cain",
