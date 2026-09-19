@@ -23,20 +23,6 @@ export type HeightmapSampler = {
   meta: HeightmapMeta;
   /** Returns elevation in metres, or NaN if (worldX, worldY) is out of bounds. */
   sample: (worldX: number, worldY: number) => number;
-  /**
-   * True when any of the four grid cells `sample` would blend at this point
-   * holds the extractor's no-data sentinel (raw 0 = minElevationM, e.g.
-   * Armenhof's outermost south row / west+east columns). Overlays skip such
-   * points — the bilinear blend from the sentinel to real terrain is garbage.
-   */
-  noDataNear: (worldX: number, worldY: number) => boolean;
-  /**
-   * Elevation of the nearest non-sentinel cell among the four `sample` would
-   * blend, or NaN when all four are sentinels (deep ocean clamped at the
-   * format floor — Everon/Kolguyev — reads NaN; Armenhof's boundary row next
-   * to 320 m fields reads ~320).
-   */
-  nearestValid: (worldX: number, worldY: number) => number;
 };
 
 /**
@@ -100,59 +86,5 @@ export async function loadHeightmap(
     return minElevationM + h * heightScale;
   };
 
-  // Boundary rows/columns: a line that is mostly sentinel is the extractor
-  // sampling outside the terrain — its few non-zero cells are partial garbage
-  // (Armenhof row 0: 383 zeros + a 128 m and a 327 m stray), so the whole
-  // line counts as no-data.
-  const badRow = new Uint8Array(heightPx);
-  const badCol = new Uint8Array(widthPx);
-  {
-    const rowZeros = new Uint32Array(heightPx);
-    const colZeros = new Uint32Array(widthPx);
-    for (let y = 0; y < heightPx; y++) {
-      for (let x = 0; x < widthPx; x++) {
-        if (raw[y * widthPx + x] === 0) {
-          rowZeros[y]++;
-          colZeros[x]++;
-        }
-      }
-    }
-    for (let y = 0; y < heightPx; y++) if (rowZeros[y] * 2 > widthPx) badRow[y] = 1;
-    for (let x = 0; x < widthPx; x++) if (colZeros[x] * 2 > heightPx) badCol[x] = 1;
-  }
-  const isNoData = (x: number, y: number): boolean =>
-    raw[y * widthPx + x] === 0 || badRow[y] === 1 || badCol[x] === 1;
-
-  const noDataNear = (worldX: number, worldY: number): boolean => {
-    if (worldX < 0 || worldX > worldWidthM || worldY < 0 || worldY > worldHeightM) return true;
-    const x0 = Math.min(maxPx, Math.floor(worldX * xScale));
-    const y0 = Math.min(maxPy, Math.floor(worldY * yScale));
-    const x1 = Math.min(maxPx, x0 + 1);
-    const y1 = Math.min(maxPy, y0 + 1);
-    return isNoData(x0, y0) || isNoData(x1, y0) || isNoData(x0, y1) || isNoData(x1, y1);
-  };
-
-  const nearestValid = (worldX: number, worldY: number): number => {
-    if (worldX < 0 || worldX > worldWidthM || worldY < 0 || worldY > worldHeightM) return NaN;
-    const fx = worldX * xScale;
-    const fy = worldY * yScale;
-    const x0 = Math.min(maxPx, Math.floor(fx));
-    const y0 = Math.min(maxPy, Math.floor(fy));
-    const x1 = Math.min(maxPx, x0 + 1);
-    const y1 = Math.min(maxPy, y0 + 1);
-    let best = NaN;
-    let bestD = Infinity;
-    for (const [cx, cy] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1]] as const) {
-      if (isNoData(cx, cy)) continue;
-      const v = raw[cy * widthPx + cx];
-      const d = (fx - cx) * (fx - cx) + (fy - cy) * (fy - cy);
-      if (d < bestD) {
-        bestD = d;
-        best = minElevationM + v * heightScale;
-      }
-    }
-    return best;
-  };
-
-  return { meta, sample, noDataNear, nearestValid };
+  return { meta, sample };
 }

@@ -174,9 +174,6 @@ export default function Editor() {
       } catch {}
       return !v;
     });
-  // Elevation overlay (POC, 2D only, not persisted).
-  const [elevLayer, setElevLayer] = useState(false);
-  const toggleElev = () => setElevLayer((v) => !v);
   const genRef = useRef<GenState>(null);
   genRef.current = gen;
 
@@ -1098,8 +1095,6 @@ export default function Editor() {
             lang,
             satLayer,
             onToggleSat: toggleSat,
-            elevLayer,
-            onToggleElev: toggleElev,
             playableFaction: mission.playableFaction,
             spawn: mission.spawn,
             zones: mission.zones,

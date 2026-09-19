@@ -17,9 +17,6 @@ type Props = {
   satAvailable?: boolean;
   satLayer?: boolean;
   onToggleSat?: () => void;
-  /** Elevation overlay (POC) on/off */
-  elevLayer?: boolean;
-  onToggleElev?: () => void;
 };
 
 const BTN =
@@ -35,8 +32,6 @@ export default function MapViewControls({
   satAvailable,
   satLayer,
   onToggleSat,
-  elevLayer,
-  onToggleElev,
 }: Props) {
   return (
     <div className="max-md:hidden absolute top-4 right-4 z-[1000] flex flex-col gap-px rounded-[8px] overflow-hidden shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]">
@@ -78,17 +73,6 @@ export default function MapViewControls({
           className={`${BTN} text-[10px] font-semibold tracking-wide ${satLayer ? "text-[#f4db50]" : "text-white/70"}`}
         >
           SAT
-        </button>
-      )}
-      {onToggleElev && (
-        <button
-          type="button"
-          aria-label={tr(lang, "Elevation overlay")}
-          title={tr(lang, "Elevation overlay")}
-          onClick={onToggleElev}
-          className={`${BTN} text-[10px] font-semibold tracking-wide ${elevLayer ? "text-[#f4db50]" : "text-white/70"}`}
-        >
-          ELEV
         </button>
       )}
       <button
