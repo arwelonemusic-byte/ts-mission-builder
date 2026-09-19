@@ -2,14 +2,12 @@
 
 import { tr, type Lang } from "@/lib/i18n";
 
-// Top-right map HUD cluster shared by the 2D and 3D views: zoom in/out,
-// fit whole map, the satellite/topo basemap toggle (only for terrains that
+// Top-right map HUD cluster shared by the 2D and 3D views: fit whole map
+// (zoom +/- buttons dropped 2026-09-19 — nobody used them, wheel/pinch zooms), the satellite/topo basemap toggle (only for terrains that
 // ship a satellite pyramid) and the 2D/3D view toggle. Desktop only — mobile
 // pinch-zooms and stays 2D.
 type Props = {
   lang: Lang;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
   onFit: () => void;
   view3D: boolean;
   onToggleView: () => void;
@@ -24,8 +22,6 @@ const BTN =
 
 export default function MapViewControls({
   lang,
-  onZoomIn,
-  onZoomOut,
   onFit,
   view3D,
   onToggleView,
@@ -35,24 +31,6 @@ export default function MapViewControls({
 }: Props) {
   return (
     <div className="max-md:hidden absolute top-4 right-4 z-[1000] flex flex-col gap-px rounded-[8px] overflow-hidden shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)]">
-      <button
-        type="button"
-        aria-label={tr(lang, "Zoom in")}
-        title={tr(lang, "Zoom in")}
-        onClick={onZoomIn}
-        className={`${BTN} text-white text-[18px] font-medium`}
-      >
-        +
-      </button>
-      <button
-        type="button"
-        aria-label={tr(lang, "Zoom out")}
-        title={tr(lang, "Zoom out")}
-        onClick={onZoomOut}
-        className={`${BTN} text-white text-[18px] font-medium`}
-      >
-        −
-      </button>
       <button
         type="button"
         aria-label={tr(lang, "Fit whole map")}

@@ -517,8 +517,6 @@ const RU: Record<string, string> = {
   "Mission written to {dir}/ ({n} files).": "Миссия записана в {dir}/ (файлов: {n}).",
 
   // Map HUD
-  "Zoom in": "Приблизить",
-  "Zoom out": "Отдалить",
   "Fit whole map": "Показать всю карту",
   "3D view": "3D-вид",
   "2D view": "2D-вид",

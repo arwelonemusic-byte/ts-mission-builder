@@ -878,8 +878,6 @@ export default function MissionMap(props: MapProps) {
       {/* zoom / fit / 3D controls (desktop only — mobile pinch-zooms) */}
       <MapViewControls
         lang={props.lang}
-        onZoomIn={() => mapRef.current?.zoomIn()}
-        onZoomOut={() => mapRef.current?.zoomOut()}
         onFit={() => {
           const [ww, hh] = worldRef.current;
           mapRef.current?.fitBounds(

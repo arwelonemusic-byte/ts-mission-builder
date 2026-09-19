@@ -1702,18 +1702,6 @@ export default function MissionMap3D(props: Map3DProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.focus?.seq]);
 
-  const zoomBy = (factor: number) => {
-    const world = worldRef.current;
-    if (!world) return;
-    const { camera, target } = world;
-    const curDist = camera.position.distanceTo(target);
-    if (curDist < 1e-6) return;
-    const newDist = Math.max(world.minDistance, Math.min(world.maxDistance, curDist * factor));
-    const dir = new THREE.Vector3().subVectors(camera.position, target).divideScalar(curDist);
-    camera.position.copy(target).addScaledVector(dir, newDist);
-    camera.lookAt(target);
-    world.render();
-  };
 
   return (
     <div className="absolute inset-0">
@@ -1729,8 +1717,6 @@ export default function MissionMap3D(props: Map3DProps) {
 
       <MapViewControls
         lang={props.lang}
-        onZoomIn={() => zoomBy(1 / 1.4)}
-        onZoomOut={() => zoomBy(1.4)}
         onFit={() => {
           const world = worldRef.current;
           if (!world) return;
