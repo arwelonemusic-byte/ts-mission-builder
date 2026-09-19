@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { spawnElements, itemWorldCorners, rotateLocal, vehicleWorldOutline, FACTIONS, FARP_DETAIL } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
 import { getSampler } from "@/lib/terrainSampler";
+import { renderElevationOverlay, RAMP_CSS } from "@/lib/elevationOverlay";
 import type { HeightmapSampler } from "@/lib/heightmap";
 import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
@@ -113,6 +114,9 @@ export type MapProps = {
   /** Satellite basemap on/off (only honoured when the terrain ships one) */
   satLayer: boolean;
   onToggleSat: () => void;
+  /** Elevation overlay (POC): heightmap recoloured blue→red, 2D only */
+  elevLayer?: boolean;
+  onToggleElev?: () => void;
 };
 
 export default function MissionMap(props: MapProps) {
@@ -120,6 +124,8 @@ export default function MissionMap(props: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.LayerGroup | null>(null);
   const satLayerRef = useRef<L.TileLayer | null>(null);
+  const elevLayerRef = useRef<L.ImageOverlay | null>(null);
+  const [elevRange, setElevRange] = useState<[number, number] | null>(null);
   // Heightmap sampler for the elevation readout (shared cache with export/3D;
   // null until the fetch resolves, so the readout simply omits the metres).
   const samplerRef = useRef<HeightmapSampler | null>(null);
@@ -346,6 +352,35 @@ export default function MissionMap(props: MapProps) {
       ]),
     }).addTo(map);
   }, [props.terrainKey, props.satLayer]);
+
+  // Elevation overlay (POC): rendered client-side from the heightmap into a
+  // data URL and stretched over the world rectangle above the basemaps.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    elevLayerRef.current?.remove();
+    elevLayerRef.current = null;
+    setElevRange(null);
+    if (!props.elevLayer) return;
+    const t = terrainByKey(props.terrainKey);
+    let stale = false;
+    getSampler(t.key)
+      .then((s) => {
+        if (stale) return;
+        const [w, h] = t.worldSize;
+        const ov = renderElevationOverlay(s, w, h);
+        elevLayerRef.current = L.imageOverlay(ov.url, [[0, 0], [h, w]], {
+          opacity: 0.72,
+          zIndex: 3,
+          interactive: false,
+        }).addTo(map);
+        setElevRange([ov.minM, ov.maxM]);
+      })
+      .catch(() => {});
+    return () => {
+      stale = true;
+    };
+  }, [props.terrainKey, props.elevLayer]);
 
   // Refresh the imperative scale-bar label when the language changes
   useEffect(() => {
@@ -894,7 +929,21 @@ export default function MissionMap(props: MapProps) {
         satAvailable={!!terrainByKey(props.terrainKey).sat}
         satLayer={props.satLayer}
         onToggleSat={props.onToggleSat}
+        elevLayer={props.elevLayer}
+        onToggleElev={props.onToggleElev}
       />
+
+      {/* elevation legend (POC): per-terrain ramp, ticks in this map's metres */}
+      {props.elevLayer && elevRange && (
+        <div className="max-md:hidden absolute right-4 bottom-[96px] z-[1000] pointer-events-none flex items-stretch gap-[8px] bg-[rgba(32,36,39,0.9)] rounded-[8px] px-[10px] py-[8px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.4)]">
+          <div className="w-[10px] h-[120px] rounded-[3px]" style={{ background: RAMP_CSS }} />
+          <div className="flex flex-col justify-between font-mono text-[10px] leading-none font-medium text-white/75">
+            <span>{Math.round(elevRange[1])} m</span>
+            <span>{Math.round((elevRange[0] + elevRange[1]) / 2)} m</span>
+            <span>{Math.round(elevRange[0])} m</span>
+          </div>
+        </div>
+      )}
 
       {/* scale bar + coordinate readout (desktop only) */}
       <div className="max-md:hidden absolute right-4 bottom-4 z-[1000] pointer-events-none flex flex-col items-end gap-[6px]">
