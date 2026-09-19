@@ -133,6 +133,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/kunar.json",
     tilePattern: "/tiles/kunar/{z}/{x}/{y}.jpg",
     tileMaxZoom: 4,
+    // 2026-09-19: 800 EnfusionMapMaker frames (step 100 / column 200 / camera
+    // 1200 m, ortho-stitched against the heightmap), 4 px/m → 16000 px → max_z 6.
+    sat: { tilePattern: "/tiles/kunar-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 6, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/5C9691EA7FD7A79F-KunarProvince",
   },
