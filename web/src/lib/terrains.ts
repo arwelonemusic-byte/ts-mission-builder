@@ -169,6 +169,10 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/takistan.json",
     tilePattern: "/tiles/takistan/{z}/{x}/{y}.jpg",
     tileMaxZoom: 6,
+    // 2026-09-19: 8256 EnfusionMapMaker frames (step 100 / column 200 / camera
+    // 1000 m, ortho-stitched against the heightmap), 2 px/m per the size rule
+    // (12.9 km, no water) → 25800 px → max_z 7, nativeZoom 1.
+    sat: { tilePattern: "/tiles/takistan-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 1 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/615EEBD9BDFEEE9B-Takistan",
   },
