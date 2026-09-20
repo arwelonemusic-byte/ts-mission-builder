@@ -164,6 +164,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/serhiivka.json",
     tilePattern: "/tiles/serhiivka/{z}/{x}/{y}.jpg",
     tileMaxZoom: 6,
+    // 2026-09-20: 5000 EnfusionMapMaker frames (step 100 / column 200 / camera
+    // 1200 m, ortho-stitched against the heightmap), 4 px/m → 40000 px → max_z 8.
+    sat: { tilePattern: "/tiles/serhiivka-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 8, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/61557578724DBE60-WCSSerhiivka",
   },
