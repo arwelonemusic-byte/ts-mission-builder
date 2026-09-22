@@ -1,4 +1,4 @@
-# Dax Humvees — harvest notes (2026-09-06, mod v1.3.21)
+# Dax Humvees — harvest notes (2026-09-06, mod v1.3.21; tan twins added 2026-09-22 from v1.3.23)
 
 Workshop: https://reforger.armaplatform.com/workshop/62DA2C805FEB90A1-DaxHumvees
 Addon GUID `62DA2C805FEB90A1`; gproj deps = base game only → registry
@@ -53,10 +53,47 @@ The 11/12/13 · 21/22/23 · 31/32/33 numbering = bumper/callsign rows; variants
 in a row differ in interior stowage, not chassis. All are HMMWV-chassis
 ground cars → `vehicleSizeClass` default "light" is correct for every key.
 
-## Tan/desert variants: SHIPPED-BUT-DISABLED by the author (checked 2026-09-06)
+## Tan/desert variants: ENABLED in v1.3.23 (audited + integrated 2026-09-22)
 
-The Workshop description advertises 28 variants — 14 green + 14 tan — with
-the caveat **"[TAN currently disabled]"**. The v1.3.21 pak matches that
+`/addon-audit daxhumvees` on 1.3.21 → 1.3.23: no breaks (all 14 green refs still
+corroborated), catalog +14 / −0 — the tan twins the author had disabled. Each
+`Prefabs/Vehicles/Wheeled/M998/Tan/<green name>T.et` is a CHILD of its green twin
+(`M1025 11T` → `{415275140FE2DEC5}Green/M1025 11.et` …; the GUIDs are the green ones + 1,
+Workbench-duplicate style) overriding materials + the roof/mount slots with tan parts that
+themselves parent the green parts (`M1025_gun_mount_M2HBTan` → `M1025_gun_mount_M2HB`,
+`…M60Tan` → `…M60`, `TanNew/M1025_roof_M2_11Tan` → `M1025_roof_M2_11`), so the armament and
+the armed/unarmed split are identical. Names are literal "… Tan". Previews = `DH-_0000s_*`
+(the 13T prefab's `m_Image` points at the 33 render — author bug; thumb mapped by hand to
+`DH-_0000s_0011_13`). Catalog-only GUIDs (top-level leaves). Other 1.3.23 changes: 4 old tan
+mount duplicates + an M923A1 cargo part + a showcase layer removed, 7 tan `.emat`s added —
+nothing the Builder references.
+
+| key | GUID | prefab | preview |
+|---|---|---|---|
+| DAX_M1025_11_TAN | `415275140FE2DEC6` | M1025 11T.et | DH-_0000s_0013_11 |
+| DAX_M1025_12_TAN | `D84CCC8D1205EF56` | M1025 12T.et | DH-_0000s_0012_12 |
+| DAX_M1025_13_TAN | `AF46A405E6A70025` | M1025 13T.et | DH-_0000s_0011_13 (prefab says 0005_33) |
+| DAX_M1025_21_TAN | `1FBA5C57B06F50CA` | M1025 21T.et | DH-_0000s_0010_21 |
+| DAX_M1025_22_TAN | `86A4E5CEAD88615A` | M1025 22T.et | DH-_0000s_0009_22 |
+| DAX_M1025_23_TAN | `F1AE8D46592A8E2A` | M1025 23T.et | DH-_0000s_0008_23 |
+| DAX_M1025_31_TAN | `EBB21BCFBDB238BE` | M1025 31T.et | DH-_0000s_0007_31 |
+| DAX_M1025_32_TAN | `72ACA256A055092E` | M1025 32T.et | DH-_0000s_0006_32 |
+| DAX_M1025_33_TAN | `05A6CADE54F7E65E` | M1025 33T.et | DH-_0000s_0005_33 |
+| DAX_M998_01_TAN | `23ED2EA20C86F313` | M998 01T.et | DH-_0000s_0002_01 |
+| DAX_M998_02_TAN | `BAF3973B1161C283` | M998 02T.et | DH-_0000s_0001_02 |
+| DAX_M1025_MORTAR_03_TAN | `14B2A1F78A0C5979` | M1025 Mortar03T.et | DH-_0000s_0004_03 |
+| DAX_M998_04_ENGI_TAN | `88E64343CB079F30` | M998 04 EngiT.et | DH-_0000s_0000_04 |
+| DAX_M997_MEDIC_TAN | `3D79A5BF36C22A3F` | M997_medicT.et | DH-_0000s_0003_41 |
+
+Registry: keys appended to `daxhumvees.mjs` (28 total), `patrolVehicleKeys` /
+`transportVehicleKeys` stay green-only (one representative per vehicle, WCS livery rule),
+new `armedVehicleKeys` = 7 green + 7 tan armed keys. `--dax` spike: + a tan M1025 31 spawn
+slot and a tan 22 (M60) in the mounted patrol. Baseline advanced to 1.3.23.
+
+### The original 1.3.21 finding (kept for the record)
+
+The Workshop description advertised 28 variants — 14 green + 14 tan — with
+the caveat **"[TAN currently disabled]"**. The v1.3.21 pak matched that
 exactly: it ships the tan SUPPORT content — `VehParts/TAN/*` roofs/gun
 mounts, tan props (Bumper1tan, floor1tan, cover1_tan…) and a full second
 preview set (`Assets/Data/Previews/DH-_0000s_*` = tan renders, verified

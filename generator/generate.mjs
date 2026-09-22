@@ -750,6 +750,7 @@ const DAX_MISSION = {
     vehicles: [
       { type: "DAX_M1025_11" },
       { type: "DAX_M998_01" },
+      { type: "DAX_M1025_31_TAN" },
       { type: "M923A1_transport_covered" },
     ],
   },
@@ -765,7 +766,7 @@ const DAX_MISSION = {
         {
           type: "TS_ScenarioFrameworkPluginMountedPatrol",
           attrs: { m_iBudget: 2 },
-          vehicles: ["BRDM2", "DAX_M1025_12", "DAX_M1025_13"],
+          vehicles: ["BRDM2", "DAX_M1025_12", "DAX_M1025_13", "DAX_M1025_22_TAN"],
         },
       ],
     },
