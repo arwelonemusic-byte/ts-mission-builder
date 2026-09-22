@@ -1,4 +1,5 @@
 import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
+import { defaultGroupKey, defaultRoleKey, rosterGroupExists, rosterRoleExists } from "./roster";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
 export type PlaceMode =
@@ -14,6 +15,7 @@ export type PlaceMode =
   | "delivery"
   | "prop"
   | "arty-stop"
+  | "zone-element"
   | null;
 
 /** sizes = Foot Patrols weight-slider selection (size classes for the group
@@ -52,7 +54,41 @@ export function stopTriggerRadius(r?: number): number {
   const v = Math.round((Number.isFinite(+(r as number)) ? +(r as number) : STOP_TRIGGER_RADIUS.default) / 5) * 5;
   return Math.max(STOP_TRIGGER_RADIUS.min, Math.min(STOP_TRIGGER_RADIUS.max, v));
 }
-export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[] };
+/** Advanced AI placement (2026-09-21): AI placed by hand INSIDE a zone, nested
+ * under its Area in the emission (shared dynamic despawn). A flat list keyed by
+ * `kind` — modules are keyed by plugin type and can't hold several of one kind.
+ * x/z = the spawn point (world coords); `group`/`role` = roster ids
+ * (ENEMY_GROUPS/ENEMY_ROLES from mission-gen, emission picks a variant);
+ * `vehicle` = a vehicle key like ZoneModule.vehicles. No facing is stored: the
+ * generator points a mounted patrol's vehicle + crew at the first waypoint and
+ * rooted statics turn to engage on their own (user decisions 2026-09-22). */
+export type ZoneElementKind = "foot-patrol" | "mounted-patrol" | "defense-group" | "static";
+export type ZoneWaypoint = { x: number; z: number };
+type ZoneElementBase = { id: string; x: number; z: number };
+export type FootPatrolElement = ZoneElementBase & { kind: "foot-patrol"; group: string; waypoints: ZoneWaypoint[] };
+export type MountedPatrolElement = ZoneElementBase & {
+  kind: "mounted-patrol";
+  vehicle: string;
+  /** crew group (boards the vehicle via MoveAIIntoVehicle) */
+  group: string;
+  waypoints: ZoneWaypoint[];
+};
+export type DefenseGroupElement = ZoneElementBase & { kind: "defense-group"; group: string; radius: number };
+export type StaticSoldierElement = ZoneElementBase & { kind: "static"; role: string };
+export type ZoneElement = FootPatrolElement | MountedPatrolElement | DefenseGroupElement | StaticSoldierElement;
+export type PatrolElement = FootPatrolElement | MountedPatrolElement;
+export const ZONE_ELEMENT_KINDS: ZoneElementKind[] = ["foot-patrol", "mounted-patrol", "defense-group", "static"];
+export const ZONE_ELEMENT_MAX_WAYPOINTS = 6;
+export const ZONE_ELEMENT_CAPS: Record<ZoneElementKind, number> = { "foot-patrol": 8, "mounted-patrol": 8, "defense-group": 8, static: 16 };
+export const DEFENSE_RADIUS = { min: 5, max: 100, default: 30 };
+/** Clamp + round a defend radius to the slider's 5 m steps. */
+export function defenseRadiusClamp(r?: number): number {
+  const v = Math.round((Number.isFinite(+(r as number)) ? +(r as number) : DEFENSE_RADIUS.default) / 5) * 5;
+  return Math.max(DEFENSE_RADIUS.min, Math.min(DEFENSE_RADIUS.max, v));
+}
+export const isPatrolElement = (el: ZoneElement): el is PatrolElement => el.kind === "foot-patrol" || el.kind === "mounted-patrol";
+
+export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[]; elements?: ZoneElement[] };
 
 /** Spawn elements are individually placed (world coords) since 2026-08-18;
  * rotation is a compass bearing like MissionProp.rotation (0 = north). The
@@ -300,7 +336,8 @@ export function scrubVehicleMods(m: Mission, mods: string[]): Partial<Mission> {
   if ((m.spawn?.vehicles ?? []).some((v) => bannedKey(v.type))) {
     patch.spawn = { ...m.spawn, vehicles: m.spawn.vehicles.filter((v) => !bannedKey(v.type)) };
   }
-  if ((m.zones ?? []).some((zn) => (zn.modules ?? []).some((md) => md.vehicles?.some(bannedKey)))) {
+  const elementBanned = (zn: Zone) => (zn.elements ?? []).some((el) => el.kind === "mounted-patrol" && bannedKey(el.vehicle));
+  if ((m.zones ?? []).some((zn) => (zn.modules ?? []).some((md) => md.vehicles?.some(bannedKey)) || elementBanned(zn))) {
     patch.zones = m.zones.map((zn) => ({
       ...zn,
       modules: (zn.modules ?? []).map((md) => {
@@ -311,6 +348,16 @@ export function scrubVehicleMods(m: Mission, mods: string[]): Partial<Mission> {
           vehicles: kept.length ? kept : (FACTIONS[m.enemyFaction]?.patrolVehicleKeys ?? []).slice(0, 1),
         };
       }),
+      // Advanced mounted patrols on a disabled mod's vehicle → enemy default
+      ...(elementBanned(zn)
+        ? {
+            elements: (zn.elements ?? []).map((el) =>
+              el.kind === "mounted-patrol" && bannedKey(el.vehicle)
+                ? { ...el, vehicle: FACTIONS[m.enemyFaction]?.patrolVehicleKeys?.[0] ?? "" }
+                : el
+            ),
+          }
+        : {}),
     }));
   }
   if ((m.objectives ?? []).some((o) => o.objectRef && bannedRefs.has(o.objectRef))) {
@@ -373,6 +420,112 @@ export function freshSpawnElemId(): string {
 
 export function freshGroupId(): string {
   return `g${Math.random().toString(36).slice(2)}`;
+}
+
+export function freshZoneElemId(): string {
+  return `ze${Math.random().toString(36).slice(2)}`;
+}
+
+// --- Advanced AI placement helpers ------------------------------------------
+
+/** Farthest spawn point / waypoint from the zone centre (m) — the generator
+ * widens the Area's dynamic despawn range to cover it. */
+export function elementFarthestDist(zone: Zone): number {
+  let d = 0;
+  for (const el of zone.elements ?? []) {
+    d = Math.max(d, Math.hypot(el.x - zone.x, el.z - zone.z));
+    if (isPatrolElement(el)) for (const w of el.waypoints) d = Math.max(d, Math.hypot(w.x - zone.x, w.z - zone.z));
+  }
+  return d;
+}
+
+/** True when the element (or one of its waypoints) lies outside the zone circle. */
+export function elementOutsideZone(zone: Zone, el: ZoneElement): boolean {
+  if (Math.hypot(el.x - zone.x, el.z - zone.z) > zone.radius) return true;
+  return isPatrolElement(el) && el.waypoints.some((w) => Math.hypot(w.x - zone.x, w.z - zone.z) > zone.radius);
+}
+
+/** A patrol needs at least one waypoint (a spawn-only patrol is a defense group). */
+export const patrolNeedsWaypoint = (el: ZoneElement): boolean => isPatrolElement(el) && el.waypoints.length === 0;
+export const missionHasIncompletePatrol = (m: Mission): boolean =>
+  m.zones.some((zn) => (zn.elements ?? []).some(patrolNeedsWaypoint));
+
+/** New element at a map click: kind defaults + outward facing. */
+export function newZoneElement(kind: ZoneElementKind, x: number, z: number, zone: Zone, m: Mission): ZoneElement {
+  const id = freshZoneElemId();
+  const group = defaultGroupKey(m.enemyFaction, m.enemyGroupSets);
+  if (kind === "foot-patrol") return { kind, id, x, z, group, waypoints: [] };
+  if (kind === "mounted-patrol") {
+    return { kind, id, x, z, group, vehicle: FACTIONS[m.enemyFaction]?.patrolVehicleKeys?.[0] ?? "", waypoints: [] };
+  }
+  if (kind === "defense-group") return { kind, id, x, z, group, radius: DEFENSE_RADIUS.default };
+  // statics get no facing: the rooted AI turns to engage on its own (user decision)
+  return { kind, id, x, z, role: defaultRoleKey(m.enemyFaction, m.enemyGroupSets) };
+}
+
+/** Defensive normalisation of a save's zone elements (migrate + import):
+ * never throws, returns undefined when nothing valid remains so untouched
+ * saves stay byte-identical. `bannedVehicle` = the scrubVehicleMods rule. */
+export function sanitizeZoneElements(
+  raw: unknown,
+  enemyFaction: string,
+  bannedVehicle: (k: string) => boolean
+): ZoneElement[] | undefined {
+  if (!Array.isArray(raw) || !raw.length) return undefined;
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+  const groupOk = (g: unknown) => typeof g === "string" && rosterGroupExists(enemyFaction, g);
+  const roleOk = (r: unknown) => typeof r === "string" && rosterRoleExists(enemyFaction, r);
+  const defGroup = defaultGroupKey(enemyFaction, undefined);
+  const out: ZoneElement[] = [];
+  const counts: Record<string, number> = {};
+  for (const e of raw as Record<string, unknown>[]) {
+    if (!e || typeof e !== "object") continue;
+    const kind = e.kind as ZoneElementKind;
+    if (!ZONE_ELEMENT_KINDS.includes(kind)) continue;
+    const x = num(e.x);
+    const z = num(e.z);
+    if (x === null || z === null) continue;
+    if ((counts[kind] = (counts[kind] ?? 0) + 1) > ZONE_ELEMENT_CAPS[kind]) continue;
+    const id = typeof e.id === "string" && e.id ? e.id : freshZoneElemId();
+    const waypoints = (Array.isArray(e.waypoints) ? e.waypoints : [])
+      .map((w: Record<string, unknown>) => ({ x: num(w?.x), z: num(w?.z) }))
+      .filter((w): w is ZoneWaypoint => w.x !== null && w.z !== null)
+      .slice(0, ZONE_ELEMENT_MAX_WAYPOINTS);
+    const group = groupOk(e.group) ? (e.group as string) : defGroup;
+    if (kind === "foot-patrol") out.push({ kind, id, x, z, group, waypoints });
+    else if (kind === "mounted-patrol") {
+      const vk = typeof e.vehicle === "string" ? e.vehicle : "";
+      const faction = FACTIONS[enemyFaction];
+      const known = !!(faction?.vehicles?.[vk] || MOD_VEHICLES[vk]);
+      const vehicle = known && !bannedVehicle(vk) ? vk : faction?.patrolVehicleKeys?.[0] ?? "";
+      out.push({ kind, id, x, z, group, vehicle, waypoints });
+    } else if (kind === "defense-group") out.push({ kind, id, x, z, group, radius: defenseRadiusClamp(e.radius as number) });
+    else out.push({ kind, id, x, z, role: roleOk(e.role) ? (e.role as string) : defaultRoleKey(enemyFaction, undefined) });
+  }
+  return out.length ? out : undefined;
+}
+
+/** Enemy faction changed: re-default roster ids that don't exist for the new
+ * faction and faction-owned vehicle keys (mod vehicles are side-agnostic). */
+export function retargetZoneElements(zones: Zone[], enemyFaction: string, enemyGroupSets: string[]): Zone[] {
+  const faction = FACTIONS[enemyFaction];
+  const group = defaultGroupKey(enemyFaction, enemyGroupSets);
+  const role = defaultRoleKey(enemyFaction, enemyGroupSets);
+  return zones.map((zn) => {
+    if (!zn.elements?.length) return zn;
+    return {
+      ...zn,
+      elements: zn.elements.map((el) => {
+        if (el.kind === "static") return rosterRoleExists(enemyFaction, el.role) ? el : { ...el, role };
+        const g = rosterGroupExists(enemyFaction, el.group) ? el.group : group;
+        if (el.kind === "mounted-patrol") {
+          const vehicle = MOD_VEHICLES[el.vehicle] || faction?.vehicles?.[el.vehicle] ? el.vehicle : faction?.patrolVehicleKeys?.[0] ?? "";
+          return { ...el, group: g, vehicle };
+        }
+        return { ...el, group: g };
+      }),
+    };
+  });
 }
 
 const normRotation = (r: unknown): number => ((Math.round(+(r as number)) % 360) + 360) % 360 || 0;
@@ -643,12 +796,18 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     const mod = MOD_VEHICLES[v?.type]?.mod;
     if (mod) usedVehicleMods.add(mod);
   }
-  for (const zn of m.zones ?? [])
+  for (const zn of m.zones ?? []) {
     for (const md of zn.modules ?? [])
       for (const k of md.vehicles ?? []) {
         const mod = MOD_VEHICLES[k]?.mod;
         if (mod) usedVehicleMods.add(mod);
       }
+    // Advanced mounted patrols (elements are sanitized further down)
+    for (const el of (Array.isArray(zn.elements) ? zn.elements : []) as Record<string, unknown>[]) {
+      const mod = el?.kind === "mounted-patrol" && typeof el.vehicle === "string" ? MOD_VEHICLES[el.vehicle]?.mod : undefined;
+      if (mod) usedVehicleMods.add(mod);
+    }
+  }
   const vehicleRefOwner = new Map(
     Object.values(VEHICLE_MODS).flatMap((vm) => Object.values(vm.vehicles).map((ref) => [ref, vm.id] as const))
   );
@@ -804,6 +963,15 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
           .slice(0, 3);
       }
     }
+    // Advanced AI placement (2026-09-21): normalise hand-placed elements;
+    // undefined when none so untouched saves stay byte-identical.
+    const bannedVehicle = (k: string) => {
+      const mod = MOD_VEHICLES[k]?.mod;
+      return !!mod && (!m.mods.includes(mod) || !!VEHICLE_MODS[mod]?.hidden);
+    };
+    const elements = sanitizeZoneElements(zn.elements, m.enemyFaction, bannedVehicle);
+    if (elements) zn.elements = elements;
+    else delete zn.elements;
   }
   return m;
 }

@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup };
+export { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
 
 let guidCounter = 0;
@@ -165,6 +165,8 @@ export function buildMissionFiles(mission, options = {}) {
   const usedVehicleKeys = [
     ...(mission.spawn?.vehicles ?? []).map((v) => v.type),
     ...(mission.zones ?? []).flatMap((z) => (z.plugins ?? []).flatMap((p) => p.vehicles ?? [])),
+    // Advanced AI placement: manually placed mounted patrols
+    ...(mission.zones ?? []).flatMap((z) => (z.elements ?? []).filter((e) => e.kind === "mounted-patrol").map((e) => e.vehicle)),
   ];
   const modVehicleRefs = new Map(
     Object.values(VEHICLE_MODS).flatMap((vm) => Object.values(vm.vehicles).map((ref) => [ref, vm.id]))
@@ -802,6 +804,171 @@ ${farpBlock}`;
 
   const isSlotAIModule = (p) => ZONE_MODULES.find((d) => d.type === p.type)?.kind === "slotai";
 
+  // --- Advanced AI placement (2026-09-21): manually placed AI inside a zone ---
+  // zone.elements[] = { kind: "foot-patrol" | "mounted-patrol" | "defense-group" | "static",
+  //   id?, pos: [x,y,z], group? (roster id | raw ref), vehicle? (vehicle key),
+  //   role? (roster id | {refs} | raw ref), radius? — no facing is stored: the
+  //   mounted vehicle + crew face the FIRST waypoint, statics turn to engage,
+  //   waypoints?: [[x,y,z]…] (1–6) }.
+  // Structure = the toolkit's Workbench template plugin output (ground truth
+  // Operation NewOp AO.layer, AI_FootPatrol_414680 / AI_MountedPatrol_5485446 /
+  // AI_Defense_2305738 / LayerStatic): one parent Layer per group, coords = the
+  // spawn point (Area-relative); inside it an `A_Waypoints_<sfx>` Layer holding
+  // SlotWaypoint entities (a Cycle at 0 0 0 — the engine's AIWaypointCycle only
+  // re-inserts the collected patrol waypoints, the group never walks to the Cycle
+  // itself — plus a Patrol waypoint at 0 0 0 = the spawn so the loop really
+  // returns there, then the user's Patrol waypoints, each with the Column
+  // formation setting) and a `B_SlotAI_<sfx>` whose m_WaypointSet names that
+  // layer. Links are by ENTITY NAME → suffix `<zoneOrdinal>_<n>` keeps them
+  // world-unique. Mounted: crew group SlotAI + MoveAIIntoVehicle action → the
+  // `B_Vehicle_<sfx>` Slot (SF-native, no toolkit change). Statics: one
+  // `LayerStatic<N>` per zone, each SlotAI rooted by the toolkit's
+  // TS_ScenarioFrameworkPluginDisableMovement (attrs written explicitly) and
+  // GC-protected like the HVT (a lone character far from players).
+  // The element layers are emitted as SIBLINGS after Layer<N>, so the module
+  // layer stays byte-identical; the Area's dynamic despawn range widens to the
+  // farthest element/waypoint (the whole Area subtree spawns as one unit,
+  // measured from the Area origin — SCR_ScenarioFrameworkSystem.PrepareDynamicDespawn).
+  // Variant picks (role twins, group twins) are seeded on the element id so a
+  // regenerated mission keeps its kits.
+  const pad = (n) => " ".repeat(n);
+  const indentBlock = (text, n) => text.split("\n").map((l) => (l.length ? pad(n) + l : l)).join("\n");
+  const entityBody = (ind, { components, coords, angles, children }) => {
+    let s = "";
+    if (components) s += `${pad(ind + 1)}components {\n${indentBlock(components, ind + 2)}\n${pad(ind + 1)}}\n`;
+    s += `${pad(ind + 1)}coords ${coords}\n`;
+    if (angles) s += `${pad(ind + 1)}angles ${angles}\n`;
+    if (children?.length) s += `${pad(ind + 1)}{\n${children.join("\n")}\n${pad(ind + 1)}}\n`;
+    return s;
+  };
+  const entity = (ind, name, prefab, body) => `${pad(ind)}GenericEntity ${name} : "${prefab}" {\n${entityBody(ind, body)}${pad(ind)}}`;
+  const grp = (ind, prefab, bodies) =>
+    `${pad(ind)}$grp GenericEntity : "${prefab}" {\n${bodies.map(({ name, ...b }) => `${pad(ind + 1)}${name} {\n${entityBody(ind + 1, b)}${pad(ind + 1)}}`).join("\n")}\n${pad(ind)}}`;
+  const advPos = (p) => {
+    if (!sampleYFn) return p;
+    const y = sampleYFn(p[0], p[2]);
+    return Number.isFinite(y) ? [p[0], +y.toFixed(3), p[2]] : p;
+  };
+  const relTo = (p, o) => posStr([p[0] - o[0], p[1] - o[1], p[2] - o[2]]);
+  const slotWaypointCmp = (waypointClass, inner) =>
+    `SCR_ScenarioFrameworkSlotWaypoint "${K.CMP_SF_SLOTWAYPOINT}" {\n m_Waypoint ${waypointClass} "{${mintGuid()}}" {${inner ? `\n${indentBlock(inner, 2)}` : ""}\n }\n}`;
+  const PATROL_SETTINGS = "m_aSettings {\n SCR_AIGroupFormationSetting \"{%G}\" {\n  m_eFormation Column\n }\n}";
+  const patrolWaypointCmp = () => slotWaypointCmp("SCR_ScenarioFrameworkWaypointPatrol", PATROL_SETTINGS.replace("%G", mintGuid()));
+  const slotAICmp = (objectRef, waypointLayer, extra = "") =>
+    `SCR_ScenarioFrameworkSlotAI "${K.CMP_SF_SLOTAI}" {\n${extra ? `${indentBlock(extra, 1)}\n` : ""} m_sObjectToSpawn "${objectRef}"${
+      waypointLayer ? `\n m_WaypointSet SCR_ScenarioFrameworkWaypointSet "{${mintGuid()}}" {\n  m_aLayerName {\n   "${waypointLayer}"\n  }\n }` : ""
+    }\n}`;
+  // A_Waypoints_<sfx>: Cycle at the spawn + a Patrol waypoint AT THE SPAWN +
+  // one Patrol waypoint per user point (Column formation). The Cycle is only a
+  // loop marker — the group never travels to it (playtest 2026-09-22: with a
+  // single user waypoint the group walked there and stopped for good), so the
+  // spawn itself is a real patrol waypoint (`_0`, outside the user's 6-cap) and
+  // every loop returns to it: spawn → WP1 … WPn → spawn.
+  const waypointsLayer = (sfx, spawn, waypoints) =>
+    entity(4, `A_Waypoints_${sfx}`, K.LAYER_PREFAB, {
+      coords: "0 0 0",
+      children: [
+        grp(6, K.SLOTWAYPOINT_PREFAB, [
+          { name: `A_Cycle_${sfx}`, components: slotWaypointCmp("SCR_ScenarioFrameworkWaypointCycle", ""), coords: "0 0 0" },
+          { name: `B_Patrol_${sfx}_0`, components: patrolWaypointCmp(), coords: "0 0 0" },
+          ...waypoints.map((wp, k) => ({ name: `B_Patrol_${sfx}_${k + 1}`, components: patrolWaypointCmp(), coords: relTo(advPos(wp), spawn) })),
+        ]),
+      ],
+    });
+  const advancedZoneBlocks = (z, i, zPos) => {
+    const elements = z.elements ?? [];
+    if (!elements.length) return { blocks: "", maxDist: 0 };
+    const sets = mission.enemyGroupSets ?? mission.enemyGroupSet;
+    const dist = (p) => Math.hypot(p[0] - zPos[0], p[2] - zPos[2]);
+    let maxDist = 0;
+    let n = 0;
+    const layers = [];
+    const statics = [];
+    elements.forEach((el, k) => {
+      const seed = `${mission.name}:${el.id ?? `${i}:${el.kind}:${k}`}`;
+      const spawn = advPos(el.pos);
+      maxDist = Math.max(maxDist, dist(spawn), ...(el.waypoints ?? []).map(dist));
+      if (el.kind === "static") {
+        const ref = resolveAdvancedRole(mission.enemyFaction, el.role, seed);
+        statics.push({
+          name: `SlotAIStatic${i + 1}_${statics.length + 1}`,
+          components: slotAICmp(ref, null, `m_aPlugins {\n TS_ScenarioFrameworkPluginDisableMovement "{${mintGuid()}}" {\n  m_bDisableMovement 1\n  m_bRestrictProne 1\n }\n}`) .replace("\n}", "\n m_bCanBeGarbageCollected 0\n}"),
+          coords: relTo(spawn, zPos),
+        });
+        return;
+      }
+      n++;
+      const sfx = `${i + 1}_${n}`;
+      if (el.kind === "defense-group") {
+        const ref = resolveAdvancedGroup(mission.enemyFaction, el.group, seed);
+        const radius = Math.round(el.radius ?? 30);
+        layers.push(
+          entity(2, `AI_Defense_${sfx}`, K.LAYER_PREFAB, {
+            coords: relTo(spawn, zPos),
+            children: [
+              entity(4, `A_Waypoints_${sfx}`, K.LAYER_PREFAB, {
+                coords: "0 0 0",
+                children: [
+                  entity(6, `A_Defend_${sfx}`, K.SLOTWAYPOINT_PREFAB, {
+                    components: slotWaypointCmp("SCR_ScenarioFrameworkWaypointDefend", `m_fCompletionRadius ${radius}\nm_fPriorityLevel 100`),
+                    coords: "0 0 0",
+                  }),
+                ],
+              }),
+              entity(4, `B_SlotAI_${sfx}`, K.SLOTAI_PREFAB, { components: slotAICmp(ref, `A_Waypoints_${sfx}`), coords: "0 0 0" }),
+            ],
+          })
+        );
+        return;
+      }
+      const wps = el.waypoints ?? [];
+      if (wps.length < 1 || wps.length > 6) throw new Error(`Zone ${i + 1} ${el.kind} ${el.id ?? k}: needs 1–6 waypoints, got ${wps.length}`);
+      if (el.kind === "foot-patrol") {
+        const ref = resolveAdvancedGroup(mission.enemyFaction, el.group, seed);
+        layers.push(
+          entity(2, `AI_FootPatrol_${sfx}`, K.LAYER_PREFAB, {
+            coords: relTo(spawn, zPos),
+            children: [waypointsLayer(sfx, spawn, wps), entity(4, `B_SlotAI_${sfx}`, K.SLOTAI_PREFAB, { components: slotAICmp(ref, `A_Waypoints_${sfx}`), coords: "0 0 0" })],
+          })
+        );
+        return;
+      }
+      if (el.kind === "mounted-patrol") {
+        const vehicleRef = ENEMY.vehicles[el.vehicle] ?? MOD_VEHICLES[el.vehicle]?.ref;
+        if (!vehicleRef) throw new Error(`Unknown mounted-patrol vehicle ${mission.enemyFaction}/${el.vehicle}`);
+        // Crew = the user's group (default: the first selected set's sentry team — driver + gunner)
+        const crewRef = el.group ? resolveAdvancedGroup(mission.enemyFaction, el.group, seed) : resolveSentryPool(mission.enemyFaction, sets)[0];
+        // Vehicle at the spawn point facing the first waypoint (compass yaw from
+        // the spawn->WP1 bearing, user decision 2026-09-22); spawn-vehicle rule for
+        // the terrain tilt over its footprint + 20 cm lift; crew 5 m to +X, same yaw.
+        const wp1 = advPos(wps[0]);
+        const yaw = +(((((Math.atan2(wp1[0] - spawn[0], wp1[2] - spawn[2]) * 180) / Math.PI) % 360) + 360) % 360).toFixed(1);
+        const size = SLOT[vehicleSizeClass(el.vehicle)];
+        const [pitch, roll] = terrainTilt(spawn[0], spawn[2], yaw, Math.max(2, size.w / 2), Math.max(2, size.len / 2));
+        const crewY = sampleYFn ? +(advPos([spawn[0] + 5, 0, spawn[2]])[1] - spawn[1]).toFixed(3) : 0;
+        const moveIn = `m_aActivationActions {\n SCR_ScenarioFrameworkActionAI "{${mintGuid()}}" {\n  m_aAIActions {\n   SCR_ScenarioFrameworkAIActionMoveAIIntoVehicle "{${mintGuid()}}" {\n    m_VehicleGetter SCR_ScenarioFrameworkGetSpawnedEntity "{${mintGuid()}}" {\n     m_sLayerName "B_Vehicle_${sfx}"\n    }\n   }\n  }\n }\n}`;
+        layers.push(
+          entity(2, `AI_MountedPatrol_${sfx}`, K.LAYER_PREFAB, {
+            coords: relTo(spawn, zPos),
+            children: [
+              waypointsLayer(sfx, spawn, wps),
+              entity(4, `C_SlotAI_${sfx}`, K.SLOTAI_PREFAB, { components: slotAICmp(crewRef, `A_Waypoints_${sfx}`, moveIn), coords: `5 ${crewY} 0`, angles: yaw ? `0 ${yaw} 0` : undefined }),
+              entity(4, `B_Vehicle_${sfx}`, K.SLOT_PREFAB, {
+                components: `SCR_ScenarioFrameworkSlotBase "${K.CMP_SF_SLOT}" {\n m_sObjectToSpawn "${vehicleRef}"\n}`,
+                coords: "0 0.2 0",
+                angles: pitch || yaw || roll ? `${pitch} ${yaw} ${roll}` : undefined,
+              }),
+            ],
+          })
+        );
+        return;
+      }
+      throw new Error(`Zone ${i + 1}: unknown advanced element kind ${el.kind}`);
+    });
+    if (statics.length) layers.push(entity(2, `LayerStatic${i + 1}`, K.LAYER_PREFAB, { coords: "0 0 0", children: [grp(4, K.SLOTAI_PREFAB, statics)] }));
+    return { blocks: layers.length ? "\n" + layers.join("\n") : "", maxDist };
+  };
+
   const aoLayer = mission.zones
     .map((z, i) => {
       const zoneName = z.name ?? `Area${i + 1}`;
@@ -828,12 +995,17 @@ ${farpBlock}`;
     }
    }`
         : "";
+      // Advanced elements (siblings after Layer<N>); the despawn range covers
+      // the farthest one so nothing pops in next to a player (radius + 600
+      // when there are none — byte-identical to the pre-feature output).
+      const zPos = typeof z.pos === "string" ? z.pos.trim().split(/\s+/).map(Number) : z.pos;
+      const adv = advancedZoneBlocks(z, i, zPos);
       return `GenericEntity ${zoneName} : "${K.AREA_PREFAB}" {
  components {
   SCR_ScenarioFrameworkArea "${K.CMP_SF_AREA}" {
    m_fAreaRadius ${z.radius}
    m_bDynamicDespawn 1
-   m_iDynamicDespawnRange ${Math.round(z.radius + 600)}
+   m_iDynamicDespawnRange ${Math.round(Math.max(z.radius, adv.maxDist) + 600)}
   }
  }
  coords ${posStr(z.pos)}
@@ -844,7 +1016,7 @@ ${farpBlock}`;
     }
    }
    coords 0 0 0${defenseBlock}
-  }
+  }${adv.blocks}
  }
 }
 `;

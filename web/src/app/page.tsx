@@ -31,12 +31,20 @@ import {
   type Zone,
   STOP_TRIGGER_RADIUS,
   type AiArtillery,
+  type ZoneElement,
+  type ZoneElementKind,
+  ZONE_ELEMENT_CAPS,
+  ZONE_ELEMENT_MAX_WAYPOINTS,
+  isPatrolElement,
+  missionHasIncompletePatrol,
+  newZoneElement,
+  retargetZoneElements,
 } from "@/lib/mission";
 import { rangeLabel, totalEnemyRange } from "@/lib/enemyEstimate";
 import { exportMission } from "@/lib/export";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
-import { ARTY_STOP_COLOR, OBJECTIVE_COLOR, PROP_COLOR } from "@/lib/overlayHtml";
+import { ARTY_STOP_COLOR, OBJECTIVE_COLOR, PROP_COLOR, ZONE_ELEMENT_COLORS } from "@/lib/overlayHtml";
 import { LangProvider, loadLang, saveLang, tr, zonesCountLabel, type Lang } from "@/lib/i18n";
 import AppBar, { type StepId } from "@/components/AppBar";
 import GenerateOverlay, { GEN_STAGES, type GenState } from "@/components/GenerateOverlay";
@@ -130,6 +138,15 @@ export default function Editor() {
     index: number;
   } | null>(null);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  // Advanced AI placement: zone-card view + sub-tab live here (not in the
+  // panel) so a map click on an element can force the card onto them.
+  const [zoneView, setZoneView] = useState<"simple" | "advanced">("simple");
+  const [zoneTab, setZoneTab] = useState<ZoneElementKind>("foot-patrol");
+  // Armed "zone-element" placement: elementId null = the next click creates
+  // the element (spawn point); non-null = clicks append waypoints to that patrol.
+  const [elementTarget, setElementTarget] = useState<{ zoneId: string; kind: ZoneElementKind; elementId: string | null } | null>(null);
+  // Selected element (panel card ↔ map badge); wp = waypoint index, null = the spawn badge
+  const [selectedElement, setSelectedElement] = useState<{ zoneId: string; elementId: string; wp: number | null } | null>(null);
   const [selectedMarkerId, setSelectedMarkerId] = useState<string | null>(null);
   const [markerDraft, setMarkerDraftState] = useState<MarkerDraft>(DEFAULT_MARKER_DRAFT);
   // Markers-panel sub-tab lives here (not in the panel) so map-side sector
@@ -174,6 +191,9 @@ export default function Editor() {
       } catch {}
       return !v;
     });
+  // Elevation overlay (POC, 2D only, not persisted).
+  const [elevLayer, setElevLayer] = useState(false);
+  const toggleElev = () => setElevLayer((v) => !v);
   const genRef = useRef<GenState>(null);
   genRef.current = gen;
 
@@ -250,6 +270,7 @@ export default function Editor() {
       else {
         setPlaceMode(null);
         setOriginTarget(null);
+        setElementTarget(null);
         setSectorDraw(null);
         setPendingObjectiveType(null);
         setPendingPropRef(null);
@@ -292,13 +313,110 @@ export default function Editor() {
     setMission((m) => (m ? { ...m, zones: m.zones.filter((z) => z.id !== id) } : m));
     setSelectedZoneId((cur) => (cur === id ? null : cur));
     setSelectedOrigin((cur) => (cur?.zoneId === id ? null : cur));
-    // Deleting the zone an origin placement was armed for cancels the mode
+    setSelectedElement((cur) => (cur?.zoneId === id ? null : cur));
+    // Deleting the zone an origin/element placement was armed for cancels the mode
     setOriginTarget((cur) => {
       if (cur?.zoneId !== id) return cur;
       setPlaceMode((pm) => (pm === "qrf-origin" ? null : pm));
       return null;
     });
+    setElementTarget((cur) => {
+      if (cur?.zoneId !== id) return cur;
+      setPlaceMode((pm) => (pm === "zone-element" ? null : pm));
+      return null;
+    });
   };
+  /* ----- Advanced AI placement: zone elements ----- */
+  const updateZoneElement = (zoneId: string, elementId: string, patch: Partial<ZoneElement>) =>
+    setMission((m) =>
+      m
+        ? {
+            ...m,
+            zones: m.zones.map((zn) =>
+              zn.id === zoneId
+                ? { ...zn, elements: (zn.elements ?? []).map((el) => (el.id === elementId ? ({ ...el, ...patch } as ZoneElement) : el)) }
+                : zn
+            ),
+          }
+        : m
+    );
+  const removeZoneElement = (zoneId: string, elementId: string) => {
+    setMission((m) =>
+      m
+        ? {
+            ...m,
+            zones: m.zones.map((zn) => {
+              if (zn.id !== zoneId) return zn;
+              const rest = (zn.elements ?? []).filter((el) => el.id !== elementId);
+              const { elements: _drop, ...bare } = zn;
+              void _drop;
+              return rest.length ? { ...zn, elements: rest } : bare;
+            }),
+          }
+        : m
+    );
+    setSelectedElement((cur) => (cur?.elementId === elementId ? null : cur));
+    setElementTarget((cur) => {
+      if (cur?.elementId !== elementId) return cur;
+      setPlaceMode((pm) => (pm === "zone-element" ? null : pm));
+      return null;
+    });
+  };
+  const patchWaypoints = (zoneId: string, elementId: string, fn: (w: { x: number; z: number }[]) => { x: number; z: number }[]) =>
+    setMission((m) =>
+      m
+        ? {
+            ...m,
+            zones: m.zones.map((zn) =>
+              zn.id === zoneId
+                ? {
+                    ...zn,
+                    elements: (zn.elements ?? []).map((el) =>
+                      el.id === elementId && isPatrolElement(el) ? { ...el, waypoints: fn(el.waypoints) } : el
+                    ),
+                  }
+                : zn
+            ),
+          }
+        : m
+    );
+  const onWaypointMoved = (zoneId: string, elementId: string, wp: number, x: number, z: number) =>
+    patchWaypoints(zoneId, elementId, (ws) => ws.map((w, i) => (i === wp ? { x, z } : w)));
+  const removeZoneWaypoint = (zoneId: string, elementId: string, wp: number) => {
+    patchWaypoints(zoneId, elementId, (ws) => ws.filter((_, i) => i !== wp));
+    // Fix up the selection (indices shift), like onOriginRemoved
+    setSelectedElement((cur) => {
+      if (!cur || cur.elementId !== elementId || cur.wp === null) return cur;
+      if (cur.wp === wp) return { ...cur, wp: null };
+      return cur.wp > wp ? { ...cur, wp: cur.wp - 1 } : cur;
+    });
+  };
+  /** Zone dot dragged: its elements (spawns + waypoints) travel with it. */
+  const moveZone = (id: string, x: number, z: number) =>
+    setMission((m) => {
+      if (!m) return m;
+      return {
+        ...m,
+        zones: m.zones.map((zn) => {
+          if (zn.id !== id) return zn;
+          const dx = x - zn.x;
+          const dz = z - zn.z;
+          const shift = (p: { x: number; z: number }) => ({ x: +(p.x + dx).toFixed(1), z: +(p.z + dz).toFixed(1) });
+          return {
+            ...zn,
+            x,
+            z,
+            ...(zn.elements?.length
+              ? {
+                  elements: zn.elements.map((el) =>
+                    isPatrolElement(el) ? { ...el, ...shift(el), waypoints: el.waypoints.map(shift) } : { ...el, ...shift(el) }
+                  ),
+                }
+              : {}),
+          };
+        }),
+      };
+    });
   const updateObjective = (id: string, patch: Partial<MissionObjective>) =>
     setMission((m) =>
       m ? { ...m, objectives: m.objectives.map((o) => (o.id === id ? { ...o, ...patch } : o)) } : m
@@ -350,6 +468,7 @@ export default function Editor() {
   const armPlaceMode = (m: PlaceMode) => {
     setSectorDraw(null);
     if (m !== "qrf-origin") setOriginTarget(null);
+    if (m !== "zone-element") setElementTarget(null);
     if (m !== "objective") setPendingObjectiveType(null);
     if (m !== "prop") setPendingPropRef(null);
     if (m !== "spawn-vehicle") setPendingVehicleType(null);
@@ -386,10 +505,25 @@ export default function Editor() {
   /** Toggle QRF origin placement for a zone+module (same pair re-toggles off). */
   const armOriginPlace = (zoneId: string, moduleType: string) => {
     setSectorDraw(null);
+    setElementTarget(null);
     setOriginTarget((cur) => {
       const same = cur?.zoneId === zoneId && cur.moduleType === moduleType;
       setPlaceMode(same ? null : "qrf-origin");
       return same ? null : { zoneId, moduleType };
+    });
+  };
+  /** Toggle Advanced element placement: elementId null = place a new element
+   * of `kind` (next click = spawn point); an element id = append waypoints to
+   * that patrol. Same target re-toggles off. */
+  const armElementPlace = (zoneId: string, kind: ZoneElementKind, elementId: string | null) => {
+    setSectorDraw(null);
+    setOriginTarget(null);
+    setZoneView("advanced");
+    setZoneTab(kind);
+    setElementTarget((cur) => {
+      const same = cur?.zoneId === zoneId && cur.kind === kind && cur.elementId === elementId;
+      setPlaceMode(same ? null : "zone-element");
+      return same ? null : { zoneId, kind, elementId };
     });
   };
   /** Toggle Stop Artillery trigger placement (re-click cancels). */
@@ -424,7 +558,8 @@ export default function Editor() {
   const enemyPatch = (ef: string, zones: Zone[]): Partial<Mission> => ({
     enemyFaction: ef,
     enemyGroupSets: [FACTIONS[ef].defaultGroupSet],
-    zones: zones.map((zn) => ({
+    // Advanced elements: re-default roster ids / faction vehicle keys for the new enemy
+    zones: retargetZoneElements(zones, ef, [FACTIONS[ef].defaultGroupSet]).map((zn) => ({
       ...zn,
       modules: zn.modules.map((mm) =>
         mm.vehicles
@@ -571,6 +706,7 @@ export default function Editor() {
   const goStep = (s: StepId) => {
     setPlaceMode(null);
     setOriginTarget(null);
+    setElementTarget(null);
     setSectorDraw(null);
     setPendingObjectiveType(null);
     setPendingPropRef(null);
@@ -619,6 +755,7 @@ export default function Editor() {
       setSelectedPropId(null);
       setStopTriggerSelected(false);
       setSelectedSpawnEl(null);
+      setSelectedElement(null);
       return;
     }
     const xi = +x.toFixed(1);
@@ -682,11 +819,16 @@ export default function Editor() {
         x: xi,
         z: zi,
         radius: 200,
-        // explicit type — ZONE_MODULES[0] is Defense Group, not the default
-        modules: [{ type: "TS_ScenarioFrameworkPluginAIPatrol", budget: 1 }],
+        // clean state (user decision 2026-09-22): no module pre-ticked, the
+        // mission maker picks what the zone does
+        modules: [],
       };
       setMission((m) => (m ? { ...m, zones: [...m.zones, zone] } : m));
       setSelectedZoneId(zone.id);
+      // A fresh zone always opens on the Simple view (the view/tab state is
+      // global and would otherwise carry over from the previously edited zone)
+      setZoneView("simple");
+      setZoneTab("foot-patrol");
       mapApi()?.addPing(xi, zi, "#9333ea");
       markFresh(zone.id);
       setPlaceMode(null);
@@ -756,6 +898,34 @@ export default function Editor() {
         setPlaceMode(null);
         setOriginTarget(null);
       }
+    } else if (placeMode === "zone-element" && elementTarget) {
+      // Advanced AI placement. Phase 1 (elementId null): the click IS the
+      // element — the card appears at once with defaults; patrols then stay
+      // armed to append waypoints (phase 2) until the cap, a re-toggle or Esc.
+      const zn = mission.zones.find((z) => z.id === elementTarget.zoneId);
+      const disarm = () => {
+        setPlaceMode(null);
+        setElementTarget(null);
+      };
+      if (!zn) return disarm();
+      if (elementTarget.elementId === null) {
+        const count = (zn.elements ?? []).filter((e) => e.kind === elementTarget.kind).length;
+        if (count >= ZONE_ELEMENT_CAPS[elementTarget.kind]) return disarm();
+        const el = newZoneElement(elementTarget.kind, xi, zi, zn, mission);
+        updateZone(zn.id, { elements: [...(zn.elements ?? []), el] });
+        setSelectedElement({ zoneId: zn.id, elementId: el.id, wp: null });
+        mapApi()?.addPing(xi, zi, ZONE_ELEMENT_COLORS[elementTarget.kind]);
+        markFresh(el.id);
+        if (isPatrolElement(el)) setElementTarget({ ...elementTarget, elementId: el.id });
+        else disarm();
+      } else {
+        const el = (zn.elements ?? []).find((e) => e.id === elementTarget.elementId);
+        if (!el || !isPatrolElement(el) || el.waypoints.length >= ZONE_ELEMENT_MAX_WAYPOINTS) return disarm();
+        updateZoneElement(zn.id, el.id, { waypoints: [...el.waypoints, { x: xi, z: zi }] } as Partial<ZoneElement>);
+        setSelectedElement({ zoneId: zn.id, elementId: el.id, wp: el.waypoints.length });
+        mapApi()?.addPing(xi, zi, ZONE_ELEMENT_COLORS[elementTarget.kind]);
+        if (el.waypoints.length + 1 >= ZONE_ELEMENT_MAX_WAYPOINTS) disarm();
+      }
     }
   };
 
@@ -770,6 +940,13 @@ export default function Editor() {
 
   const selectAndFocusZone = (id: string) => {
     setSelectedZoneId(id);
+    // The armed element placement lives on the expanded card — collapsing that
+    // card (selecting another zone) cancels it.
+    setElementTarget((cur) => {
+      if (!cur || cur.zoneId === id) return cur;
+      setPlaceMode((pm) => (pm === "zone-element" ? null : pm));
+      return null;
+    });
     const zn = mission?.zones.find((z) => z.id === id);
     if (zn) focusOn(zn.x, zn.z, zn.radius * 1.5);
   };
@@ -887,6 +1064,25 @@ export default function Editor() {
       return cur.index > index ? { ...cur, index: cur.index - 1 } : cur;
     });
 
+  /* ----- Advanced element selection (panel card ↔ map badge, two-way) ----- */
+  const selectElementFromPanel = (zoneId: string, elementId: string, wp: number | null) => {
+    setSelectedElement({ zoneId, elementId, wp });
+    const el = mission?.zones.find((z) => z.id === zoneId)?.elements?.find((e) => e.id === elementId);
+    if (!el) return;
+    if (wp !== null && isPatrolElement(el) && el.waypoints[wp]) focusOn(el.waypoints[wp].x, el.waypoints[wp].z, 120);
+    else focusOn(el.x, el.z, 150);
+  };
+  const onElementMapClick = (zoneId: string, elementId: string, wp: number | null) => {
+    const el = mission?.zones.find((z) => z.id === zoneId)?.elements?.find((e) => e.id === elementId);
+    setSelectedElement({ zoneId, elementId, wp });
+    setSelectedZoneId(zoneId);
+    setZoneView("advanced");
+    if (el) setZoneTab(el.kind);
+    // no zoneRevealSeq bump: ZoneAdvanced scrolls the element card itself, and the
+    // zone-card reveal would re-align the (taller-than-panel) card's top instead
+    setStep("zones");
+  };
+
   const onMarkerClick = (id: string) => {
     setSelectedMarkerId((cur) => (cur === id ? null : id));
     setSelectedSectorId(null);
@@ -956,6 +1152,11 @@ export default function Editor() {
     if (mission.objectives.some((o) => o.type === "deliver" && !o.delivery)) {
       say(t("Place a delivery point for every Deliver Vehicle objective (Objectives tab)."), "warn");
       goStep("objectives");
+      return;
+    }
+    if (missionHasIncompletePatrol(mission)) {
+      say(t("Every manually placed patrol needs at least one waypoint (Zones tab, Advanced)."), "warn");
+      goStep("zones");
       return;
     }
     setGen({ phase: "run", stage: 0 });
@@ -1072,6 +1273,17 @@ export default function Editor() {
               ? t("the FARP")
       : placeMode === "qrf-origin"
         ? t("a reinforcement origin")
+        : placeMode === "zone-element"
+          ? elementTarget?.elementId
+            ? `${t("a patrol waypoint")} ${(() => {
+                const pe = (mission.zones.find((z) => z.id === elementTarget.zoneId)?.elements ?? []).find((e) => e.id === elementTarget.elementId);
+                return pe && isPatrolElement(pe) ? pe.waypoints.length : 0;
+              })()}/${ZONE_ELEMENT_MAX_WAYPOINTS}`
+            : elementTarget?.kind === "defense-group"
+              ? t("the defense group")
+              : elementTarget?.kind === "static"
+                ? t("the static soldier")
+                : t("the patrol's spawn point")
         : placeMode === "objective"
           ? t("the objective")
           : placeMode === "delivery"
@@ -1095,6 +1307,8 @@ export default function Editor() {
             lang,
             satLayer,
             onToggleSat: toggleSat,
+            elevLayer,
+            onToggleElev: toggleElev,
             playableFaction: mission.playableFaction,
             spawn: mission.spawn,
             zones: mission.zones,
@@ -1129,7 +1343,13 @@ export default function Editor() {
             focus,
             onMapClick,
             onZoneClick,
-            onZoneMoved: (id: string, x: number, z: number) => updateZone(id, { x, z }),
+            onZoneMoved: moveZone,
+            // Advanced AI placement
+            selectedElement,
+            onElementClick: onElementMapClick,
+            onElementMoved: (zoneId: string, elementId: string, x: number, z: number) =>
+              updateZoneElement(zoneId, elementId, { x, z } as Partial<ZoneElement>),
+            onWaypointMoved,
             onOriginMoved: (zoneId: string, moduleType: string, index: number, x: number, z: number) =>
               setMission((m) =>
                 m
@@ -1213,7 +1433,12 @@ export default function Editor() {
                 {t("Drag on the map to draw")} <span className="text-[#f4db50] font-medium">{sectorNoun}</span>
               </>
             )}
-            <span className="text-white/45"> {t("· press the button again to cancel")}</span>
+            <span className="text-white/45">
+              {" "}
+              {placeMode === "zone-element" && elementTarget?.elementId
+                ? t("· press the button again to finish")
+                : t("· press the button again to cancel")}
+            </span>
           </span>
         </div>
       )}
@@ -1335,6 +1560,17 @@ export default function Editor() {
                 onSelectZone={selectAndFocusZone}
                 updateZone={updateZone}
                 removeZone={removeZone}
+                zoneView={zoneView}
+                setZoneView={setZoneView}
+                zoneTab={zoneTab}
+                setZoneTab={setZoneTab}
+                elementTarget={placeMode === "zone-element" ? elementTarget : null}
+                onArmElement={armElementPlace}
+                selectedElement={selectedElement}
+                onSelectElement={selectElementFromPanel}
+                updateZoneElement={updateZoneElement}
+                removeZoneElement={removeZoneElement}
+                removeZoneWaypoint={removeZoneWaypoint}
               />
             )}
             {step === "objectives" && (

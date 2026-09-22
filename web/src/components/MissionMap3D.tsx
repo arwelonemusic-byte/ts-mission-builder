@@ -52,8 +52,12 @@ import {
   propBadgeHtml,
   sectorChipHtml,
   zoneDotHtml,
+  ZONE_ELEMENT_COLORS,
+  zoneElementBadgeHtml,
+  waypointDotHtml,
 } from "@/lib/overlayHtml";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
+import { isPatrolElement } from "@/lib/mission";
 import { coordsText, elevText } from "@/lib/i18n";
 import MapViewControls from "@/components/MapViewControls";
 import type { MapProps } from "@/components/MissionMap";
@@ -949,6 +953,75 @@ export default function MissionMap3D(props: Map3DProps) {
           }
         }
 
+        // Advanced AI placement: spawn badge + numbered waypoint dots joined by
+        // a draped loop closing on the spawn; dashed draped ring for defense
+        // groups. Drags refill the loop live; rotation is 2D-only (heading tick).
+        for (const el of zone.elements ?? []) {
+          const se = p.selectedElement;
+          const sel = se?.zoneId === zone.id && se.elementId === el.id;
+          const color = new THREE.Color(ZONE_ELEMENT_COLORS[el.kind]);
+          const nodes: [number, number][] = [
+            [el.x, el.z],
+            ...(isPatrolElement(el) ? el.waypoints.map((w) => [w.x, w.z] as [number, number]) : []),
+          ];
+          const PER = 12;
+          const loop =
+            nodes.length > 1
+              ? drapedLine(grid, nodes.length * PER, new THREE.LineBasicMaterial({ color }), true)
+              : null;
+          const refillLoop = () => loop?.fill(perimeter(nodes, PER), LINE_LIFT);
+          if (loop) {
+            overlay.add(loop.obj);
+            refillLoop();
+          }
+          const ringEl =
+            el.kind === "defense-group"
+              ? drapedLine(
+                  grid,
+                  64,
+                  new THREE.LineDashedMaterial({ color, dashSize: 4, gapSize: 4, transparent: true, opacity: 0.85 }),
+                  true
+                )
+              : null;
+          const defRadius = el.kind === "defense-group" ? el.radius : 0;
+          const refillRing = () =>
+            ringEl?.fill((i) => {
+              const a = (i / 64) * Math.PI * 2;
+              return [nodes[0][0] + defRadius * Math.cos(a), nodes[0][1] + defRadius * Math.sin(a)];
+            }, LINE_LIFT);
+          if (ringEl) {
+            overlay.add(ringEl.obj);
+            refillRing();
+          }
+          const badge = css2dNode(zoneElementBadgeHtml(el.kind, sel && se!.wp === null), true);
+          badge.obj.position.set(el.x, meshY(grid, el.x, el.z) + ICON_LIFT, -el.z);
+          overlay.add(badge.obj);
+          makeDraggable(world, badge.el, badge.obj, ICON_LIFT, {
+            onClick: () => propsRef.current.onElementClick(zone.id, el.id, null),
+            onDragLive: (x, z) => {
+              nodes[0] = [x, z];
+              refillLoop();
+              refillRing();
+            },
+            onDragEnd: (x, z) => propsRef.current.onElementMoved(zone.id, el.id, x, z),
+          });
+          if (isPatrolElement(el)) {
+            for (const [wi, wp] of el.waypoints.entries()) {
+              const dot = css2dNode(waypointDotHtml(wi + 1, sel && se!.wp === wi, ZONE_ELEMENT_COLORS[el.kind]), true);
+              dot.obj.position.set(wp.x, meshY(grid, wp.x, wp.z) + ICON_LIFT, -wp.z);
+              overlay.add(dot.obj);
+              makeDraggable(world, dot.el, dot.obj, ICON_LIFT, {
+                onClick: () => propsRef.current.onElementClick(zone.id, el.id, wi),
+                onDragLive: (x, z) => {
+                  nodes[wi + 1] = [x, z];
+                  refillLoop();
+                },
+                onDragEnd: (x, z) => propsRef.current.onWaypointMoved(zone.id, el.id, wi, x, z),
+              });
+            }
+          }
+        }
+
         drapeZone();
 
         const dot = css2dNode(zoneDotHtml(selected), true);
@@ -1665,6 +1738,7 @@ export default function MissionMap3D(props: Map3DProps) {
     props.zones,
     props.selectedZoneId,
     props.selectedOrigin,
+    props.selectedElement,
     props.markers,
     props.selectedMarkerId,
     props.objectives,

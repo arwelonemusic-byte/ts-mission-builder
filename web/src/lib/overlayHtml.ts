@@ -2,10 +2,9 @@
 // (wrapped in L.divIcon) and the 3D view (mounted in CSS2DObjects). All
 // roots are center-anchored: 2D wraps them with iconAnchor = size/2, 3D
 // relies on CSS2DRenderer's default translate(-50%,-50%).
-import { ZONE_MODULES } from "mission-gen";
-import type { MissionMarker, ObjectiveType, Zone } from "./mission";
+import type { MissionMarker, ObjectiveType, Zone, ZoneElementKind } from "./mission";
 import { findColor, findIcon, militaryIconUrl, MARKER_LABEL_OUTLINE, VANILLA_ATLAS } from "./markers";
-import { DISABLED_ICON_FILTER, MODULE_ICONS } from "./zoneModules";
+import { DISABLED_ICON_FILTER, zoneChipCounts } from "./zoneModules";
 import type { Lang } from "./i18n";
 
 /** Mission marker: military = pre-colored PNG, custom = atlas sprite
@@ -41,11 +40,12 @@ export function markerHtml(mk: MissionMarker, selected: boolean, freshDrop = fal
 /** Zone dot hover tooltip: module chip row, disabled modules greyed with 0
  * (Figma 106:216). Styled via the .zone-tip rules in globals.css. */
 export function zoneTooltipHtml(zone: Zone, name: string, lang: Lang): string {
-  const chips = ZONE_MODULES.map((def) => {
-    const mod = zone.modules.find((mm) => mm.type === def.type);
-    const iconStyle = `width:16px;height:16px;flex:none;${mod ? "" : `filter:${DISABLED_ICON_FILTER};opacity:0.45;`}`;
-    const countStyle = `font:400 12px/1 var(--font-roboto),sans-serif;color:${mod ? "#fff" : "#6a767c"};`;
-    return `<span style="display:flex;align-items:center;gap:3px;flex:none;"><img src="${MODULE_ICONS[def.type]}" alt="" style="${iconStyle}" /><span style="${countStyle}">${mod?.budget ?? 0}</span></span>`;
+  // Module budgets + advanced elements (zoneChipCounts) — same row as the collapsed card
+  const chips = zoneChipCounts(zone).map((c) => {
+    const on = c.count > 0;
+    const iconStyle = `width:16px;height:16px;flex:none;${on ? "" : `filter:${DISABLED_ICON_FILTER};opacity:0.45;`}`;
+    const countStyle = `font:400 12px/1 var(--font-roboto),sans-serif;color:${on ? "#fff" : "#6a767c"};`;
+    return `<span style="display:flex;align-items:center;gap:3px;flex:none;"><img src="${c.icon}" alt="" style="${iconStyle}" /><span style="${countStyle}">${c.count}</span></span>`;
   }).join("");
   return `<div style="width:max-content;">
     <div style="display:flex;align-items:baseline;gap:8px;"><span style="font:700 12px/1.2 var(--font-roboto),sans-serif;color:#fff;">${name}</span><span style="font:400 11px/1.2 var(--font-roboto),sans-serif;color:rgba(255,255,255,0.5);">${zone.radius} ${lang === "ru" ? "м" : "m"}</span></div>
@@ -190,4 +190,48 @@ export function pingHtml(color: string): string {
   const ring = (delay: string) =>
     `<div style="position:absolute;inset:0;border:2px solid ${color};border-radius:50%;animation:mbPing 0.7s ease-out ${delay} both;"></div>`;
   return `<div style="position:relative;width:44px;height:44px;">${ring("0s")}${ring("0.15s")}</div>`;
+}
+
+// --- Advanced AI placement (2026-09-21) ---------------------------------------
+/** Element accent (spawn badge, waypoint dots, loop line, defend ring) —
+ * lime, distinct from zone purple #9333ea, prop green #4ade80, objective red. */
+export const ZONE_ELEMENT_COLOR = "#a3e635";
+/** Per-kind shades of green (user request 2026-09-21): lime foot patrols,
+ * green mounted patrols, emerald defense groups, olive statics. */
+export const ZONE_ELEMENT_COLORS: Record<ZoneElementKind, string> = {
+  "foot-patrol": "#a3e635",
+  "mounted-patrol": "#16a34a",
+  "defense-group": "#34d399",
+  static: "#65a30d",
+};
+const FOOT_GLYPH_PATH =
+  "M10.6667 11.3333H13.3333M2.66667 8.66667H5.33333M2.66669 10.6667V9.08C2.66669 7.66667 1.98002 7 2.00002 5.33333C2.02002 3.52 2.99336 1.33333 5.00002 1.33333C6.24669 1.33333 6.66669 2.53333 6.66669 3.66667C6.66669 5.74 5.33336 7.44 5.33336 9.45333V10.6667C5.33336 11.0203 5.19288 11.3594 4.94283 11.6095C4.69278 11.8595 4.35364 12 4.00002 12C3.6464 12 3.30726 11.8595 3.05721 11.6095C2.80716 11.3594 2.66669 11.0203 2.66669 10.6667ZM13.3333 13.3333V11.7467C13.3333 10.3333 14.02 9.66667 14 8C13.98 6.18667 13.0067 4 11 4C9.75333 4 9.33333 5.2 9.33333 6.33333C9.33333 8.40667 10.6667 10.1067 10.6667 12.12V13.3333C10.6667 13.687 10.8071 14.0261 11.0572 14.2761C11.3072 14.5262 11.6464 14.6667 12 14.6667C12.3536 14.6667 12.6928 14.5262 12.9428 14.2761C13.1929 14.0261 13.3333 13.687 13.3333 13.3333Z";
+const TRUCK_GLYPH_PATH =
+  "M12.6667 12H14C14.4 12 14.6667 11.7333 14.6667 11.3333V9.33333C14.6667 8.73333 14.2 8.2 13.6667 8.06667C12.4667 7.73333 10.6667 7.33333 10.6667 7.33333C10.6667 7.33333 9.8 6.4 9.2 5.8C8.86667 5.53333 8.46667 5.33333 8 5.33333H7.33333M12.6667 12C12.6667 12.7364 12.0697 13.3333 11.3333 13.3333C10.597 13.3333 10 12.7364 10 12M12.6667 12C12.6667 11.2636 12.0697 10.6667 11.3333 10.6667C10.597 10.6667 10 11.2636 10 12M3.33333 5.33333C2.93333 5.33333 2.6 5.6 2.4 5.93333L1.46667 7.86667C1.37839 8.12415 1.33333 8.39447 1.33333 8.66667V11.3333C1.33333 11.7333 1.6 12 2 12H3.33333M3.33333 5.33333H3L2.99996 2.99996H7.33329L7.33333 3.50004M3.33333 5.33333H7.33333M3.33333 12C3.33333 12.7364 3.93029 13.3333 4.66667 13.3333C5.40305 13.3333 6 12.7364 6 12M3.33333 12C3.33333 11.2636 3.93029 10.6667 4.66667 10.6667C5.40305 10.6667 6 11.2636 6 12M7.33333 5.33333L7.33333 3.50004M7.33333 3.50004H12.3333M6 12L10 12";
+const SHIELD_GLYPH_PATH =
+  "M13.3333 8.66664C13.3333 12 11 13.6666 8.22667 14.6333C8.08144 14.6825 7.92369 14.6802 7.78 14.6266C5 13.6666 2.66667 12 2.66667 8.66664V3.99997C2.66667 3.82316 2.7369 3.65359 2.86193 3.52857C2.98695 3.40355 3.15652 3.33331 3.33333 3.33331C4.66667 3.33331 6.33333 2.53331 7.49333 1.51997C7.63457 1.39931 7.81424 1.33301 8 1.33301C8.18576 1.33301 8.36543 1.39931 8.50667 1.51997C9.67333 2.53997 11.3333 3.33331 12.6667 3.33331C12.8435 3.33331 13.013 3.40355 13.1381 3.52857C13.2631 3.65359 13.3333 3.82316 13.3333 3.99997V8.66664Z";
+/** White stroke glyphs (16×16 inner markup) for the element badges. */
+export const ZONE_ELEMENT_GLYPHS: Record<ZoneElementKind, string> = {
+  "foot-patrol": `<path d="${FOOT_GLYPH_PATH}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>`,
+  "mounted-patrol": `<path d="${TRUCK_GLYPH_PATH}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>`,
+  "defense-group": `<path d="${SHIELD_GLYPH_PATH}" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>`,
+  // user-supplied glyph (input/ai_soldier.svg, filled) — same path as static-soldier.svg
+  static: `<path d="M8.00036 0C8.92102 0 9.66702 0.746 9.66702 1.66667C9.66702 2.58733 8.92102 3.33333 8.00036 3.33333C7.07969 3.33333 6.33369 2.58733 6.33369 1.66667C6.33369 0.746 7.07969 0 8.00036 0ZM10.0004 12.6667V9.886C10.7764 9.61067 11.3337 8.86933 11.3337 8V6.66667C11.3337 5.196 10.1377 4 8.66702 4H7.33369C5.86302 4 4.66702 5.196 4.66702 6.66667V8C4.66702 8.86933 5.22436 9.61067 6.00036 9.886V12.6667C6.00036 13.0347 6.29836 13.3333 6.66702 13.3333C7.03569 13.3333 7.33369 13.0347 7.33369 12.6667V9.33333C7.33369 8.96533 7.03569 8.66667 6.66702 8.66667C6.29836 8.66667 6.00036 8.36733 6.00036 8V6.66667C6.00036 5.93133 6.59836 5.33333 7.33369 5.33333H8.66702C9.40236 5.33333 10.0004 5.93133 10.0004 6.66667V8C10.0004 8.36733 9.70169 8.66667 9.33369 8.66667C8.96569 8.66667 8.66702 8.96533 8.66702 9.33333V12.6667C8.66702 13.0347 8.96502 13.3333 9.33369 13.3333C9.70236 13.3333 10.0004 13.0347 10.0004 12.6667ZM16.0004 13C16.0004 11.8347 14.6277 10.908 12.1357 10.3913C11.7764 10.316 11.4224 10.548 11.347 10.9087C11.2724 11.2693 11.5037 11.622 11.8644 11.6967C13.961 12.132 14.6664 12.774 14.6664 13C14.6664 13.4987 12.3984 14.6667 7.99969 14.6667C3.60102 14.6667 1.33302 13.4987 1.33302 13C1.33302 12.774 2.03902 12.132 4.13502 11.6967C4.49569 11.622 4.72769 11.2687 4.65236 10.9087C4.57702 10.548 4.22169 10.316 3.86369 10.3913C1.37169 10.908 -0.000976562 11.8347 -0.000976562 13C-0.000976562 15.0613 4.14636 16 7.99902 16C11.8517 16 15.999 15.0613 15.999 13H16.0004Z" fill="#fff"/>`,
+};
+
+/** Round badge at an advanced element's spawn point: per-kind green disc +
+ * white kind glyph. Selection = yellow halo. Same 24 px footprint as originBadgeHtml. */
+export function zoneElementBadgeHtml(kind: ZoneElementKind, selected: boolean): string {
+  const halo = selected
+    ? `<div style="position:absolute;inset:-6px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
+    : "";
+  return `<div style="position:relative;width:24px;height:24px;">${halo}<div style="width:24px;height:24px;border-radius:50%;background:${ZONE_ELEMENT_COLORS[kind]};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none">${ZONE_ELEMENT_GLYPHS[kind]}</svg></div></div>`;
+}
+
+/** Numbered 18 px dot for a patrol waypoint; selection = yellow halo. */
+export function waypointDotHtml(n: number, selected: boolean, color: string = ZONE_ELEMENT_COLOR): string {
+  const halo = selected
+    ? `<div style="position:absolute;inset:-5px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 10px rgba(244,219,80,0.6);"></div>`
+    : "";
+  return `<div style="position:relative;width:18px;height:18px;">${halo}<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;font:700 10px/1 var(--font-roboto),sans-serif;color:#202427;">${n}</div></div>`;
 }

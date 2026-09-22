@@ -1,5 +1,6 @@
 import { FACTIONS, ZONE_MODULES } from "mission-gen";
 import type { Mission, Zone } from "./mission";
+import { groupSize } from "./roster";
 
 /** Ballpark enemy-count estimation for AI zones.
  *
@@ -66,6 +67,25 @@ export function zoneEnemyRange(
       if (classes.length === 0) continue;
       min += mod.budget * Math.min(...classes.map((c) => CLASS_RANGE[c][0]));
       max += mod.budget * Math.max(...classes.map((c) => CLASS_RANGE[c][1]));
+    }
+  }
+  // Advanced AI placement: fixed groups (roster size known), one soldier per static
+  for (const el of zone.elements ?? []) {
+    if (el.kind === "static") {
+      min += 1;
+      max += 1;
+      continue;
+    }
+    const size = groupSize(enemyFaction, el.group);
+    if (size !== undefined) {
+      min += size;
+      max += size;
+    } else if (el.kind === "mounted-patrol") {
+      min += VEHICLE_CREW_RANGE[0];
+      max += VEHICLE_CREW_RANGE[1];
+    } else {
+      min += CLASS_RANGE.medium[0];
+      max += CLASS_RANGE.medium[1];
     }
   }
   return [min, max];

@@ -15,7 +15,7 @@ import {
   militaryIconUrl,
 } from "@/lib/markers";
 import { useT } from "@/lib/i18n";
-import { Field, GhostButton, PlusIcon, Slider, TextInput } from "../ui";
+import { Field, GhostButton, PlusIcon, Segmented, Slider, TextInput } from "../ui";
 
 /** Template for new markers — a MissionMarker minus id/position. */
 export type MarkerDraft = Omit<MissionMarker, "id" | "x" | "z">;
@@ -191,27 +191,15 @@ export default function MarkersPanel({
       )}
 
       {!(tab === "sectors" && selectedSector) && (
-      <div className="bg-[#14181a] rounded-[8px] h-[40px] p-1 flex items-center w-full">
-        {(["military", "custom", "sectors"] as const).map((kind) => {
-          const activeTab = tab === kind;
-          return (
-            <button
-              key={kind}
-              type="button"
-              onClick={() => {
-                setTab(kind);
-                if (kind === "sectors") onDeselectMarker();
-                else apply({ kind });
-              }}
-              className={`flex-1 h-full rounded-[6px] flex items-center justify-center text-[12px] leading-[20px] font-medium transition-colors ${
-                activeTab ? "bg-[#f4db50] text-[#202427]" : "text-white/60 hover:text-white"
-              }`}
-            >
-              {TAB_LABELS[kind]}
-            </button>
-          );
-        })}
-      </div>
+      <Segmented
+        value={tab}
+        onChange={(kind) => {
+          setTab(kind);
+          if (kind === "sectors") onDeselectMarker();
+          else apply({ kind });
+        }}
+        options={(["military", "custom", "sectors"] as const).map((kind) => ({ value: kind, label: TAB_LABELS[kind] }))}
+      />
       )}
 
       {tab === "military" && (

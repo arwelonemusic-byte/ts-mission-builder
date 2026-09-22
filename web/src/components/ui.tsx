@@ -34,9 +34,26 @@ export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return <input {...rest} className={`${INPUT_CLS} h-[44px] px-3 ${className ?? ""}`} />;
 }
 
+// Custom caret: the native Chromium arrow hugs the box edge regardless of
+// padding (user-caught 2026-09-21) — draw our own chevron 12 px in.
+const SELECT_CARET =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none' stroke='white' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E\")";
 export function SelectInput(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  const { className, ...rest } = props;
-  return <select {...rest} className={`${INPUT_CLS} h-[44px] px-3 ${className ?? ""}`} />;
+  const { className, style, ...rest } = props;
+  return (
+    <select
+      {...rest}
+      style={{
+        appearance: "none",
+        WebkitAppearance: "none",
+        backgroundImage: SELECT_CARET,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "right 12px center",
+        ...style,
+      }}
+      className={`${INPUT_CLS} h-[44px] pl-3 pr-9 ${className ?? ""}`}
+    />
+  );
 }
 
 export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
@@ -273,4 +290,69 @@ export function SectionLabel({ children }: { children: ReactNode }) {
 /** Horizontal divider between panel subsections. */
 export function Divider() {
   return <div className="border-t border-[#2e3439]" />;
+}
+
+/** Segmented control (Markers sub-tabs, zone Simple/Advanced, icon sub-tabs).
+ * Promoted from MarkersPanel 2026-09-21; `label` may be text or an icon node. */
+export function Segmented<T extends string>({
+  value,
+  onChange,
+  options,
+  className = "",
+  tone = "base",
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: ReactNode; title?: string }[];
+  className?: string;
+  /** "base" (panel background, default) or "raised" — one step lighter for
+   * controls that sit INSIDE a #14181a card (zone card tabs, Figma 118:346) */
+  tone?: "base" | "raised";
+}) {
+  return (
+    <div className={`${tone === "raised" ? "bg-[#202427]" : "bg-[#14181a]"} rounded-[8px] h-[40px] p-1 flex items-center w-full ${className}`}>
+      {options.map((o) => {
+        const active = value === o.value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            title={o.title}
+            aria-label={o.title}
+            aria-pressed={active}
+            onClick={() => onChange(o.value)}
+            className={`flex-1 h-full rounded-[6px] flex items-center justify-center text-[12px] leading-[20px] font-medium transition-colors ${
+              active ? "bg-[#f4db50] text-[#202427]" : "text-white/60 hover:text-white"
+            }`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** An SVG icon file rendered as a CSS mask in currentColor — the shipped zone
+ * icons are yellow-stroked, which would vanish on the active yellow tab. */
+export function MaskIcon({ src, size = 16, className = "" }: { src: string; size?: number; className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={`inline-block shrink-0 ${className}`}
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: "currentColor",
+        WebkitMaskImage: `url(${src})`,
+        maskImage: `url(${src})`,
+        WebkitMaskSize: "contain",
+        maskSize: "contain",
+        WebkitMaskRepeat: "no-repeat",
+        maskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        maskPosition: "center",
+      }}
+    />
+  );
 }

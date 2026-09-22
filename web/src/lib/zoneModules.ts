@@ -32,3 +32,62 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
   TS_ScenarioFrameworkPluginQRFMounted:
     "Reinforcements drive in from origin points and dismount at the zone",
 };
+
+// --- Advanced AI placement (2026-09-21) ---------------------------------------
+import type { Zone, ZoneElementKind } from "./mission";
+import { ZONE_MODULES } from "mission-gen";
+
+/** Which Simple-tab module chip an advanced element kind counts toward (null = its own chip). */
+export const ELEMENT_KIND_MODULE: Record<ZoneElementKind, string | null> = {
+  "foot-patrol": "TS_ScenarioFrameworkPluginAIPatrol",
+  "mounted-patrol": "TS_ScenarioFrameworkPluginMountedPatrol",
+  "defense-group": "DefenseGroup",
+  static: null,
+};
+export const ELEMENT_KIND_ICONS: Record<ZoneElementKind, string> = {
+  "foot-patrol": "/icons/zones/foot-patrol.svg",
+  "mounted-patrol": "/icons/zones/mounted-patrol.svg",
+  "defense-group": "/icons/zones/defense.svg",
+  static: "/icons/zones/static-soldier.svg",
+};
+/** Sub-tab titles / card titles (EN keys, RU in i18n). */
+export const ELEMENT_KIND_LABELS: Record<ZoneElementKind, string> = {
+  "foot-patrol": "Foot patrols",
+  "mounted-patrol": "Mounted patrols",
+  "defense-group": "Defense groups",
+  static: "Static AI soldiers",
+};
+export const ELEMENT_LABELS: Record<ZoneElementKind, string> = {
+  "foot-patrol": "Foot patrol",
+  "mounted-patrol": "Mounted patrol",
+  "defense-group": "Defense group",
+  static: "Static soldier",
+};
+export const ELEMENT_ADD_LABELS: Record<ZoneElementKind, string> = {
+  "foot-patrol": "Add foot patrol",
+  "mounted-patrol": "Add mounted patrol",
+  "defense-group": "Add defense group",
+  static: "Add static soldier",
+};
+export const ELEMENT_DESCRIPTIONS: Record<ZoneElementKind, string> = {
+  "foot-patrol": "Patrol groups with manually placed cycled waypoints.",
+  "mounted-patrol": "Patrol groups on vehicles with manually placed cycled waypoints.",
+  "defense-group": "AI groups defending an area with a custom radius.",
+  static: "AI characters that don't move. They will still shoot and turn.",
+};
+
+/** Chip row shared by the collapsed zone card and the map dot tooltip: one
+ * chip per Simple-tab module (budget + advanced elements of the mapped kind)
+ * plus a trailing static-soldier chip. */
+export function zoneChipCounts(zone: Zone): { key: string; icon: string; label: string; count: number }[] {
+  const els = zone.elements ?? [];
+  const chips = ZONE_MODULES.map((def: { type: string; label: string }) => {
+    const mod = zone.modules.find((mm) => mm.type === def.type);
+    const kinds = (Object.keys(ELEMENT_KIND_MODULE) as ZoneElementKind[]).filter((k) => ELEMENT_KIND_MODULE[k] === def.type);
+    const manual = els.filter((e) => kinds.includes(e.kind)).length;
+    const budget = mod ? (def.type === "DefenseGroup" ? 1 : mod.budget) : 0;
+    return { key: def.type, icon: MODULE_ICONS[def.type], label: def.label, count: budget + manual };
+  });
+  chips.push({ key: "static", icon: ELEMENT_KIND_ICONS.static, label: ELEMENT_KIND_LABELS.static, count: els.filter((e) => e.kind === "static").length });
+  return chips;
+}

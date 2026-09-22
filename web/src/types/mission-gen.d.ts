@@ -189,6 +189,18 @@ declare module "mission-gen" {
   export const CORE_ARSENAL_POOL: ArsenalPoolEntry[];
   /** {mode, ref} view of CORE_ARSENAL_POOL (baked-default shape) */
   export const CORE_ARSENAL_ITEMS: { mode: string; ref: string }[];
+  /** Advanced AI placement roster (AUTO-GENERATED generator/roster.mjs): every
+   * registry group per faction with a label + unit-slot size, and character
+   * ROLES (variant prefabs collapsed per subfaction; emission picks one ref).
+   * ids: groups "<faction>/<setKey>/<stem>", roles "<faction>/<subfaction-slug>/<label-slug>". */
+  export type RosterGroup = { id: string; label: string; labelRu?: string; set: string; setLabel: string; size: number; classes: string[]; refs: string[] };
+  export type RosterRole = { id: string; label: string; labelRu?: string; subfaction: string; set: string | null; refs: string[] };
+  export const ENEMY_GROUPS: Record<string, RosterGroup[]>;
+  export const ENEMY_ROLES: Record<string, RosterRole[]>;
+  export function pickVariant(refs: string[], seed: string): string;
+  export function rosterFactionsFor(enemyKey: string): string[];
+  export function resolveAdvancedGroup(enemyKey: string, groupRef: string, seed: string): string;
+  export function resolveAdvancedRole(enemyKey: string, roleRef: string | { refs: string[] }, seed: string): string;
   export function resolvePropDefenseGroup(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[] | undefined, ordinal?: number): string;
   export function resolveGroupPool(factionKey: string, groupSetKeys: string | string[] | undefined, sizes: string[]): string[];
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];

@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FACTIONS, MOD_VEHICLES, VEHICLE_MODS, ZONE_MODULES } from "mission-gen";
-import type { Mission, PlaceMode, Zone, ZoneModule } from "@/lib/mission";
+import type { Mission, PlaceMode, Zone, ZoneElement, ZoneElementKind, ZoneModule } from "@/lib/mission";
 import { rangeLabel, zoneEnemyRange } from "@/lib/enemyEstimate";
-import { MODULE_DESCRIPTIONS, MODULE_ICONS } from "@/lib/zoneModules";
+import { MODULE_DESCRIPTIONS, MODULE_ICONS, zoneChipCounts } from "@/lib/zoneModules";
 import { useLang, useT, zoneName } from "@/lib/i18n";
-import { CheckRow, GhostButton, PlusIcon, Slider } from "../ui";
+import { CheckRow, GhostButton, PlusIcon, Segmented, Slider } from "../ui";
+import ZoneAdvanced, { type ElementTarget, type SelectedElement } from "./ZoneAdvanced";
 
 /** Foot Patrols weight slider: 5 stops over contiguous size-class windows.
  * Only the selected stop's label is shown. Stop 3 (all sizes) = default.
@@ -80,8 +81,31 @@ export default function ZonesPanel({
   onSelectZone,
   updateZone,
   removeZone,
+  zoneView,
+  setZoneView,
+  zoneTab,
+  setZoneTab,
+  elementTarget,
+  onArmElement,
+  selectedElement,
+  onSelectElement,
+  updateZoneElement,
+  removeZoneElement,
+  removeZoneWaypoint,
 }: {
   mission: Mission;
+  /** Advanced AI placement (state lives in page.tsx so map clicks can force it) */
+  zoneView: "simple" | "advanced";
+  setZoneView: (v: "simple" | "advanced") => void;
+  zoneTab: ZoneElementKind;
+  setZoneTab: (k: ZoneElementKind) => void;
+  elementTarget: ElementTarget | null;
+  onArmElement: (zoneId: string, kind: ZoneElementKind, elementId: string | null) => void;
+  selectedElement: SelectedElement | null;
+  onSelectElement: (zoneId: string, elementId: string, wp: number | null) => void;
+  updateZoneElement: (zoneId: string, elementId: string, patch: Partial<ZoneElement>) => void;
+  removeZoneElement: (zoneId: string, elementId: string) => void;
+  removeZoneWaypoint: (zoneId: string, elementId: string, wp: number) => void;
   placeMode: PlaceMode;
   setPlaceMode: (m: PlaceMode) => void;
   /** Armed QRF origin placement: which zone+module the next map click feeds */
@@ -187,22 +211,21 @@ export default function ZonesPanel({
                 with 0 (Figma 106:24). Expanded (= selected): full controls. */}
             {!selected && (
               <div className="flex items-center gap-3">
-                {ZONE_MODULES.map((d: { type: string; label: string }) => {
-                  const mm = zn.modules.find((m2) => m2.type === d.type);
+                {/* module budgets + Advanced elements of the same kind; static soldiers get their own chip */}
+                {zoneChipCounts(zn).map((c) => {
+                  const on = c.count > 0;
                   return (
-                    <span key={d.type} className="flex items-center gap-[3px]" title={t(d.label)}>
+                    <span key={c.key} className="flex items-center gap-[3px]" title={t(c.label)}>
                       <img
-                        src={MODULE_ICONS[d.type]}
-                        alt={t(d.label)}
+                        src={c.icon}
+                        alt={t(c.label)}
                         style={{
                           width: 16,
                           height: 16,
-                          ...(mm ? {} : { filter: "grayscale(1) brightness(0.8)", opacity: 0.45 }),
+                          ...(on ? {} : { filter: "grayscale(1) brightness(0.8)", opacity: 0.45 }),
                         }}
                       />
-                      <span className={`text-[12px] ${mm ? "text-white" : "text-white/40"}`}>
-                        {mm?.budget ?? 0}
-                      </span>
+                      <span className={`text-[12px] ${on ? "text-white" : "text-white/40"}`}>{c.count}</span>
                     </span>
                   );
                 })}
@@ -226,7 +249,19 @@ export default function ZonesPanel({
               trackColor="#2e3439"
             />
 
-            {ZONE_MODULES.map((def: { type: string; label: string; kind?: string; sizes?: string[]; maxBudget?: number; noBudget?: boolean; maxOrigins?: number }) => {
+            {/* Simple = the module list; Advanced = hand-placed AI. A UI switch
+                only — elements added in Advanced persist regardless (Figma 118:346). */}
+            <Segmented
+              tone="raised"
+              value={zoneView}
+              onChange={setZoneView}
+              options={[
+                { value: "simple", label: t("Simple") },
+                { value: "advanced", label: t("Advanced") },
+              ]}
+            />
+
+            {zoneView === "simple" && ZONE_MODULES.map((def: { type: string; label: string; kind?: string; sizes?: string[]; maxBudget?: number; noBudget?: boolean; maxOrigins?: number }) => {
               const mod = zn.modules.find((mm) => mm.type === def.type);
               const isQrf = def.kind === "qrf-foot" || def.kind === "qrf-vehicle";
               const wantsVehicles = def.kind === "vehicle" || def.kind === "qrf-vehicle";
@@ -414,6 +449,22 @@ export default function ZonesPanel({
                 </div>
               );
             })}
+
+            {zoneView === "advanced" && (
+              <ZoneAdvanced
+                mission={mission}
+                zone={zn}
+                tab={zoneTab}
+                setTab={setZoneTab}
+                elementTarget={elementTarget?.zoneId === zn.id ? elementTarget : null}
+                onArmElement={onArmElement}
+                selectedElement={selectedElement?.zoneId === zn.id ? selectedElement : null}
+                onSelectElement={onSelectElement}
+                updateZoneElement={updateZoneElement}
+                removeZoneElement={removeZoneElement}
+                removeZoneWaypoint={removeZoneWaypoint}
+              />
+            )}
               </div>
             )}
           </div>

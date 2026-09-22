@@ -52,11 +52,35 @@ export async function toGeneratorMission(m: Mission) {
       }
       plugins.push(p);
     }
+    // Advanced AI placement: hand-placed elements (heightmap Y per point);
+    // omitted entirely when the zone has none, keeping the payload unchanged.
+    const elements: Record<string, unknown>[] = [];
+    for (const el of zn.elements ?? []) {
+      const ey = await elevationAt(m.terrain, el.x, el.z);
+      const e: Record<string, unknown> = { kind: el.kind, id: el.id, pos: [y(el.x), y(ey), y(el.z)] };
+      if (el.kind === "static") {
+        e.role = el.role;
+      } else {
+        e.group = el.group;
+        if (el.kind === "defense-group") e.radius = el.radius;
+        else {
+          if (el.kind === "mounted-patrol") e.vehicle = el.vehicle;
+          const wps: number[][] = [];
+          for (const w of el.waypoints) {
+            const wy = await elevationAt(m.terrain, w.x, w.z);
+            wps.push([y(w.x), y(wy), y(w.z)]);
+          }
+          e.waypoints = wps;
+        }
+      }
+      elements.push(e);
+    }
     zones.push({
       name: `Area${i + 1}`,
       pos: [y(zn.x), y(zy), y(zn.z)],
       radius: zn.radius,
       plugins,
+      ...(elements.length ? { elements } : {}),
     });
   }
 

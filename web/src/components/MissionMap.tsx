@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { spawnElements, itemWorldCorners, rotateLocal, vehicleWorldOutline, FACTIONS, FARP_DETAIL } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
 import { getSampler } from "@/lib/terrainSampler";
+import { renderElevationOverlay, RAMP_CSS } from "@/lib/elevationOverlay";
 import type { HeightmapSampler } from "@/lib/heightmap";
-import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone } from "@/lib/mission";
+import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone, ZoneElement } from "@/lib/mission";
+import { isPatrolElement } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
 import {
   distanceLabel,
@@ -22,10 +24,13 @@ import {
   pingHtml,
   PROP_COLOR,
   propBadgeHtml,
+  waypointDotHtml,
+  ZONE_ELEMENT_COLORS,
+  zoneElementBadgeHtml,
   zoneDotHtml,
   zoneTooltipHtml,
 } from "@/lib/overlayHtml";
-import { ORIGIN_COLORS } from "@/lib/zoneModules";
+import { ELEMENT_LABELS, ORIGIN_COLORS } from "@/lib/zoneModules";
 import { coordsText, elevText, scaleLabel, tr, zoneName, type Lang } from "@/lib/i18n";
 import MapViewControls from "@/components/MapViewControls";
 
@@ -84,6 +89,11 @@ export type MapProps = {
   selectedOrigin: { zoneId: string; moduleType: string; index: number } | null;
   /** Origin badge clicked on the map → page selects its panel row */
   onOriginClick: (zoneId: string, moduleType: string, index: number) => void;
+  /** Advanced AI placement: selected element (wp null = spawn badge) + handlers */
+  selectedElement: { zoneId: string; elementId: string; wp: number | null } | null;
+  onElementClick: (zoneId: string, elementId: string, wp: number | null) => void;
+  onElementMoved: (zoneId: string, elementId: string, x: number, z: number) => void;
+  onWaypointMoved: (zoneId: string, elementId: string, wp: number, x: number, z: number) => void;
   /** Selected spawn element key ("farp" | "sp:<id>" | "crate:<id>" |
    * "veh:<id>") — shows the rotate handle (2D, non-spawnPoint only) */
   selectedSpawnEl: string | null;
@@ -113,6 +123,9 @@ export type MapProps = {
   /** Satellite basemap on/off (only honoured when the terrain ships one) */
   satLayer: boolean;
   onToggleSat: () => void;
+  /** Elevation overlay (POC): heightmap recoloured blue→red, 2D only */
+  elevLayer?: boolean;
+  onToggleElev?: () => void;
 };
 
 export default function MissionMap(props: MapProps) {
@@ -120,6 +133,8 @@ export default function MissionMap(props: MapProps) {
   const mapRef = useRef<L.Map | null>(null);
   const overlayRef = useRef<L.LayerGroup | null>(null);
   const satLayerRef = useRef<L.TileLayer | null>(null);
+  const elevLayerRef = useRef<L.ImageOverlay | null>(null);
+  const [elevRange, setElevRange] = useState<[number, number] | null>(null);
   // Heightmap sampler for the elevation readout (shared cache with export/3D;
   // null until the fetch resolves, so the readout simply omits the metres).
   const samplerRef = useRef<HeightmapSampler | null>(null);
@@ -346,6 +361,35 @@ export default function MissionMap(props: MapProps) {
       ]),
     }).addTo(map);
   }, [props.terrainKey, props.satLayer]);
+
+  // Elevation overlay (POC): rendered client-side from the heightmap into a
+  // data URL and stretched over the world rectangle above the basemaps.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    elevLayerRef.current?.remove();
+    elevLayerRef.current = null;
+    setElevRange(null);
+    if (!props.elevLayer) return;
+    const t = terrainByKey(props.terrainKey);
+    let stale = false;
+    getSampler(t.key)
+      .then((s) => {
+        if (stale) return;
+        const [w, h] = t.worldSize;
+        const ov = renderElevationOverlay(s, w, h);
+        elevLayerRef.current = L.imageOverlay(ov.url, [[0, 0], [h, w]], {
+          opacity: 0.72,
+          zIndex: 3,
+          interactive: false,
+        }).addTo(map);
+        setElevRange([ov.minM, ov.maxM]);
+      })
+      .catch(() => {});
+    return () => {
+      stale = true;
+    };
+  }, [props.terrainKey, props.elevLayer]);
 
   // Refresh the imperative scale-bar label when the language changes
   useEffect(() => {
@@ -607,6 +651,87 @@ export default function MissionMap(props: MapProps) {
           });
         }
       }
+
+      // Advanced AI placement: spawn badge (+ numbered waypoint dots and a
+      // solid loop closing back on the spawn for patrols; dashed defend ring
+      // for defense groups). Badges/dots drag with a live redraw. No facing
+      // controls: the generator points a vehicle at its first waypoint.
+      for (const [ei, el] of (zone.elements ?? []).entries()) {
+        const sel = props.selectedElement?.zoneId === zone.id && props.selectedElement.elementId === el.id;
+        const selWp = sel ? props.selectedElement!.wp : undefined;
+        const color = ZONE_ELEMENT_COLORS[el.kind];
+        const nodes: [number, number][] = [[el.x, el.z], ...(isPatrolElement(el) ? el.waypoints.map((w) => [w.x, w.z] as [number, number]) : [])];
+        const loopLatLngs = () => (nodes.length > 1 ? [...nodes, nodes[0]].map(([x, z]) => [z, x] as [number, number]) : []);
+        const line =
+          nodes.length > 1
+            ? L.polyline(loopLatLngs(), { color, weight: 2, opacity: 0.85, interactive: false }).addTo(overlay)
+            : null;
+        const ring =
+          el.kind === "defense-group"
+            ? L.circle([el.z, el.x], {
+                radius: el.radius,
+                color,
+                weight: 1.5,
+                dashArray: "4 4",
+                fillColor: color,
+                fillOpacity: 0.06,
+                interactive: false,
+              }).addTo(overlay)
+            : null;
+        const kindLabel = tr(props.lang, ELEMENT_LABELS[el.kind]);
+        const ordinal = (zone.elements ?? []).filter((e) => e.kind === el.kind).indexOf(el) + 1;
+        const badge = L.marker([el.z, el.x], {
+          icon: zoneElementIcon(el, sel && selWp === null, !!props.fresh[el.id]),
+          draggable: true,
+        })
+          .bindTooltip(`${zoneName(props.lang, zi + 1)} · ${kindLabel} ${ordinal}`, { direction: "top", offset: [0, -12], opacity: 1 })
+          .addTo(overlay);
+        badge.on("click", (e) => {
+          L.DomEvent.stopPropagation(e);
+          propsRef.current.onElementClick(zone.id, el.id, null);
+        });
+        badge.on("dragstart", () => badge.unbindTooltip());
+        badge.on("drag", () => {
+          const ll = badge.getLatLng();
+          nodes[0] = [ll.lng, ll.lat];
+          line?.setLatLngs(loopLatLngs());
+          ring?.setLatLng(ll);
+        });
+        badge.on("dragend", () => {
+          const ll = badge.getLatLng();
+          suppressClickRef.current = true;
+          setTimeout(() => (suppressClickRef.current = false), 100);
+          propsRef.current.onElementMoved(zone.id, el.id, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
+        });
+        if (isPatrolElement(el)) {
+          for (const [wi, wp] of el.waypoints.entries()) {
+            const dot = L.marker([wp.z, wp.x], { icon: waypointDotIcon(wi + 1, sel && selWp === wi, color), draggable: true })
+              .bindTooltip(`${zoneName(props.lang, zi + 1)} · ${kindLabel} ${ordinal} · ${tr(props.lang, "Waypoint")} ${wi + 1}`, {
+                direction: "top",
+                offset: [0, -10],
+                opacity: 1,
+              })
+              .addTo(overlay);
+            dot.on("click", (e) => {
+              L.DomEvent.stopPropagation(e);
+              propsRef.current.onElementClick(zone.id, el.id, wi);
+            });
+            dot.on("dragstart", () => dot.unbindTooltip());
+            dot.on("drag", () => {
+              const ll = dot.getLatLng();
+              nodes[wi + 1] = [ll.lng, ll.lat];
+              line?.setLatLngs(loopLatLngs());
+            });
+            dot.on("dragend", () => {
+              const ll = dot.getLatLng();
+              suppressClickRef.current = true;
+              setTimeout(() => (suppressClickRef.current = false), 100);
+              propsRef.current.onWaypointMoved(zone.id, el.id, wi, +ll.lng.toFixed(1), +ll.lat.toFixed(1));
+            });
+          }
+        }
+        void ei;
+      }
     }
 
     for (const mk of props.markers) {
@@ -844,6 +969,7 @@ export default function MissionMap(props: MapProps) {
     props.zones,
     props.selectedZoneId,
     props.selectedOrigin,
+    props.selectedElement,
     props.markers,
     props.selectedMarkerId,
     props.objectives,
@@ -892,7 +1018,21 @@ export default function MissionMap(props: MapProps) {
         satAvailable={!!terrainByKey(props.terrainKey).sat}
         satLayer={props.satLayer}
         onToggleSat={props.onToggleSat}
+        elevLayer={props.elevLayer}
+        onToggleElev={props.onToggleElev}
       />
+
+      {/* elevation legend (POC): per-terrain ramp, ticks in this map's metres */}
+      {props.elevLayer && elevRange && (
+        <div className="max-md:hidden absolute right-4 bottom-[96px] z-[1000] pointer-events-none flex items-stretch gap-[8px] bg-[rgba(32,36,39,0.9)] rounded-[8px] px-[10px] py-[8px] shadow-[0px_4px_12px_0px_rgba(0,0,0,0.4)]">
+          <div className="w-[10px] h-[120px] rounded-[3px]" style={{ background: RAMP_CSS }} />
+          <div className="flex flex-col justify-between font-mono text-[10px] leading-none font-medium text-white/75">
+            <span>{Math.round(elevRange[1])} m</span>
+            <span>{Math.round((elevRange[0] + elevRange[1]) / 2)} m</span>
+            <span>{Math.round(elevRange[0])} m</span>
+          </div>
+        </div>
+      )}
 
       {/* scale bar + coordinate readout (desktop only) */}
       <div className="max-md:hidden absolute right-4 bottom-4 z-[1000] pointer-events-none flex flex-col items-end gap-[6px]">
@@ -957,6 +1097,21 @@ function distancePillIcon(dist: number, lang: Lang) {
     iconAnchor: [0, 0],
     html: distancePillHtml(dist, lang),
   });
+}
+
+/** Advanced element spawn badge (24px, heading tick for statics/vehicles). */
+function zoneElementIcon(el: ZoneElement, selected: boolean, freshDrop: boolean) {
+  const html = zoneElementBadgeHtml(el.kind, selected);
+  return L.divIcon({
+    className: freshDrop ? "mb-fresh-drop" : "",
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    html,
+  });
+}
+/** Numbered patrol waypoint dot (18px). */
+function waypointDotIcon(n: number, selected: boolean, color: string) {
+  return L.divIcon({ className: "", iconSize: [18, 18], iconAnchor: [9, 9], html: waypointDotHtml(n, selected, color) });
 }
 
 /** DivIcon wrapper for a QRF origin badge; 32px transparent hit box on touch. */

@@ -4,6 +4,8 @@
 // Usage: node generate.mjs [--clean] [--rhs] [--armenhof]
 //   --clean     only when Workbench is NOT running: it wipes the addon dir
 //               including EnfusionMCP handler scripts
+//   --advanced  build the Advanced AI placement variant (TS_WebSpikeAdvanced:
+//               manually placed foot/mounted patrols, defense groups, statics)
 //   --rhs       build the RHS variant instead (TS_WebSpikeRHS: RHS_USAF vs
 //               RHS_AFRF, exercises mod deps + FactionManager conf-ref entries)
 //   --uk        build the British Forces variant (TS_WebSpikeUK: UK "1989
@@ -2020,7 +2022,54 @@ const SEITENBUCH_MISSION = {
   props: [],
 };
 
-const BUILT = process.argv.includes("--seitenbuch")
+// --advanced: Advanced AI placement (2026-09-21) — manually placed AI inside
+// Area1 (US vs USSR on Arland): a 6-waypoint foot patrol, a BRDM-2 and a Dax
+// Humvee mounted patrol (mod dep must appear once in addon.gproj), two defense
+// groups (one ~350 m out → m_iDynamicDespawnRange widens to ~950), two statics
+// at the zone edge (role with 2 variants → deterministic pick). Coords are
+// world XZ with a placeholder Y — the CLI sampler re-samples Y like props.
+const ADV_CENTER = [2795.307, 74.075, 1628.664];
+const advAt = (dx, dz) => [+(ADV_CENTER[0] + dx).toFixed(3), 0, +(ADV_CENTER[2] + dz).toFixed(3)];
+const ADVANCED_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeAdvanced",
+  dirName: "TS_WebSpikeAdvanced",
+  addonTitle: "TS Web Spike Advanced Mission",
+  name: "TS_WebSpikeAdvanced",
+  displayName: "TS Web Spike Advanced",
+  guids: {
+    addon: "6AD07A2C51B3E9F4",
+    world: "6AD07A2C7D2C4A18",
+    missionConf: "6AD07A2CA48F1D63",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      elements: [
+        {
+          kind: "foot-patrol",
+          id: "zeFoot1",
+          pos: advAt(60, 40),
+          group: "USSR/USSR_Army/LightFireTeam",
+          waypoints: [advAt(120, 60), advAt(150, -10), advAt(110, -90), advAt(30, -120), advAt(-40, -60), advAt(-20, 30)],
+        },
+        { kind: "mounted-patrol", id: "zeMount1", pos: advAt(-80, 90), vehicle: "BRDM2", group: "USSR/USSR_Army/SentryTeam", waypoints: [advAt(-160, 20), advAt(-120, -140), advAt(40, -170), advAt(90, 20)] },
+        { kind: "mounted-patrol", id: "zeMount2", pos: advAt(20, 150), vehicle: "DAX_M1025_12", group: "USSR/USSR_Army/SentryTeam", waypoints: [advAt(-100, 160), advAt(-140, 60), advAt(60, 100)] },
+        { kind: "defense-group", id: "zeDef1", pos: advAt(-90, -70), group: "USSR/USSR_Army/FireGroup", radius: 25 },
+        { kind: "defense-group", id: "zeDef2", pos: advAt(300, 180), group: "USSR/USSR_Army/MachineGunTeam", radius: 40 },
+        { kind: "static", id: "zeStatic1", pos: advAt(141.4, 141.4), role: "USSR/soviet-army/rifleman" },
+        { kind: "static", id: "zeStatic2", pos: advAt(-200, 0), role: "USSR/soviet-army/rifleman" },
+      ],
+    },
+    ...MISSION.zones.slice(1),
+  ],
+  objectives: [],
+  props: [],
+};
+
+const BUILT = process.argv.includes("--advanced")
+  ? ADVANCED_MISSION
+  : process.argv.includes("--seitenbuch")
   ? SEITENBUCH_MISSION
   : process.argv.includes("--zagoria")
   ? ZAGORIA_MISSION
