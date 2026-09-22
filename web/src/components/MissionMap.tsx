@@ -9,7 +9,7 @@ import { getSampler } from "@/lib/terrainSampler";
 import { renderElevationOverlay, RAMP_CSS } from "@/lib/elevationOverlay";
 import type { HeightmapSampler } from "@/lib/heightmap";
 import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone, ZoneElement } from "@/lib/mission";
-import { isPatrolElement } from "@/lib/mission";
+import { elementSpawnOutsideZone, isPatrolElement } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
 import {
   distanceLabel,
@@ -681,7 +681,7 @@ export default function MissionMap(props: MapProps) {
         const kindLabel = tr(props.lang, ELEMENT_LABELS[el.kind]);
         const ordinal = (zone.elements ?? []).filter((e) => e.kind === el.kind).indexOf(el) + 1;
         const badge = L.marker([el.z, el.x], {
-          icon: zoneElementIcon(el, sel && selWp === null, !!props.fresh[el.id]),
+          icon: zoneElementIcon(el, sel && selWp === null, !!props.fresh[el.id], elementSpawnOutsideZone(zone, el)),
           draggable: true,
         })
           .bindTooltip(`${zoneName(props.lang, zi + 1)} · ${kindLabel} ${ordinal}`, { direction: "top", offset: [0, -12], opacity: 1 })
@@ -1099,9 +1099,9 @@ function distancePillIcon(dist: number, lang: Lang) {
   });
 }
 
-/** Advanced element spawn badge (24px, heading tick for statics/vehicles). */
-function zoneElementIcon(el: ZoneElement, selected: boolean, freshDrop: boolean) {
-  const html = zoneElementBadgeHtml(el.kind, selected);
+/** Advanced element spawn badge (24px; red "!" when the spawn is outside its zone). */
+function zoneElementIcon(el: ZoneElement, selected: boolean, freshDrop: boolean, outside: boolean) {
+  const html = zoneElementBadgeHtml(el.kind, selected, outside);
   return L.divIcon({
     className: freshDrop ? "mb-fresh-drop" : "",
     iconSize: [24, 24],

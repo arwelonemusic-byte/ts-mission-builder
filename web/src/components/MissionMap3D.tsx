@@ -57,7 +57,7 @@ import {
   waypointDotHtml,
 } from "@/lib/overlayHtml";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
-import { isPatrolElement } from "@/lib/mission";
+import { elementSpawnOutsideZone, isPatrolElement } from "@/lib/mission";
 import { coordsText, elevText } from "@/lib/i18n";
 import MapViewControls from "@/components/MapViewControls";
 import type { MapProps } from "@/components/MissionMap";
@@ -993,7 +993,7 @@ export default function MissionMap3D(props: Map3DProps) {
             overlay.add(ringEl.obj);
             refillRing();
           }
-          const badge = css2dNode(zoneElementBadgeHtml(el.kind, sel && se!.wp === null), true);
+          const badge = css2dNode(zoneElementBadgeHtml(el.kind, sel && se!.wp === null, elementSpawnOutsideZone(zone, el)), true);
           badge.obj.position.set(el.x, meshY(grid, el.x, el.z) + ICON_LIFT, -el.z);
           overlay.add(badge.obj);
           makeDraggable(world, badge.el, badge.obj, ICON_LIFT, {
