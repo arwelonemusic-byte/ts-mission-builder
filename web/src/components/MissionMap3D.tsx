@@ -1802,6 +1802,8 @@ export default function MissionMap3D(props: Map3DProps) {
         view3D={props.view3D}
         onToggleView={props.onToggleView}
         satAvailable={!!terrainByKey(props.terrainKey).sat}
+        layers={props.layers}
+        onLayersChange={props.onLayersChange}
         satLayer={props.satLayer}
         onToggleSat={props.onToggleSat}
       />

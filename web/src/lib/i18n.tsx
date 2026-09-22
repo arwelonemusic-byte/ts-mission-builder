@@ -560,6 +560,15 @@ const RU: Record<string, string> = {
   "Satellite imagery": "Спутниковый снимок",
   "Elevation overlay": "Карта высот",
   "Topographic map": "Топографическая карта",
+  "Map layers": "Слои карты",
+  "Hide layer": "Скрыть слой",
+  "Show layer": "Показать слой",
+  "Show only this layer": "Показать только этот слой",
+  "Show all layers": "Показать все слои",
+  only: "только",
+  "Show all": "Показать все",
+  "{n} hidden": "Скрыто: {n}",
+  "Hidden on the map:": "Скрыто на карте:",
 };
 
 /** Pure lookup — usable outside React (Leaflet HTML, event closures). */

@@ -50,6 +50,27 @@ const STEPS: { id: StepId; label: string; icon: string }[] = [
 
 const DISCORD_URL = "https://discord.gg/M3yAhHGxrd";
 
+/** The step tab's icon, reusable outside the tab bar (map-layers sheet). */
+export function StepIcon({ id, size = 16, className = "" }: { id: StepId; size?: number; className?: string }) {
+  const d = STEPS.find((s) => s.id === id)?.icon ?? "";
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={`shrink-0 ${className}`}
+    >
+      <path d={d} />
+    </svg>
+  );
+}
+
 /** Discord logo mark (16×12.39 fill path from the design asset). */
 function DiscordIcon() {
   return (

@@ -42,6 +42,16 @@ import {
 } from "@/lib/mission";
 import { rangeLabel, totalEnemyRange } from "@/lib/enemyEstimate";
 import { exportMission } from "@/lib/export";
+import {
+  ALL_LAYERS_VISIBLE,
+  loadMapLayers,
+  MAP_LAYER_KEYS,
+  MAP_LAYER_LABELS,
+  placeModeLayer,
+  saveMapLayers,
+  type MapLayerKey,
+  type MapLayers,
+} from "@/lib/mapLayers";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
 import { ARTY_STOP_COLOR, OBJECTIVE_COLOR, PROP_COLOR, ZONE_ELEMENT_COLORS } from "@/lib/overlayHtml";
@@ -108,6 +118,13 @@ type Ghost = { x: number; y: number; over: boolean } | null;
 
 /** Satellite-basemap preference (browser-local, not part of the mission) */
 const SAT_STORAGE_KEY = "ts-mission-builder-sat";
+// Stable empty arrays for hidden map layers (a fresh [] per render would
+// retrigger the maps' redraw effects every time).
+const NO_ZONES: Zone[] = [];
+const NO_OBJECTIVES: MissionObjective[] = [];
+const NO_PROPS: MissionProp[] = [];
+const NO_MARKERS: MissionMarker[] = [];
+const NO_SECTORS: MissionSector[] = [];
 
 export default function Editor() {
   const [mission, setMission] = useState<Mission | null>(null);
@@ -194,6 +211,43 @@ export default function Editor() {
   // Elevation overlay (POC, 2D only, not persisted).
   const [elevLayer, setElevLayer] = useState(false);
   const toggleElev = () => setElevLayer((v) => !v);
+  // Map layer visibility (markers / AI zones / props / objectives) — a per-
+  // browser view preference like SAT. Hidden layers are filtered out of the
+  // map props below, so they neither render nor catch pointer events.
+  const [layers, setLayersState] = useState<MapLayers>(ALL_LAYERS_VISIBLE);
+  useEffect(() => {
+    setLayersState(loadMapLayers());
+  }, []);
+  const setLayers = (next: MapLayers) => {
+    saveMapLayers(next);
+    setLayersState(next);
+  };
+  /** Placing on / selecting from a hidden layer un-hides it, so the panel and
+   * the map never disagree silently. */
+  const revealLayer = (key: MapLayerKey | null) => {
+    if (!key) return;
+    setLayersState((cur) => {
+      if (cur[key]) return cur;
+      const next = { ...cur, [key]: true };
+      saveMapLayers(next);
+      return next;
+    });
+  };
+  // Hiding the layer that holds the current selection clears that selection
+  // (its handles / edit pane would otherwise point at nothing on the map).
+  useEffect(() => {
+    if (!layers.markers) {
+      setSelectedMarkerId(null);
+      setSelectedSectorId(null);
+    }
+    if (!layers.zones) {
+      setSelectedZoneId(null);
+      setSelectedOrigin(null);
+      setSelectedElement(null);
+    }
+    if (!layers.props) setSelectedPropId(null);
+    if (!layers.objectives) setSelectedObjectiveId(null);
+  }, [layers]);
   const genRef = useRef<GenState>(null);
   genRef.current = gen;
 
@@ -536,6 +590,7 @@ export default function Editor() {
   const onSectorDrawn = (kind: "ao" | "objective", x: number, z: number, length: number, width: number) => {
     const id = freshId();
     setMission((m) => (m ? { ...m, sectors: [...m.sectors, { id, kind, x, z, length, width, rotation: 0 }] } : m));
+    revealLayer("markers");
     setSelectedSectorId(id);
     setSectorDraw(null);
     markFresh(id);
@@ -760,6 +815,7 @@ export default function Editor() {
     }
     const xi = +x.toFixed(1);
     const zi = +z.toFixed(1);
+    revealLayer(placeModeLayer(placeMode));
     if (placeMode === "spawn") {
       // First placement: spawn point at the click + one crate. Everything
       // else is added via per-element map-click placement ("spawn" mode is
@@ -939,6 +995,7 @@ export default function Editor() {
   };
 
   const selectAndFocusZone = (id: string) => {
+    revealLayer("zones");
     setSelectedZoneId(id);
     // The armed element placement lives on the expanded card — collapsing that
     // card (selecting another zone) cancels it.
@@ -959,6 +1016,7 @@ export default function Editor() {
     setStep("objectives");
   };
   const selectAndFocusObjective = (id: string) => {
+    revealLayer("objectives");
     setSelectedObjectiveId(id);
     const o = mission?.objectives.find((ob) => ob.id === id);
     if (o) focusOn(o.x, o.z, Math.max(200, (o.radius ?? 0) * 1.5));
@@ -972,6 +1030,7 @@ export default function Editor() {
     setStep("props");
   };
   const selectAndFocusProp = (id: string) => {
+    revealLayer("props");
     setSelectedPropId(id);
     const p = mission?.props.find((pr) => pr.id === id);
     if (p) focusOn(p.x, p.z, 150);
@@ -1044,6 +1103,7 @@ export default function Editor() {
 
   /* ----- QRF origin selection (panel row ↔ map badge, two-way) ----- */
   const selectOriginFromPanel = (zoneId: string, moduleType: string, index: number) => {
+    revealLayer("zones");
     setSelectedOrigin({ zoneId, moduleType, index });
     const o = mission?.zones
       .find((z) => z.id === zoneId)
@@ -1066,6 +1126,7 @@ export default function Editor() {
 
   /* ----- Advanced element selection (panel card ↔ map badge, two-way) ----- */
   const selectElementFromPanel = (zoneId: string, elementId: string, wp: number | null) => {
+    revealLayer("zones");
     setSelectedElement({ zoneId, elementId, wp });
     const el = mission?.zones.find((z) => z.id === zoneId)?.elements?.find((e) => e.id === elementId);
     if (!el) return;
@@ -1117,6 +1178,7 @@ export default function Editor() {
         const world = mapApi()?.screenToWorld(ev.clientX, ev.clientY);
         if (world && overPanelGate(ev.clientX)) {
           const id = freshId();
+          revealLayer("markers");
           setMission((m) =>
             m ? { ...m, markers: [...m.markers, { ...markerDraft, id, x: world.x, z: world.z }] } : m
           );
@@ -1294,6 +1356,7 @@ export default function Editor() {
                 ? t("the stop-artillery trigger")
                 : t("an AI zone");
   const sectorNoun = sectorDraw === "ao" ? t("the AO sector") : t("an objective sector");
+  const hiddenLayerNames = MAP_LAYER_KEYS.filter((k) => !layers[k]).map((k) => t(MAP_LAYER_LABELS[k]));
 
   return (
     <LangProvider value={lang}>
@@ -1309,18 +1372,22 @@ export default function Editor() {
             onToggleSat: toggleSat,
             elevLayer,
             onToggleElev: toggleElev,
+            layers,
+            onLayersChange: setLayers,
             playableFaction: mission.playableFaction,
             spawn: mission.spawn,
-            zones: mission.zones,
+            // Hidden map layers are filtered here, at the map boundary: the
+            // map never renders (or hit-tests) what it never receives.
+            zones: layers.zones ? mission.zones : NO_ZONES,
             selectedZoneId,
             selectedOrigin,
             onOriginClick: onOriginMapClick,
-            objectives: mission.objectives,
+            objectives: layers.objectives ? mission.objectives : NO_OBJECTIVES,
             selectedObjectiveId,
             onObjectiveClick,
             onObjectiveMoved: (id: string, x: number, z: number) => updateObjective(id, { x, z }),
             onDeliveryMoved: (id: string, x: number, z: number) => updateObjective(id, { delivery: { x, z } }),
-            props: mission.props,
+            props: layers.props ? mission.props : NO_PROPS,
             selectedPropId,
             onPropClick,
             onPropMoved: (id: string, x: number, z: number) => updateProp(id, { x, z }),
@@ -1333,9 +1400,9 @@ export default function Editor() {
                   ? { ...m, aiArty: { ...m.aiArty, stopTrigger: { ...m.aiArty.stopTrigger, x, z } } }
                   : m
               ),
-            markers: mission.markers,
+            markers: layers.markers ? mission.markers : NO_MARKERS,
             selectedMarkerId,
-            sectors: mission.sectors,
+            sectors: layers.markers ? mission.sectors : NO_SECTORS,
             selectedSectorId,
             sectorDraw,
             fresh,
@@ -1418,6 +1485,25 @@ export default function Editor() {
         lang={lang}
         onLang={setLang}
       />
+
+      {/* hidden-layers pill: a persistent reminder at the bottom of the map
+          that some overlays are filtered out (the yellow HUD button alone was
+          too easy to forget — user feedback 2026-09-22) */}
+      {hiddenLayerNames.length > 0 && (
+        <div className="absolute bottom-4 max-md:bottom-[calc(var(--mb-map-bottom)+16px)] left-1/2 -translate-x-1/2 z-[1700] flex items-center gap-[10px] bg-[rgba(32,36,39,0.95)] rounded-[8px] pl-4 pr-2 py-[6px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease] max-md:max-w-[calc(100vw-24px)]">
+          <span className="w-2 h-2 rounded-full bg-[#f4db50] shrink-0" />
+          <span className="text-[12px] leading-[1.4] text-white whitespace-nowrap max-md:whitespace-normal">
+            {t("Hidden on the map:")} <span className="text-[#f4db50] font-medium">{hiddenLayerNames.join(", ")}</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setLayers(ALL_LAYERS_VISIBLE)}
+            className="shrink-0 h-7 px-3 rounded-[6px] text-[12px] font-medium bg-white/10 hover:bg-white/15 text-white"
+          >
+            {t("Show all")}
+          </button>
+        </div>
+      )}
 
       {/* placement banner */}
       {(placeMode || sectorDraw) && (

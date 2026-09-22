@@ -8,6 +8,7 @@ import { terrainByKey } from "@/lib/terrains";
 import { getSampler } from "@/lib/terrainSampler";
 import { renderElevationOverlay, RAMP_CSS } from "@/lib/elevationOverlay";
 import type { HeightmapSampler } from "@/lib/heightmap";
+import type { MapLayers } from "@/lib/mapLayers";
 import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone, ZoneElement } from "@/lib/mission";
 import { elementSpawnOutsideZone, isPatrolElement, pointOutsideZone } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
@@ -126,6 +127,11 @@ export type MapProps = {
   /** Elevation overlay (POC): heightmap recoloured blue→red, 2D only */
   elevLayer?: boolean;
   onToggleElev?: () => void;
+  /** Map layer visibility sheet (markers / AI zones / props / objectives).
+   * Hidden layers are filtered out of the arrays above by the page — the
+   * map never sees them — so these only drive the HUD sheet. */
+  layers?: MapLayers;
+  onLayersChange?: (v: MapLayers) => void;
 };
 
 export default function MissionMap(props: MapProps) {
@@ -1016,6 +1022,8 @@ export default function MissionMap(props: MapProps) {
         view3D={props.view3D}
         onToggleView={props.onToggleView}
         satAvailable={!!terrainByKey(props.terrainKey).sat}
+        layers={props.layers}
+        onLayersChange={props.onLayersChange}
         satLayer={props.satLayer}
         onToggleSat={props.onToggleSat}
         elevLayer={props.elevLayer}
