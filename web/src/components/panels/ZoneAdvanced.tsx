@@ -150,11 +150,23 @@ export default function ZoneAdvanced({
         tone="raised"
         value={tab}
         onChange={setTab}
-        options={ZONE_ELEMENT_KINDS.map((k) => ({
-          value: k,
-          title: t(ELEMENT_KIND_LABELS[k]),
-          label: <MaskIcon src={ELEMENT_KIND_ICONS[k]} size={18} />,
-        }))}
+        options={ZONE_ELEMENT_KINDS.map((k) => {
+          // Count per tab (Figma 135:575, user decision 2026-09-22): icon + plain
+          // number (Roboto 11 bold) as one centred group, 4 px apart, number
+          // hidden at 0 — the icon simply shifts left to keep the pair centred.
+          // Both inherit the tab's text colour (dark on the active yellow tab).
+          const n = (zone.elements ?? []).filter((el) => el.kind === k).length;
+          return {
+            value: k,
+            title: `${t(ELEMENT_KIND_LABELS[k])}${n ? ` (${n})` : ""}`,
+            label: (
+              <span className="inline-flex items-center gap-1">
+                <MaskIcon src={ELEMENT_KIND_ICONS[k]} size={16} />
+                {n > 0 && <span className="text-[11px] leading-none font-bold tabular-nums">{n}</span>}
+              </span>
+            ),
+          };
+        })}
       />
       <span className="text-[13px] font-bold text-white">{t(ELEMENT_KIND_LABELS[tab])}</span>
       <Hint>{t(ELEMENT_DESCRIPTIONS[tab])}</Hint>
