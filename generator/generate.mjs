@@ -25,9 +25,10 @@
 //               mounted patrol + a Dax deliver target — all three usage-derived
 //               dep paths of the first VEHICLE mod)
 //   --wcs       build the WCS vehicle-mods variant (TS_WebSpikeWCS: US vs USSR
-//               using all seven WCS mods at once — JLTV/FMTV/Stryker/MRZR spawn
-//               vehicles (light + heavy slots), a BMP-1/BMP-3 mounted patrol,
-//               an M1 Abrams deliver target — addon.gproj must list the 7 GUIDs)
+//               using all eight WCS mods at once — JLTV/FMTV/Stryker/MRZR/T-72A
+//               spawn vehicles (light + heavy slots), a BMP-1/BMP-3/T-72B
+//               mounted patrol, an M1 Abrams deliver target — addon.gproj
+//               must list the 8 GUIDs)
 //   --sfs       build the SFS loadout-pack variant (TS_WebSpikeSFS: SFS_US
 //               "US Special Force Squad (Abrashka)" vs USSR — playable alias)
 //   --sfs-enemy build the SFS enemy-side variant (TS_WebSpikeSFSEnemy: vanilla
@@ -783,10 +784,10 @@ const DAX_MISSION = {
   props: [],
 };
 
-// WCS spike (2026-09-10): all seven Worst Case Scenario vehicle mods in one
-// mission — every mod contributes through at least one usage path so the
-// .gproj lists each of the 7 GUIDs exactly once (SpaceCore/Armaments arrive
-// transitively). Spawn = light (JLTV, MRZR) + heavy (FMTV covered, Stryker ICV)
+// WCS spike (2026-09-10, +T-72 2026-09-22): all eight Worst Case Scenario
+// vehicle mods in one mission — every mod contributes through at least one
+// usage path so the .gproj lists each of the 8 GUIDs exactly once
+// (SpaceCore/Armaments arrive transitively). Spawn = light (JLTV, MRZR) + heavy (FMTV covered, Stryker ICV)
 // slots via vehicleSizeClass; mounted patrol = vanilla BRDM2 + BMP-1 + BMP-3
 // with USSR crews (crew rule); deliver target = an M1A1 (Olive) parked in the AO.
 const WCS_MISSION = {
@@ -810,6 +811,7 @@ const WCS_MISSION = {
       { type: "WCS_MRZR_D4_Unarmed_Olive" },
       { type: "WCS_M1083_Transport_Covered" },
       { type: "WCS_Stryker_APC" },
+      { type: "WCS_T72A_Desert" },
     ],
   },
   zones: [
@@ -823,7 +825,7 @@ const WCS_MISSION = {
         {
           type: "TS_ScenarioFrameworkPluginMountedPatrol",
           attrs: { m_iBudget: 2 },
-          vehicles: ["BRDM2", "WCS_BMP1_Base", "WCS_BMP3_Base"],
+          vehicles: ["BRDM2", "WCS_BMP1_Base", "WCS_BMP3_Base", "WCS_T72B_Base"],
         },
       ],
     },

@@ -19,7 +19,8 @@ Seven "Worst Case Scenario" (WCS) vehicle mods, downloaded headless + extracted 
 | WCS_FMTV | `65B60A48AEC31157` | 8.1.1 | 85 MB | 30 | 10 | 6 | heavy (2.8×7.6 m) |
 | WCS_Stryker | `5B02128D896F7DE8` | 8.1.0 | 68 MB | 24 | 8 | 18 | heavy (3.2×7.5 m) |
 | WCS_MRZR | `64900A5A31F5DCB5` | 8.1.1 | 81 MB | 9 | 5 | 5 | light (1.5×3.6 m) |
-| **all** | | | | **164** | | **126** | |
+| WCS_T-72 | `5E0AB16BEB16D6A4` | 8.2.1 | 90 MB | 6 | 2 | 6 | heavy (3.6×6.8 m) |
+| **all** | | | | **170** | | **132** | |
 
 ## WCS_JLTV (`5C721177A220B42F`, v8.1.3, folder `JointLightTacticalVehicle_5C721177A220B42F`)
 
@@ -685,6 +686,52 @@ Seven "Worst Case Scenario" (WCS) vehicle mods, downloaded headless + extracted 
 |---|---|---|
 | MRZR_D4_NSV_SPP_Black | `{74C20AC5FE868229}Prefabs/Vehicles/Wheeled/MRZR/NSV/MRZR_D4_NSV_SPP_Black.et` | MRZR_D4_NSV_SPP_Black |
 
+
+## WCS_T-72 (`5E0AB16BEB16D6A4`, v8.2.1, folder `T-72MainBattleTank_5E0AB16BEB16D6A4`) — second batch, added 2026-09-22
+
+Downloaded + extracted 2026-09-22 (`reference\WCS_T-72`, 90 MB, 268 files). Its gproj lists
+SpaceCore + Armaments, and the download moved BOTH shared deps to **8.2.1** (the seven
+first-batch mods stay at 8.1.x on disk and still load against them — WB-validated with the
+`--wcs` spike). Catalogs: `Configs/EntityCatalog/USSR/Vehicles/WCS_T72.conf` (4 USSR entries,
+multi-list appended via the `Vehicles_EntityCatalog_USSR.conf` override) + a direct
+`Vehicles_EntityCatalog_FIA.conf` override (2 FIA entries) + a USSR `InventoryItems` append (5
+vehicle-ammo items — 125 mm rack magazines, excluded from the arsenal pool by rule). All six
+prefabs parent `WCS_SpaceCore`'s `Tracked_Base.et`; the T-72B chain parents `T72A_Base.et`, the
+Desert/FIA liveries parent their mark's base — every catalog GUID is corroborated as a parent ref
+except the four leaf liveries (catalog-only, normal). `m_eSlotTypes VEHICLE_MEDIUM`. Names via
+`Language/wcs_t72_localization.en_us.conf` (RU table = EN copy; the `SPC-` duplicates of the
+same keys are the author's older namespace).
+
+### [USSR] T-72A Main Battle Tank — ARMED
+
+- weapon slots: T72A_Turret_Base / _Desert / _FIA → `Cannon_2A46_T72A` (APFSDS) + `Cannon_2A46_T72A_HE` (HE-FRAG) + coaxial vanilla `MG_PKMT`; commander cupola `T72A_Commander_Turret*` → `HMG_NSV_MG` 12.7 mm (default occupant `Character_USSR_CC`)
+- footprint (xob): 3.6×6.8 m, h 3.0 (T72A_Base.xob; turret 2.5×2.9, wreck 3.4×6.6)
+- default occupants: Character_USSR_Crew (FIA livery: Character_FIA_Crew)
+- name key: `#WCS-Vehicle_T72A_Name`
+
+| livery variant | ref | thumb (EditorPreview basename) |
+|---|---|---|
+| T72A_Base | `{BC07885176C7FF8A}Prefabs/Vehicles/Tracked/T72A/T72A_Base.et` | T72A (copied as T72A_Base) |
+| T72A_Desert | `{AF1C02364D45CC5B}Prefabs/Vehicles/Tracked/T72A/T72A_Desert.et` | T72A_Desert |
+| T72A_FIA | `{2B9DB09AC8BEA673}Prefabs/Vehicles/Tracked/T72A/T72A_FIA.et` | T72A_FIA |
+
+### [USSR] T-72B Main Battle Tank — ARMED
+
+- weapon slots: T72B_Turret / _Desert / _FIA (parent T72A_Turret_Base) → `Cannon_2A46_T72B` (APFSDS) + `_HE` + `_HEAT` (HEAT-FS, third feed) + coaxial `MG_PKMT` + an `Armament_Empty` slot; same NSV commander cupola; 18 `T72B_Kontakt_Turret_*` + 27 `Kontakt_Hull_*` ERA tiles (`Prefabs/Vehicles/Core/ERA/Kontakt_Base.et`)
+- footprint (xob): 3.6×6.8 m, h 3.0 (T72A_Base.xob — same hull)
+- default occupants: Character_USSR_Crew (FIA livery: Character_FIA_Crew)
+- name key: `#WCS-Vehicle_T72B_Name`
+
+| livery variant | ref | thumb (EditorPreview basename) |
+|---|---|---|
+| T72B_Base | `{726286E1F9570EA1}Prefabs/Vehicles/Tracked/T72B/T72B_Base.et` | T72B (copied as T72B_Base) |
+| T72B_Desert | `{0154275FD6AE2370}Prefabs/Vehicles/Tracked/T72B/T72B_Desert.et` | T72B_Desert |
+| T72B_FIA | `{D9EB40D7AD0966EC}Prefabs/Vehicles/Tracked/T72B/T72B_FIA.et` | T72B_FIA |
+
+Registry: `generator/mods/wcs-t72.mjs` (id `wcst72`, keys `WCS_T72A_*` / `WCS_T72B_*`, labels EN
+name + " (Green|Desert|FIA)"); `patrolVehicleKeys` = the two Green bases; `vehicleSizeClass`
+heavy via the `WCS_T72[AB]_` prefix. The `--wcs` spike gained a T-72A Desert spawn slot and a
+T-72B Green in the mounted patrol (8 GUIDs in addon.gproj). Baseline seeded 2026-09-22.
 
 ## Builder integration (decided + built 2026-09-10)
 

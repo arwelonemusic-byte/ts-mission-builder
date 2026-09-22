@@ -29,6 +29,7 @@ import { WCS_BMP1 } from "./mods/wcs-bmp1.mjs";
 import { WCS_FMTV } from "./mods/wcs-fmtv.mjs";
 import { WCS_STRYKER } from "./mods/wcs-stryker.mjs";
 import { WCS_MRZR } from "./mods/wcs-mrzr.mjs";
+import { WCS_T72 } from "./mods/wcs-t72.mjs";
 import { FENNEK } from "./mods/fennek.mjs";
 import { MARDER } from "./mods/marder.mjs";
 
@@ -1105,7 +1106,7 @@ for (const mod of Object.values(MODS)) {
 // or a deliver/destroy objective ref). Vehicle keys must be globally unique
 // across all vehicle mods AND all faction `vehicles` dicts (prefix them).
 export const VEHICLE_MODS = Object.fromEntries(
-  [DAXHUMVEES, WCS_JLTV, WCS_M1A1, WCS_BMP3, WCS_BMP1, WCS_FMTV, WCS_STRYKER, WCS_MRZR, FENNEK, MARDER].map((vm) => [vm.id, vm])
+  [DAXHUMVEES, WCS_JLTV, WCS_M1A1, WCS_BMP3, WCS_BMP1, WCS_FMTV, WCS_STRYKER, WCS_MRZR, WCS_T72, FENNEK, MARDER].map((vm) => [vm.id, vm])
 );
 /** Flat lookup for every modded vehicle: key -> { ref, label, mod }.
  * lib.mjs falls back here when a spawn/patrol vehicle key isn't in the
