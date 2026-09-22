@@ -9,7 +9,7 @@ import { getSampler } from "@/lib/terrainSampler";
 import { renderElevationOverlay, RAMP_CSS } from "@/lib/elevationOverlay";
 import type { HeightmapSampler } from "@/lib/heightmap";
 import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone, ZoneElement } from "@/lib/mission";
-import { elementSpawnOutsideZone, isPatrolElement } from "@/lib/mission";
+import { elementSpawnOutsideZone, isPatrolElement, pointOutsideZone } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
 import {
   distanceLabel,
@@ -705,7 +705,7 @@ export default function MissionMap(props: MapProps) {
         });
         if (isPatrolElement(el)) {
           for (const [wi, wp] of el.waypoints.entries()) {
-            const dot = L.marker([wp.z, wp.x], { icon: waypointDotIcon(wi + 1, sel && selWp === wi, color), draggable: true })
+            const dot = L.marker([wp.z, wp.x], { icon: waypointDotIcon(wi + 1, sel && selWp === wi, color, pointOutsideZone(zone, wp)), draggable: true })
               .bindTooltip(`${zoneName(props.lang, zi + 1)} · ${kindLabel} ${ordinal} · ${tr(props.lang, "Waypoint")} ${wi + 1}`, {
                 direction: "top",
                 offset: [0, -10],
@@ -1110,8 +1110,8 @@ function zoneElementIcon(el: ZoneElement, selected: boolean, freshDrop: boolean,
   });
 }
 /** Numbered patrol waypoint dot (18px). */
-function waypointDotIcon(n: number, selected: boolean, color: string) {
-  return L.divIcon({ className: "", iconSize: [18, 18], iconAnchor: [9, 9], html: waypointDotHtml(n, selected, color) });
+function waypointDotIcon(n: number, selected: boolean, color: string, outside: boolean) {
+  return L.divIcon({ className: "", iconSize: [18, 18], iconAnchor: [9, 9], html: waypointDotHtml(n, selected, color, outside) });
 }
 
 /** DivIcon wrapper for a QRF origin badge; 32px transparent hit box on touch. */

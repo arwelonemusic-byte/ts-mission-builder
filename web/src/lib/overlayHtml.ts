@@ -221,22 +221,24 @@ export const ZONE_ELEMENT_GLYPHS: Record<ZoneElementKind, string> = {
 
 /** Round badge at an advanced element's spawn point: per-kind green disc +
  * white kind glyph. Selection = yellow halo. Same 24 px footprint as originBadgeHtml. */
+/** Red "!" pip at the top-right of a badge/dot: the point lies outside its
+ * parent zone circle (spawn points AND waypoints — user decision 2026-09-22). */
+const outsidePipHtml = (): string =>
+  `<div style="position:absolute;top:-5px;right:-5px;width:13px;height:13px;border-radius:50%;background:#ef4444;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font:900 9px/1 var(--font-roboto),sans-serif;color:#fff;pointer-events:none;">!</div>`;
+
 export function zoneElementBadgeHtml(kind: ZoneElementKind, selected: boolean, outside = false): string {
   const halo = selected
     ? `<div style="position:absolute;inset:-6px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 12px rgba(244,219,80,0.6);"></div>`
     : "";
-  // Spawn point outside its parent zone circle → red "!" pip at the top-right
-  // (spawn only, never for waypoints — user request 2026-09-22).
-  const warn = outside
-    ? `<div style="position:absolute;top:-5px;right:-5px;width:13px;height:13px;border-radius:50%;background:#ef4444;border:1.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font:900 9px/1 var(--font-roboto),sans-serif;color:#fff;pointer-events:none;">!</div>`
-    : "";
+  const warn = outside ? outsidePipHtml() : "";
   return `<div style="position:relative;width:24px;height:24px;">${halo}<div style="width:24px;height:24px;border-radius:50%;background:${ZONE_ELEMENT_COLORS[kind]};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;"><svg width="13" height="13" viewBox="0 0 16 16" fill="none">${ZONE_ELEMENT_GLYPHS[kind]}</svg></div>${warn}</div>`;
 }
 
 /** Numbered 18 px dot for a patrol waypoint; selection = yellow halo. */
-export function waypointDotHtml(n: number, selected: boolean, color: string = ZONE_ELEMENT_COLOR): string {
+export function waypointDotHtml(n: number, selected: boolean, color: string = ZONE_ELEMENT_COLOR, outside = false): string {
   const halo = selected
     ? `<div style="position:absolute;inset:-5px;border:2px solid #f4db50;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,0.4),0 0 10px rgba(244,219,80,0.6);"></div>`
     : "";
-  return `<div style="position:relative;width:18px;height:18px;">${halo}<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;font:700 10px/1 var(--font-roboto),sans-serif;color:#202427;">${n}</div></div>`;
+  const warn = outside ? outsidePipHtml() : "";
+  return `<div style="position:relative;width:18px;height:18px;">${halo}<div style="width:18px;height:18px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;cursor:move;font:700 10px/1 var(--font-roboto),sans-serif;color:#202427;">${n}</div>${warn}</div>`;
 }

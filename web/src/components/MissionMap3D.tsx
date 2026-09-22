@@ -57,7 +57,7 @@ import {
   waypointDotHtml,
 } from "@/lib/overlayHtml";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
-import { elementSpawnOutsideZone, isPatrolElement } from "@/lib/mission";
+import { elementSpawnOutsideZone, isPatrolElement, pointOutsideZone } from "@/lib/mission";
 import { coordsText, elevText } from "@/lib/i18n";
 import MapViewControls from "@/components/MapViewControls";
 import type { MapProps } from "@/components/MissionMap";
@@ -1007,7 +1007,7 @@ export default function MissionMap3D(props: Map3DProps) {
           });
           if (isPatrolElement(el)) {
             for (const [wi, wp] of el.waypoints.entries()) {
-              const dot = css2dNode(waypointDotHtml(wi + 1, sel && se!.wp === wi, ZONE_ELEMENT_COLORS[el.kind]), true);
+              const dot = css2dNode(waypointDotHtml(wi + 1, sel && se!.wp === wi, ZONE_ELEMENT_COLORS[el.kind], pointOutsideZone(zone, wp)), true);
               dot.obj.position.set(wp.x, meshY(grid, wp.x, wp.z) + ICON_LIFT, -wp.z);
               overlay.add(dot.obj);
               makeDraggable(world, dot.el, dot.obj, ICON_LIFT, {

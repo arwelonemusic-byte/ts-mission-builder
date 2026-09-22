@@ -439,10 +439,12 @@ export function elementFarthestDist(zone: Zone): number {
   return d;
 }
 
-/** True when the element's SPAWN point lies outside the zone circle (waypoints
- * ignored) — drives the red "!" on the map badge (user request 2026-09-22). */
-export const elementSpawnOutsideZone = (zone: Zone, el: ZoneElement): boolean =>
-  Math.hypot(el.x - zone.x, el.z - zone.z) > zone.radius;
+/** True when a point lies outside the zone circle — drives the red "!" pip on
+ * the map badge of an element's spawn AND on each waypoint dot (user decision
+ * 2026-09-22, after first wanting spawns only). */
+export const pointOutsideZone = (zone: Zone, p: { x: number; z: number }): boolean =>
+  Math.hypot(p.x - zone.x, p.z - zone.z) > zone.radius;
+export const elementSpawnOutsideZone = pointOutsideZone;
 
 /** True when the element (or one of its waypoints) lies outside the zone circle. */
 export function elementOutsideZone(zone: Zone, el: ZoneElement): boolean {
