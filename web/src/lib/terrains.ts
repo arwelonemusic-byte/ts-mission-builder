@@ -275,6 +275,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/westzagoria.json",
     tilePattern: "/tiles/westzagoria/{z}/{x}/{y}.jpg",
     tileMaxZoom: 5,
+    // 2026-09-23: 1152 EnfusionMapMaker frames (step 100 / column 200 / camera
+    // 1200 m, ortho-stitched against the heightmap), 4 px/m → 18432 px → max_z 7.
+    sat: { tilePattern: "/tiles/westzagoria-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/6044F5AB4E6F9D5A-WestZagoria",
   },
