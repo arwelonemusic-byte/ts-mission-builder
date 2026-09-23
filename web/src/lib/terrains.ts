@@ -293,6 +293,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/seitenbuch.json",
     tilePattern: "/tiles/seitenbuch/{z}/{x}/{y}.jpg",
     tileMaxZoom: 4,
+    // 2026-09-23: 400 EnfusionMapMaker frames (step 100 / column 200 / camera
+    // 1000 m, ortho-stitched against the heightmap), 4 px/m → 16000×8000 px → max_z 6.
+    sat: { tilePattern: "/tiles/seitenbuch-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 6, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/5F031E702D6FAAB1-Seitenbuch-Germany",
   },
