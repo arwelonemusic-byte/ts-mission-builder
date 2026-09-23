@@ -193,6 +193,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     heightmapMeta: "/heightmaps/zargabad.json",
     tilePattern: "/tiles/zargabad/{z}/{x}/{y}.jpg",
     tileMaxZoom: 5,
+    // 2026-09-23: 3200 EnfusionMapMaker frames (step 100 / column 200 / camera
+    // 1000 m, ortho-stitched against the heightmap), 4 px/m → 32000 px → max_z 7.
+    sat: { tilePattern: "/tiles/zargabad-sat/{z}/{x}/{y}.jpg", tileMaxZoom: 7, nativeZoom: 2 },
     modded: true,
     workshopUrl: "https://reforger.armaplatform.com/workshop/662B602B3F823F27-Zargabad",
   },
