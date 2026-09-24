@@ -53,25 +53,19 @@ const THUMB_FALLBACKS: Record<string, string> = {
   UAZ469_Camo: "UAZ469.png",
   UAZ469_Camo_uncovered: "UAZ469_uncovered.png",
   UAZ452_Armed_Bandit: "UAZ452_transport_Bandit.png",
-  // Arma II Factions reskins (mod ships no EditorPreviews) — vanilla/RHS
-  // base-vehicle thumbs, same silhouettes
-  UAZ469_Ses_CDF: "UAZ469.png",
-  UAZ469_uncovered_Ses_CDF: "UAZ469_uncovered.png",
+  // Arma II Factions reskins: the mod's own EditorPreviews ship as PNGs for
+  // the HMMWVs, UAZ-469s and command Urals. The rest fall back to the vanilla
+  // base vehicle — the mod has no preview for them (UAZ-452, BRDM-2, Mi-8
+  // gunships) or a broken one (every BTR-70 = a bad rock shot, Mi-8 = a wheel
+  // close-up, 12 of 14 Urals = a CDF soldier). Re-check after a mod update.
   UAZ452_transport_CDF: "UAZ452_transport.png",
   UAZ452_ambulance_CDF: "UAZ452_ambulance.png",
   UAZ452_cargo_CDF: "UAZ452_cargo.png",
-  M998_Ses_CDF: "M998_covered.png",
-  M998_covered_Ses_CDF: "M998_covered.png",
-  M998_covered_long_Ses_CDF: "M998_covered_long.png",
-  M997_maxi_ambulance_Ses_CDF: "M997_maxi_ambulance.png",
-  M1025_Ses_CDF: "M1025_USAF.png",
-  M1025_armed_M2HB_Ses_CDF: "M1025_armed_M2HB.png",
   BRDM2_CDF: "BRDM2.png",
   BTR70_Ses_CDF: "BTR70.png",
   Ural4320_Ses_CDF_transport: "Ural4320_transport.png",
   Ural4320_Ses_CDF_transport_covered: "Ural4320_transport_covered.png",
   Ural4320_Ses_CDF_ammo: "Ural4320_ammo.png",
-  Ural4320_Ses_CDF_command: "Ural4320_command.png",
   Ural4320_Ses_CDF_engineer: "Ural4320_engineer.png",
   Ural4320_Ses_CDF_repair: "Ural4320_repair.png",
   Ural4320_Ses_CDF_tanker: "Ural4320_tanker.png",
@@ -79,9 +73,6 @@ const THUMB_FALLBACKS: Record<string, string> = {
   Mi8MT_armed_Ses_CDF: "Mi8MT_armed.png",
   Mi8MT_armed_gunship_HE_Ses_CDF: "Mi8MT_armed_gunship_HE.png",
   Mi8MT_armed_gunship_HEDP_Ses_CDF: "Mi8MT_armed_gunship_HEDP.png",
-  UAZ469_Ses_ChDKZ: "UAZ469.png",
-  UAZ469_uncovered_Ses_ChDKZ: "UAZ469_uncovered.png",
-  UAZ469_PKM_Ses_ChDKZ: "UAZ469_PKM.png",
   UAZ452_transport_ChDKZ: "UAZ452_transport.png",
   UAZ452_ambulance_ChDKZ: "UAZ452_ambulance.png",
   UAZ452_cargo_ChDKZ: "UAZ452_cargo.png",
@@ -90,13 +81,9 @@ const THUMB_FALLBACKS: Record<string, string> = {
   Ural4320_Ses_ChDKZ_transport: "Ural4320_transport.png",
   Ural4320_Ses_ChDKZ_transport_covered: "Ural4320_transport_covered.png",
   Ural4320_Ses_ChDKZ_ammo: "Ural4320_ammo.png",
-  Ural4320_Ses_ChDKZ_command: "Ural4320_command.png",
   Ural4320_Ses_ChDKZ_engineer: "Ural4320_engineer.png",
   Ural4320_Ses_ChDKZ_repair: "Ural4320_repair.png",
   Ural4320_Ses_ChDKZ_tanker: "Ural4320_tanker.png",
-  UAZ469_Ses_NAPA: "UAZ469.png",
-  UAZ469_uncovered_Ses_NAPA: "UAZ469_uncovered.png",
-  UAZ469_UK59_Ses_NAPA: "UAZ469_PKM.png",
   BRDM2_Ses_NAPA: "BRDM2.png",
   BTR70_Ses_NAPA: "BTR70.png",
   // Bundeswehr (2026-09-15): the Tropentarn Dingo shares the Flecktarn preview;

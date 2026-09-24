@@ -111,3 +111,15 @@ prefab-side GUID on any conflict; ChDKZ/NAPA/vehicles had no conflicts.
 `--a2` → TS_WebSpikeA2 (Ses_CDF "CDF Army" vs Ses_ChDKZ, Arland; mounted
 patrol mixes armed BRDM-2 + unarmed covered Ural; deliver/spawn vehicles =
 CDF fleet; hvt = ChDKZ PL).
+
+## Vehicle thumbnails (2026-09-24)
+
+The mod DOES ship EditorPreviews (`UI/Textures/EditorPreviews/Vehicles`), but
+many are broken: all BTR-70s share one mis-framed rock shot, both Mi-8
+previews show a wheel close-up, and 12 of 14 Ural previews are a pasted CDF
+soldier. Shipped as `web/public/icons/prefabs/<basename>.png` (200x150): the 16
+good ones (6 CDF HMMWVs, 8 UAZ-469s, 2 command Urals). Everything else keeps
+its vanilla-base entry in `THUMB_FALLBACKS` (destroyObjects.ts). Reskin labels
+carry the faction tag (user request, same day): "UAZ-469 (ChDKZ)", merged into
+existing parentheses as "UAZ-469 (uncovered, CDF)". NAPA's UAZ-452/Ural keys
+are plain vanilla prefabs and stay untagged.
