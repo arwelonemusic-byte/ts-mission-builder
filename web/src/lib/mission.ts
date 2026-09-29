@@ -1,4 +1,4 @@
-import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
+import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
 import { defaultGroupKey, defaultRoleKey, rosterGroupExists, rosterRoleExists } from "./roster";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
@@ -368,6 +368,33 @@ export function scrubVehicleMods(m: Mission, mods: string[]): Partial<Mission> {
     );
   }
   return patch;
+}
+
+/** Rewrite RETIRED_VEHICLES keys/refs in place (a registry vehicle whose addon
+ * left the Workshop — the PZG GER reskins, 2026-09-29) onto their replacement,
+ * everywhere a save stores a vehicle: spawn elements, zone-module selections,
+ * advanced mounted patrols and deliver/destroy targets. Positions and every
+ * other field are kept; saves without retired keys are left untouched. */
+function remapRetiredVehicles(m: Mission) {
+  const retired = (k: unknown) => typeof k === "string" && k in RETIRED_VEHICLES;
+  for (const v of Array.isArray(m.spawn?.vehicles) ? m.spawn.vehicles : []) {
+    if (retired(v?.type)) v.type = RETIRED_VEHICLES[v.type].to;
+  }
+  for (const zn of Array.isArray(m.zones) ? m.zones : []) {
+    for (const md of Array.isArray(zn?.modules) ? zn.modules : []) {
+      if (Array.isArray(md?.vehicles) && md.vehicles.some(retired)) {
+        md.vehicles = [...new Set(md.vehicles.map((k) => (retired(k) ? RETIRED_VEHICLES[k].to : k)))];
+      }
+    }
+    for (const el of Array.isArray(zn?.elements) ? zn.elements : []) {
+      if (el?.kind === "mounted-patrol" && retired(el.vehicle)) el.vehicle = RETIRED_VEHICLES[el.vehicle].to;
+    }
+  }
+  const byRef = new Map(Object.values(RETIRED_VEHICLES).map((r) => [r.ref, r.toRef]));
+  for (const o of Array.isArray(m.objectives) ? m.objectives : []) {
+    const to = typeof o?.objectRef === "string" ? byRef.get(o.objectRef) : undefined;
+    if (to) o.objectRef = to;
+  }
 }
 
 /** Category-sort arsenal refs (stable): pool category order, then name.
@@ -795,6 +822,9 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     const mod = factionMeta(fk).mod;
     if (mod && !m.mods.includes(mod)) m.mods.push(mod);
   }
+  // Retired faction vehicles (addon gone from the Workshop) → their vanilla
+  // replacement, before the mod rescue/scrub below looks at vehicle keys.
+  remapRetiredVehicles(m);
   // Vehicle mods: a save using a modded vehicle without the mod enabled gets
   // the mod enabled (same rescue as factions); content of HIDDEN vehicle
   // mods is scrubbed instead (spawn/zones/objectives — see scrubVehicleMods).

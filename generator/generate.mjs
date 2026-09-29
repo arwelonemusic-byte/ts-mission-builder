@@ -38,16 +38,18 @@
 //   --a2        build the Arma II Factions variant (TS_WebSpikeA2: CDF playable
 //               vs ChDKZ — exercises both new-faction sides + NAPA availability)
 //   --bw        build the Bundeswehr variant (TS_WebSpikeBW: BWAR "Flecktarn"
-//               playable vs USSR — Dingo + PZG GER reskin spawn vehicles, both
-//               bundled addon GUIDs in addon.gproj)
+//               playable vs USSR — Dingo + vanilla US spawn vehicles, the
+//               Bundeswehr Mod as the only mod GUID in addon.gproj)
 //   --bw-enemy  build the Bundeswehr enemy-side variant (TS_WebSpikeBWEnemy:
 //               vanilla US vs BWAR "Tropentarn" — friendliness clearing, GER
-//               groups/officer hvt/crews in reskinned HMMWVs + the Dingo)
+//               groups/officer hvt/crews in a vanilla HMMWV + the Dingo)
 //   --bwv       build the Bundeswehr VEHICLE-mods variant (TS_WebSpikeBWV:
 //               BWAR playable vs USSR with Fennek (light) + CIE Marder 1A3
 //               (heavy) spawn slots, a Marder/Fennek mounted patrol (USSR
 //               crews) and a Fennek deliver target — both mod GUIDs
-//               usage-derived, the Marder's 3-addon dep chain is transitive)
+//               usage-derived, the Marder's 3-addon dep chain is transitive;
+//               the Marder is HIDDEN since 2026-09-29 — banned from the
+//               Workshop, so this spike can no longer be published)
 //   --arsenal   build the Arsenal Builder variant (TS_WebSpikeArsenal: US vs
 //               USSR with a mission.arsenal override — pool-resolved modes)
 //   --ai-arty   build the enemy-AI-artillery variant (TS_WebSpikeAiArty:
@@ -1014,9 +1016,10 @@ const THUMBS_SFS_RF_FIA_MISSION = {
 };
 
 // Bundeswehr spike: BWAR "Flecktarn" playable vs vanilla USSR. Exercises the
-// mod's entryGuid member + callsign block, the bundled PZG GER reskin vehicles
-// (spawn slots: Dingo heavy + M1025 M2HB light + covered M923A1 heavy) and the
-// two-GUID dependency list. No friendliness clearing (BWAR↔USSR hostile).
+// mod's entryGuid member + callsign block and BWAR's vehicle dict (spawn
+// slots: Dingo heavy + vanilla M1025 M2HB light + covered M923A1 heavy — the
+// PZG GER reskins these were until 2026-09-29 left the Workshop). No
+// friendliness clearing (BWAR↔USSR hostile).
 const BW_MISSION = {
   ...MISSION,
   addonId: "TSWebSpikeBW",
@@ -1041,7 +1044,7 @@ const BW_MISSION = {
     extra: [
       {
         title: "Support",
-        text: ["- 1x Dingo 2 A3.2B", "- 1x M1025 M2HB (GER)", "- 1x M923A1 Truck (covered, GER)"],
+        text: ["- 1x Dingo 2 A3.2B", "- 1x M1025 M2HB", "- 1x M923A1 Truck (covered)"],
       },
     ],
   },
@@ -1049,8 +1052,8 @@ const BW_MISSION = {
     ...MISSION.spawn,
     vehicles: [
       { type: "BWAR_Dingo2A3_2B" },
-      { type: "M1025_armed_M2HB_GER" },
-      { type: "M923A1_transport_covered_GER" },
+      { type: "M1025_armed_M2HB" },
+      { type: "M923A1_transport_covered" },
     ],
   },
 };
@@ -1058,7 +1061,7 @@ const BW_MISSION = {
 // Bundeswehr enemy-side spike: vanilla US vs BWAR "Tropentarn" — the US↔BWAR
 // friendly declaration must be cleared on the BWAR member, Tropentarn groups
 // fill the zones, the pistol-only Officer is the hvt, and the mounted patrol
-// mixes an armed reskin HMMWV with the unarmed Tropentarn Dingo (GER crews).
+// mixes an armed vanilla HMMWV with the unarmed Tropentarn Dingo (GER crews).
 const BW_ENEMY_MISSION = {
   ...MISSION,
   addonId: "TSWebSpikeBWEnemy",
@@ -1078,7 +1081,7 @@ const BW_ENEMY_MISSION = {
       ? {
           ...z,
           plugins: [
-            { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["M1025_armed_M2HB_GER", "BWAR_Dingo2A3_2B_3FT"] },
+            { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["M1025_armed_M2HB", "BWAR_Dingo2A3_2B_3FT"] },
           ],
         }
       : z

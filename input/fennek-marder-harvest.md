@@ -8,6 +8,12 @@ Dax pattern). The Marder was FIRST integrated as the "Marder_Bundeswehr" livery 
 "undercooked and buggy") — the rejected pack's harvest is kept at the end for the record.
 Spike: `node generator/generate.mjs --bwv` (TS_WebSpikeBWV, BWAR vs USSR).
 
+> **2026-09-29 — CIE Marder 1A3 HIDDEN.** The mod was banned from the Workshop (page 404);
+> missions listing `6446DDF41914A293` can't be published. `hidden: true` on the def: the UI
+> no longer offers it and `migrate()` strips it from saves (spawn slots dropped, zone
+> selections backfill the enemy's first armed key). Registry + `--bwv` spike kept for the
+> record. Fennek is unaffected.
+
 | Mod | GUID | ver | size | catalog entries | integrated | armed | size class |
 |---|---|---|---|---|---|---|---|
 | Fennek | `631D7B00C9DC049E` | 1.0.81 | 1 pak | 16 | **6** (German cut) | 4 | light (2.8×5.7 m) |

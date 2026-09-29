@@ -5,6 +5,14 @@ Raw harvest results from the unpacked dumps
 `D:\VSCode_dev\arma-reforger\reference\PZG GER Vanilla Reskin`, v1.0.1). The curated cut lives
 in `generator/mods/bundeswehr.mjs`; this doc keeps the superset + provenance.
 
+> **2026-09-29 — PZG GER Vanilla Reskins RETIRED.** The reskin (`685EC277A4031C83`) is gone
+> from the Workshop (page 404, absent from search; its author "cris PzGrenBtl 24" lists only
+> "PZG Everon PVP"). Every BWAR mission failed to publish (`CreateAssetUpload` ValidationError
+> "Referenced dependency '685EC277A4031C83' doesn't exist or isn't accessible"). The def now
+> depends on the Bundeswehr Mod alone; BWAR's vehicles are the Dingo + the vanilla US vehicles
+> the reskins were painted from. The `_GER` harvest below is kept for the record — its keys
+> survive only as `FACTIONS.BWAR.retiredVehicles` (→ `RETIRED_VEHICLES`, remapped by `migrate()`).
+
 ## Addons / bundle
 
 - **Bundeswehr Mod** `59673B087BFF710C` — 2.7 GB (data.pak + data001.pak), own `.gproj` deps =

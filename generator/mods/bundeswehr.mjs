@@ -14,14 +14,15 @@
 //                      (+ the character prefabs for what they actually carry)
 // Full raw harvest + exclusions: input/bundeswehr-harvest.md.
 //
-// BUNDLE (user decision 2026-09-15): the mod ships only ONE unarmed vehicle (the
-// Dingo 2), so "PZG GER Vanilla Reskin" `685EC277A4031C83` — 17 vanilla US
-// vehicles (jeeps, HMMWVs, M923A1 trucks, LAV-25, UH-1Hs) reskinned into German
-// camo, appended to the vanilla US vehicle catalog — is a second dependency of
-// this def and its armed vehicles form the BWAR patrol/QRF pool. Both GUIDs go
-// into addon.gproj whenever BWAR is a mission side. The reskin's catalog
-// override also DISABLES ~30 vanilla US catalog entries (GM browser / Conflict
-// spawners only — our SF slots spawn by prefab ref, unaffected).
+// VEHICLES: the mod ships only ONE unarmed vehicle (the Dingo 2), so BWAR's
+// armed patrol/QRF pool and most of its spawn picker are VANILLA US vehicles in
+// US paint (user decision 2026-09-29). History: from 2026-09-15 this def
+// bundled "PZG GER Vanilla Reskins" `685EC277A4031C83` (17 of those vehicles
+// in German camo) as a second dependency; the reskin then LEFT THE WORKSHOP
+// (page 404, noticed 2026-09-29 when a BWAR mission failed to publish with
+// "Referenced dependency '685EC277A4031C83' doesn't exist or isn't
+// accessible"). `retiredVehicles` maps each old `_GER` key onto the vanilla
+// vehicle it reskinned so migrate() keeps old saves' layouts.
 //
 // GUID COLLISION (excluded by user decision 2026-09-15): BWAR_Group_FireTeam.et
 // carries `{84E5BBAB25EA23E6}` — byte-identical to the SFS US mod's own
@@ -42,7 +43,6 @@ const P_GT = "Prefabs/Groups/Bundeswehr/Tropen";
 const P_C = "Prefabs/Characters/Factions/BLUFOR/Bundeswehr";
 const P_CT = "Prefabs/Characters/Factions/BLUFOR/Bundeswehr/Tropen";
 const P_SLOT = "Prefabs/Compositions/Slotted";
-const P_RS = "Prefabs/Vehicles"; // PZG GER Vanilla Reskin (paths contain SPACES — verbatim)
 
 const CH = {
   Rifleman: `{9A5161184FEEEDBF}${P_C}/BWAR_Character_Rifleman.et`,
@@ -160,16 +160,7 @@ export const BUNDESWEHR = {
   id: "bundeswehr",
   label: "Bundeswehr Mod",
   workshopUrl: "https://reforger.armaplatform.com/workshop/59673B087BFF710C",
-  // Bundeswehr Mod + PZG GER Vanilla Reskin (bundled vehicle pool — see header)
-  dependencies: ["59673B087BFF710C", "685EC277A4031C83"],
-  // the bundled second addon players must ALSO install — the builder lists it
-  // next to the mod in the Important! callout (user request 2026-09-16)
-  extraAddons: [
-    {
-      label: "PZG GER Vanilla Reskins",
-      workshopUrl: "https://reforger.armaplatform.com/workshop/685EC277A4031C83",
-    },
-  ],
+  dependencies: ["59673B087BFF710C"],
   factions: {
     BWAR: {
       label: "Bundeswehr",
@@ -237,56 +228,79 @@ export const BUNDESWEHR = {
         { mode: "", ref: "{7B60A7CF3689D55A}Prefabs/Characters/Backpacks/BWAR_Backpack_Trizip.et" },
       ],
       // Dingo 2 (the mod's only vehicle, UNARMED — turret slot registered but
-      // never filled) + the PZG GER reskins of vanilla US vehicles. Reskin
-      // keys = the vanilla key + `_GER`; reskin file names contain spaces.
+      // never filled) + the vanilla US vehicles the retired PZG GER reskin
+      // covered (same keys + refs as FACTIONS.US — see the header).
       vehicles: {
         BWAR_Dingo2A3_2B: "{193CAE259137911B}Prefabs/Vehicles/Wheeled/Dingo2/BWAR_Dingo2A3_2B.et",
         BWAR_Dingo2A3_2B_3FT: "{F373992A38F2FEF4}Prefabs/Vehicles/Wheeled/Dingo2/BWAR_Dingo2A3_2B_3FT.et",
-        M151A2_GER: `{9BDDB06E8D3E3D8D}${P_RS}/Wheeled/M151A2/M151A2 PZG GER.et`,
-        M151A2_transport_GER: `{A59B6CE827176166}${P_RS}/Wheeled/M151A2/M151A2 Roof PZG GER.et`,
-        M151A2_M2HB_GER: `{B45E86F64FD17B13}${P_RS}/Wheeled/M151A2/M151A2 armed PZG GER.et`,
-        M998_covered_GER: `{F51C4A5DEFEC9E90}${P_RS}/Wheeled/M998/M1025 light PZG GER.et`,
-        M1025_GER: `{61C45911C277F184}${P_RS}/Wheeled/M998/M1025 PZG GER.et`,
-        M1025_armed_M2HB_GER: `{29B6B56EB4ADC157}${P_RS}/Wheeled/M998/M1025 armed PZG GER.et`,
-        M997_maxi_ambulance_GER: `{EDEBB5E916D0D8E5}${P_RS}/Wheeled/M998/M1025_maxi_ambulance_GER.et`,
-        M923A1_transport_GER: `{40CC95401F931557}${P_RS}/Wheeled/M923A1/M923A1 transpo 1 PZG GER.et`,
-        M923A1_transport_covered_GER: `{2F4496DBB6BF8195}${P_RS}/Wheeled/M923A1/M923A1 covered PZG GER.et`,
-        M923A1_tanker_GER: `{7D5A6B25C6622144}${P_RS}/Wheeled/M923A1/M923A1 tanker PZG GER.et`,
-        M923A1_command_GER: `{1C39719492E2DF66}${P_RS}/Wheeled/M923A1/M923A1 Command PZG GER.et`,
-        M923A1_arsenal_GER: `{515237604A3896FC}${P_RS}/Wheeled/M923A1/M923A1 Arsenal PZG GER.et`,
-        M923A1_repair_GER: `{4AAF0D3BC2B93ED1}${P_RS}/Wheeled/M923A1/M923A1 repair PZG GER.et`,
-        M923A1_engineer_GER: `{E293F1978E4A4F08}${P_RS}/Wheeled/M923A1/M923A1 Engineer PZG GER.et`,
-        LAV25_GER: `{A431F97175AFB711}${P_RS}/Wheeled/LAV25/LAV25 PZG GER.et`,
-        UH1H_GER: `{19957370950822FC}${P_RS}/Helicopters/UH1H/UH1H PZG GER.et`,
-        UH1H_armed_GER: `{B63FCA821F1AAF27}${P_RS}/Helicopters/UH1H/UH1H armed PZG GER.et`,
-        UH1H_gunship_HEDP_GER: `{62B49833125D09EA}${P_RS}/Helicopters/UH1H/UH1H gunship PZG GER.et`,
-        UH1H_supply_GER: `{71F5CD3C708CAE11}${P_RS}/Helicopters/UH1H/UH1H Supply PZG GER.et`,
+        M151A2_MERDC: "{86D830868F026D54}Prefabs/Vehicles/Wheeled/M151A2/M151A2_MERDC.et",
+        M151A2_transport: "{47D94E1193A88497}Prefabs/Vehicles/Wheeled/M151A2/M151A2_transport.et",
+        M151A2_M2HB: "{F6B23D17D5067C11}Prefabs/Vehicles/Wheeled/M151A2/M151A2_M2HB.et",
+        M998_covered: "{B55C6990A6A9411B}Prefabs/Vehicles/Wheeled/M998/M998_covered.et",
+        M1025_MERDC: "{27E2E58E734A80EC}Prefabs/Vehicles/Wheeled/M998/M1025_MERDC.et",
+        M1025_armed_M2HB: "{3EA6F47D95867114}Prefabs/Vehicles/Wheeled/M998/M1025_armed_M2HB.et",
+        M997_maxi_ambulance: "{00C9BBE426F7D459}Prefabs/Vehicles/Wheeled/M998/M997_maxi_ambulance.et",
+        M923A1_transport: "{F1FBD0972FA5FE09}Prefabs/Vehicles/Wheeled/M923A1/M923A1_transport.et",
+        M923A1_transport_covered: "{81FDAD5EB644CC3D}Prefabs/Vehicles/Wheeled/M923A1/M923A1_transport_covered.et",
+        M923A1_tanker: "{2BE1F8B9299B67C1}Prefabs/Vehicles/Wheeled/M923A1/M923A1_tanker.et",
+        M923A1_command: "{36BDCC88B17B3BFA}Prefabs/Vehicles/Wheeled/M923A1/M923A1_command.et",
+        M923A1_arsenal: "{1FF144F8A209239D}Prefabs/Vehicles/Wheeled/M923A1/M923A1_arsenal.et",
+        M923A1_repair: "{A042ACE5C2B13206}Prefabs/Vehicles/Wheeled/M923A1/M923A1_repair.et",
+        M923A1_engineer: "{2D74C39A650A3030}Prefabs/Vehicles/Wheeled/M923A1/M923A1_engineer.et",
+        LAV25: "{0FBF8F010F81A4E5}Prefabs/Vehicles/Wheeled/LAV25/LAV25.et",
+        UH1H: "{EEE291940A9DA42A}Prefabs/Vehicles/Helicopters/UH1H/UH1H_sharkNose.et",
+        UH1H_armed: "{DDDD9B51F1234DF3}Prefabs/Vehicles/Helicopters/UH1H/UH1H_armed.et",
+        UH1H_gunship_HEDP: "{CB4D4CF7E887B2D0}Prefabs/Vehicles/Helicopters/UH1H/UH1H_armed_gunship_HEDP.et",
       },
       vehicleLabels: {
         BWAR_Dingo2A3_2B: "Dingo 2 A3.2B (Flecktarn)",
         BWAR_Dingo2A3_2B_3FT: "Dingo 2 A3.2B (Tropentarn)",
-        M151A2_GER: "M151A2 (GER)",
-        M151A2_transport_GER: "M151A2 Jeep (GER)",
-        M151A2_M2HB_GER: "M151A2 M2HB (GER)",
-        M998_covered_GER: "M998 HMMWV (GER)",
-        M1025_GER: "M1025 HMMWV (GER)",
-        M1025_armed_M2HB_GER: "M1025 M2HB (GER)",
-        M997_maxi_ambulance_GER: "M997 Ambulance (GER)",
-        M923A1_transport_GER: "M923A1 Truck (GER)",
-        M923A1_transport_covered_GER: "M923A1 Truck (covered, GER)",
-        M923A1_tanker_GER: "M923A1 Fuel Tanker (GER)",
-        M923A1_command_GER: "M923A1 Command Truck (GER)",
-        M923A1_arsenal_GER: "M923A1 Arsenal Truck (GER)",
-        M923A1_repair_GER: "M923A1 Repair Truck (GER)",
-        M923A1_engineer_GER: "M923A1 Engineer Truck (GER)",
-        LAV25_GER: "LAV-25 (GER)",
-        UH1H_GER: "UH-1H (GER)",
-        UH1H_armed_GER: "UH-1H (armed, GER)",
-        UH1H_gunship_HEDP_GER: "UH-1H Gunship HEDP (GER)",
-        UH1H_supply_GER: "UH-1H Supply (GER)",
+        M151A2_MERDC: "M151A2 (MERDC)",
+        M151A2_transport: "M151A2 Jeep",
+        M151A2_M2HB: "M151A2 M2HB",
+        M998_covered: "M998 HMMWV",
+        M1025_MERDC: "M1025 HMMWV (MERDC)",
+        M1025_armed_M2HB: "M1025 M2HB",
+        M997_maxi_ambulance: "M997 Ambulance",
+        M923A1_transport: "M923A1 Truck",
+        M923A1_transport_covered: "M923A1 Truck (covered)",
+        M923A1_tanker: "M923A1 Fuel Tanker",
+        M923A1_command: "M923A1 Command Truck",
+        M923A1_arsenal: "M923A1 Arsenal Truck",
+        M923A1_repair: "M923A1 Repair Truck",
+        M923A1_engineer: "M923A1 Engineer Truck",
+        LAV25: "LAV-25",
+        UH1H: "UH-1H",
+        UH1H_armed: "UH-1H (armed)",
+        UH1H_gunship_HEDP: "UH-1H Gunship HEDP",
       },
-      patrolVehicleKeys: ["M151A2_M2HB_GER", "M1025_armed_M2HB_GER", "LAV25_GER"],
-      transportVehicleKeys: ["M151A2_transport_GER", "BWAR_Dingo2A3_2B", "M923A1_transport_covered_GER"],
+      patrolVehicleKeys: ["M151A2_M2HB", "M1025_armed_M2HB", "LAV25"],
+      transportVehicleKeys: ["M151A2_transport", "BWAR_Dingo2A3_2B", "M923A1_transport_covered"],
+      // Retired PZG GER reskin keys (addon gone from the Workshop 2026-09-29):
+      // old key -> { its old prefab ref (deliver/destroy objectRef), the vanilla
+      // key it reskinned }. catalogue.mjs flattens these into RETIRED_VEHICLES;
+      // migrate() rewrites saves with it. Never re-add these keys.
+      retiredVehicles: {
+        M151A2_GER: { ref: "{9BDDB06E8D3E3D8D}Prefabs/Vehicles/Wheeled/M151A2/M151A2 PZG GER.et", to: "M151A2_MERDC" },
+        M151A2_transport_GER: { ref: "{A59B6CE827176166}Prefabs/Vehicles/Wheeled/M151A2/M151A2 Roof PZG GER.et", to: "M151A2_transport" },
+        M151A2_M2HB_GER: { ref: "{B45E86F64FD17B13}Prefabs/Vehicles/Wheeled/M151A2/M151A2 armed PZG GER.et", to: "M151A2_M2HB" },
+        M998_covered_GER: { ref: "{F51C4A5DEFEC9E90}Prefabs/Vehicles/Wheeled/M998/M1025 light PZG GER.et", to: "M998_covered" },
+        M1025_GER: { ref: "{61C45911C277F184}Prefabs/Vehicles/Wheeled/M998/M1025 PZG GER.et", to: "M1025_MERDC" },
+        M1025_armed_M2HB_GER: { ref: "{29B6B56EB4ADC157}Prefabs/Vehicles/Wheeled/M998/M1025 armed PZG GER.et", to: "M1025_armed_M2HB" },
+        M997_maxi_ambulance_GER: { ref: "{EDEBB5E916D0D8E5}Prefabs/Vehicles/Wheeled/M998/M1025_maxi_ambulance_GER.et", to: "M997_maxi_ambulance" },
+        M923A1_transport_GER: { ref: "{40CC95401F931557}Prefabs/Vehicles/Wheeled/M923A1/M923A1 transpo 1 PZG GER.et", to: "M923A1_transport" },
+        M923A1_transport_covered_GER: { ref: "{2F4496DBB6BF8195}Prefabs/Vehicles/Wheeled/M923A1/M923A1 covered PZG GER.et", to: "M923A1_transport_covered" },
+        M923A1_tanker_GER: { ref: "{7D5A6B25C6622144}Prefabs/Vehicles/Wheeled/M923A1/M923A1 tanker PZG GER.et", to: "M923A1_tanker" },
+        M923A1_command_GER: { ref: "{1C39719492E2DF66}Prefabs/Vehicles/Wheeled/M923A1/M923A1 Command PZG GER.et", to: "M923A1_command" },
+        M923A1_arsenal_GER: { ref: "{515237604A3896FC}Prefabs/Vehicles/Wheeled/M923A1/M923A1 Arsenal PZG GER.et", to: "M923A1_arsenal" },
+        M923A1_repair_GER: { ref: "{4AAF0D3BC2B93ED1}Prefabs/Vehicles/Wheeled/M923A1/M923A1 repair PZG GER.et", to: "M923A1_repair" },
+        M923A1_engineer_GER: { ref: "{E293F1978E4A4F08}Prefabs/Vehicles/Wheeled/M923A1/M923A1 Engineer PZG GER.et", to: "M923A1_engineer" },
+        LAV25_GER: { ref: "{A431F97175AFB711}Prefabs/Vehicles/Wheeled/LAV25/LAV25 PZG GER.et", to: "LAV25" },
+        UH1H_GER: { ref: "{19957370950822FC}Prefabs/Vehicles/Helicopters/UH1H/UH1H PZG GER.et", to: "UH1H" },
+        UH1H_armed_GER: { ref: "{B63FCA821F1AAF27}Prefabs/Vehicles/Helicopters/UH1H/UH1H armed PZG GER.et", to: "UH1H_armed" },
+        UH1H_gunship_HEDP_GER: { ref: "{62B49833125D09EA}Prefabs/Vehicles/Helicopters/UH1H/UH1H gunship PZG GER.et", to: "UH1H_gunship_HEDP" },
+        UH1H_supply_GER: { ref: "{71F5CD3C708CAE11}Prefabs/Vehicles/Helicopters/UH1H/UH1H Supply PZG GER.et", to: "UH1H" },
+      },
       // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool);
       // the Dingo's prefab-default occupant is the vanilla US rifleman.
       patrolCrew: [CH.Rifleman, CH.TL, CH.MG, CH.AT, CH.Medic],

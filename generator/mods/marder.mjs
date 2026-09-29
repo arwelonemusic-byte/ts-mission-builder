@@ -26,6 +26,12 @@
 const P = "Prefabs/Vehicles/Tracked";
 export const MARDER = {
   id: "marder",
+  // HIDDEN 2026-09-29: BANNED from the Workshop (page 404) — a mission listing
+  // 6446DDF41914A293 can't be published ("Referenced dependency … doesn't
+  // exist or isn't accessible"). Registry + --bwv spike keep working;
+  // MissionPanel skips the checkbox and migrate() strips the id + both keys
+  // from saves (zone selections backfill the enemy's first armed key).
+  hidden: true,
   label: "CIE Marder 1A3",
   workshopUrl: "https://reforger.armaplatform.com/workshop/6446DDF41914A293-CIEMarder1A3",
   dependencies: ["6446DDF41914A293"],

@@ -56,6 +56,9 @@ declare module "mission-gen" {
        *  always emitted so borrowed/captured vehicles never spawn their
        *  prefab-default (wrong-faction) crews. Concrete prefabs only. */
       patrolCrew?: string[];
+      /** Keys that left the registry (their addon left the Workshop): old key
+       *  -> its old prefab ref + the replacement key. Flattened into RETIRED_VEHICLES. */
+      retiredVehicles?: Record<string, { ref: string; to: string }>;
       fortifications: { road: string[]; roadside: string[] };
       defaultGroupSet: string;
       groupSets: Record<
@@ -111,6 +114,9 @@ declare module "mission-gen" {
   >;
   /** Flat modded-vehicle lookup: key -> { ref, label, mod } */
   export const MOD_VEHICLES: Record<string, { ref: string; label: string; mod: string }>;
+  /** Retired faction vehicle keys: old key -> { old ref, replacement key + ref }.
+   * migrate() rewrites saves with it so their layouts survive. */
+  export const RETIRED_VEHICLES: Record<string, { ref: string; to: string; toRef: string }>;
   export const ZONE_MODULES: {
     type: string;
     label: string;

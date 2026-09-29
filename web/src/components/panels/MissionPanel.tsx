@@ -141,7 +141,8 @@ export default function MissionPanel({
       .filter(Boolean)
       .flatMap((mod) => [
         { label: mod.label, url: mod.workshopUrl },
-        // bundled companion addons (Bundeswehr → PZG GER Vanilla Reskins)
+        // bundled companion addons (none today — Bundeswehr's PZG GER reskin
+        // left the Workshop 2026-09-29)
         ...(mod.extraAddons ?? []).map((a) => ({ label: a.label, url: a.workshopUrl })),
       ]),
   ];

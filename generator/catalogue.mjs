@@ -1093,6 +1093,17 @@ for (const mod of Object.values(MODS)) {
   }
 }
 
+/** Retired faction vehicle keys (a bundled addon left the Workshop), flattened
+ * from every faction's `retiredVehicles`: old key -> { ref: its old prefab ref,
+ * to: replacement key, toRef: the replacement's ref }. Only the web migrate()
+ * reads it — lib.mjs never sees a retired key in a migrated save. */
+export const RETIRED_VEHICLES = {};
+for (const F of Object.values(FACTIONS)) {
+  for (const [key, { ref, to }] of Object.entries(F.retiredVehicles ?? {})) {
+    RETIRED_VEHICLES[key] = { ref, to, toRef: F.vehicles[to] };
+  }
+}
+
 // --- Vehicle mods ----------------------------------------------------------
 // Side-agnostic pool contributors (design settled 2026-08-09, first mod = Dax
 // Humvees 2026-09-06): NOT factions — an enabled vehicle mod's vehicles join

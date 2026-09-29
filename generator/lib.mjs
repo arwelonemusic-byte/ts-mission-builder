@@ -4,9 +4,9 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
-import { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole } from "./catalogue.mjs";
+import { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, K,ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
-export { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, K, ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole };
+export { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, K,ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
 
 let guidCounter = 0;
