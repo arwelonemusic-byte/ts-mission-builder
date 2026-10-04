@@ -1,6 +1,6 @@
 # Roster labels — roles and groups per enemy-capable faction
 
-Generated 2026-09-21 by `node generator/tools/label-roster.mjs` from `input/characters-harvest.json` + the registry's `groupSets` (regenerate, don't hand-edit; tweak the label dictionaries in the script). JSON twin: `input/roster-labels.json`.
+Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/characters-harvest.json` + the registry's `groupSets` (regenerate, don't hand-edit; tweak the label dictionaries in the script). JSON twin: `input/roster-labels.json`.
 
 **Roles** = character prefabs collapsed per subfaction on their role STEM (basename minus the faction prefix and the `_2`/`3`/`_Variant_1` suffix); the emission script picks one variant at random. Labels come from a stem dictionary shared by all factions (so RHS "Rifleman"-named M249 gunners still read Automatic Rifleman); stems the dictionary doesn't know keep the game's own name ("game name" in the Source column). Unarmed shells, non-shipping prefabs and GUID-less prefabs are excluded (listed at the end). `Guard/` and FIA `Special Units/` prefabs fold into the parent subfaction's role of the same stem. Subfactions with no registry group set are marked — roles there are placeable, but no groups exist for them yet.
 
@@ -655,20 +655,19 @@ Generated 2026-09-21 by `node generator/tools/label-roster.mjs` from `input/char
 | **Sniper (covert)** | Снайпер (скрытный) | `SniperCovert` | Special Forces PM Sniper (Covert) | 1: `Character_UK_1989_SpecialForces_SniperCovert` | Rifle_AI_PMSD_PM6x42 + Welrod | override |
 | **Squad Leader** | Командир отделения | `SL` | Special Forces Squad Leader | 1: `Character_UK_1989_SpecialForces_SL` | Rifle_AR15_M203_715_OliveGreen_SandStripes + Welrod | stem |
 
-### MEI — Middle East Insurgents (15 roles, 30 prefabs)
+### MEI — Middle East Insurgents (14 roles, 22 prefabs)
 
-#### Insurgents (registry set `Insurgents`, 15 roles)
+#### Insurgents (registry set `Insurgents`, 14 roles)
 
 | Label | RU | Stems | Game name(s) | Variants | Weapons (distinct kits) | Source |
 |---|---|---|---|---|---|---|
-| **Anti-Tank** | Гранатометчик (РПГ) | `AT` | Anti-Tank Specialist | 3: `Character_MEI_AT`, `Character_MEI_AT1`, `Character_MEI_AT2` | Rifle_AK74 + Launcher_RPG7_PGO7 | stem |
-| **Automatic Rifleman** | Стрелок-пулеметчик | `AR`, `ARifleman` | Automatic Rifleman | 6: `Character_MEI_AR`, `Character_MEI_AR2`, `Character_MEI_AR3`, `Character_MEI_ARifleman1`, `Character_MEI_ARifleman2`, `Character_MEI_ARifleman3` | MG_RPK74 | stem |
-| **Bomb Maker** | Подрывник | `Bomb` | Bomb vest Warrior | 1: `Character_MEI_Bomb` | Rifle_AKS74U | stem |
+| **Anti-Tank** | Гранатометчик (РПГ) | `AT` | Anti-Tank Specialist | 2: `Character_MEI_AT`, `Character_MEI_AT2` | Rifle_AK74 + Launcher_RPG7_PGO7 | stem |
+| **Automatic Rifleman** | Стрелок-пулеметчик | `AR` | Automatic Rifleman | 3: `Character_MEI_AR`, `Character_MEI_AR2`, `Character_MEI_AR3` | MG_RPK74 | stem |
 | **Crew Commander** | Командир экипажа | `CC` | Crew Commander | 1: `Character_MEI_CC` | Rifle_AKS74U | stem |
 | **Crewman** | Член экипажа | `Crew` | Crewman | 1: `Character_MEI_Crew` | Rifle_AKS74U | stem |
-| **Grenadier** | Гренадер | `AG`, `GL` | Grenadier | 2: `Character_MEI_AG1`, `Character_MEI_GL` | Rifle_AK74N_GP25 | stem |
+| **Grenadier** | Гренадер | `GL` | Grenadier | 1: `Character_MEI_GL` | Rifle_AK74N_GP25 | stem |
 | **Leader** | Главарь | `Leader` | Officer | 1: `Character_MEI_Leader` | Rifle_AK74 | override |
-| **Machine Gunner** | Пулеметчик | `LMG`, `MG` | Machine-Gunner | 4: `Character_MEI_LMG1`, `Character_MEI_LMG2`, `Character_MEI_MG`, `Character_MEI_MG2` | MG_PKM<br>MG_UK59 | stem |
+| **Machine Gunner** | Пулеметчик | `MG` | Machine-Gunner | 2: `Character_MEI_MG`, `Character_MEI_MG2` | MG_PKM<br>MG_UK59 | stem |
 | **Medic** | Врач | `Medic` | Medic | 1: `Character_MEI_Medic` | Rifle_VZ58V | stem |
 | **Rifleman** | Стрелок | `Rifleman` | Rifleman | 5: `Character_MEI_Rifleman1`, `Character_MEI_Rifleman2`, `Character_MEI_Rifleman3`, `Character_MEI_Rifleman4`, `Character_MEI_Rifleman5` | Rifle_AK74<br>Rifle_VZ58V | stem |
 | **Sapper** | Сапер | `Sapper` | Sapper | 1: `Character_MEI_Sapper` | Rifle_AKS74U | stem |

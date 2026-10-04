@@ -1,5 +1,5 @@
 {
- "generated": "2026-09-21",
+ "generated": "2026-10-04",
  "roles": [
   {
    "faction": "US",
@@ -16986,50 +16986,11 @@
    "faction": "MEI",
    "setKey": "Insurgents",
    "subfaction": "Insurgents",
-   "label": "Grenadier",
-   "labelRu": "Гренадер",
-   "labelSource": "stem",
-   "stems": [
-    "AG",
-    "GL"
-   ],
-   "gameNames": [
-    "Grenadier"
-   ],
-   "gameNamesRu": [
-    "Гренадер"
-   ],
-   "variants": [
-    {
-     "file": "Character_MEI_AG1.et",
-     "ref": "{91D9FF2600E080AF}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AG1.et",
-     "weapons": [
-      "Rifle_AK74N_GP25"
-     ],
-     "status": "OK",
-     "cataloged": true
-    },
-    {
-     "file": "Character_MEI_GL.et",
-     "ref": "{157C8AAF4C30BBDA}Prefabs/Characters/Factions/IND/MEI/Character_MEI_GL.et",
-     "weapons": [
-      "Rifle_AK74N_GP25"
-     ],
-     "status": "OK",
-     "cataloged": true
-    }
-   ]
-  },
-  {
-   "faction": "MEI",
-   "setKey": "Insurgents",
-   "subfaction": "Insurgents",
    "label": "Automatic Rifleman",
    "labelRu": "Стрелок-пулеметчик",
    "labelSource": "stem",
    "stems": [
-    "AR",
-    "ARifleman"
+    "AR"
    ],
    "gameNames": [
     "Automatic Rifleman"
@@ -17059,33 +17020,6 @@
     {
      "file": "Character_MEI_AR3.et",
      "ref": "{0F4660898150BCA3}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AR3.et",
-     "weapons": [
-      "MG_RPK74"
-     ],
-     "status": "OK",
-     "cataloged": true
-    },
-    {
-     "file": "Character_MEI_ARifleman1.et",
-     "ref": "{A47DAC6EE8361F75}Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman1.et",
-     "weapons": [
-      "MG_RPK74"
-     ],
-     "status": "OK",
-     "cataloged": true
-    },
-    {
-     "file": "Character_MEI_ARifleman2.et",
-     "ref": "{C829988E54F2905B}Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman2.et",
-     "weapons": [
-      "MG_RPK74"
-     ],
-     "status": "OK",
-     "cataloged": true
-    },
-    {
-     "file": "Character_MEI_ARifleman3.et",
-     "ref": "{2DB5D47758170730}Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman3.et",
      "weapons": [
       "MG_RPK74"
      ],
@@ -17122,47 +17056,11 @@
      "cataloged": true
     },
     {
-     "file": "Character_MEI_AT1.et",
-     "ref": "{F6438A49A355F155}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AT1.et",
-     "weapons": [
-      "Rifle_AK74",
-      "Launcher_RPG7_PGO7"
-     ],
-     "status": "OK",
-     "cataloged": true
-    },
-    {
      "file": "Character_MEI_AT2.et",
      "ref": "{6A455C4D045B7B4F}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AT2.et",
      "weapons": [
       "Rifle_AK74",
       "Launcher_RPG7_PGO7"
-     ],
-     "status": "OK",
-     "cataloged": true
-    }
-   ]
-  },
-  {
-   "faction": "MEI",
-   "setKey": "Insurgents",
-   "subfaction": "Insurgents",
-   "label": "Bomb Maker",
-   "labelRu": "Подрывник",
-   "labelSource": "stem",
-   "stems": [
-    "Bomb"
-   ],
-   "gameNames": [
-    "Bomb vest Warrior"
-   ],
-   "gameNamesRu": [],
-   "variants": [
-    {
-     "file": "Character_MEI_Bomb.et",
-     "ref": "{11CF9580EEE827F6}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Bomb.et",
-     "weapons": [
-      "Rifle_AKS74U"
      ],
      "status": "OK",
      "cataloged": true
@@ -17257,52 +17155,24 @@
    "faction": "MEI",
    "setKey": "Insurgents",
    "subfaction": "Insurgents",
-   "label": "Machine Gunner",
-   "labelRu": "Пулеметчик",
+   "label": "Grenadier",
+   "labelRu": "Гренадер",
    "labelSource": "stem",
    "stems": [
-    "LMG",
-    "MG"
+    "GL"
    ],
    "gameNames": [
-    "Machine-Gunner"
+    "Grenadier"
    ],
    "gameNamesRu": [
-    "Пулеметчик"
+    "Гренадер"
    ],
    "variants": [
     {
-     "file": "Character_MEI_LMG1.et",
-     "ref": "{B582888C61E30624}Prefabs/Characters/Factions/IND/MEI/Character_MEI_LMG1.et",
+     "file": "Character_MEI_GL.et",
+     "ref": "{157C8AAF4C30BBDA}Prefabs/Characters/Factions/IND/MEI/Character_MEI_GL.et",
      "weapons": [
-      "MG_PKM"
-     ],
-     "status": "OK",
-     "cataloged": true
-    },
-    {
-     "file": "Character_MEI_LMG2.et",
-     "ref": "{D9D6BC6CDD27890A}Prefabs/Characters/Factions/IND/MEI/Character_MEI_LMG2.et",
-     "weapons": [
-      "MG_UK59"
-     ],
-     "status": "OK",
-     "cataloged": true
-    },
-    {
-     "file": "Character_MEI_MG.et",
-     "ref": "{8A6672A86B068679}Prefabs/Characters/Factions/IND/MEI/Character_MEI_MG.et",
-     "weapons": [
-      "MG_PKM"
-     ],
-     "status": "OK",
-     "cataloged": true
-    },
-    {
-     "file": "Character_MEI_MG2.et",
-     "ref": "{307A5448B2E63ECC}Prefabs/Characters/Factions/IND/MEI/Character_MEI_MG2.et",
-     "weapons": [
-      "MG_UK59"
+      "Rifle_AK74N_GP25"
      ],
      "status": "OK",
      "cataloged": true
@@ -17331,6 +17201,43 @@
      "ref": "{15CD0954AEE19BF2}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Leader.et",
      "weapons": [
       "Rifle_AK74"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "MEI",
+   "setKey": "Insurgents",
+   "subfaction": "Insurgents",
+   "label": "Machine Gunner",
+   "labelRu": "Пулеметчик",
+   "labelSource": "stem",
+   "stems": [
+    "MG"
+   ],
+   "gameNames": [
+    "Machine-Gunner"
+   ],
+   "gameNamesRu": [
+    "Пулеметчик"
+   ],
+   "variants": [
+    {
+     "file": "Character_MEI_MG.et",
+     "ref": "{8A6672A86B068679}Prefabs/Characters/Factions/IND/MEI/Character_MEI_MG.et",
+     "weapons": [
+      "MG_PKM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_MEI_MG2.et",
+     "ref": "{307A5448B2E63ECC}Prefabs/Characters/Factions/IND/MEI/Character_MEI_MG2.et",
+     "weapons": [
+      "MG_UK59"
      ],
      "status": "OK",
      "cataloged": true

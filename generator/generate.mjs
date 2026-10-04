@@ -13,7 +13,7 @@
 //   --uk-enemy  build the British Forces enemy-side variant (TS_WebSpikeUKEnemy:
 //               vanilla US vs UK — UK groups/fortifications/Land Rover patrols)
 //   --mei       build the Middle East Insurgents variant (TS_WebSpikeMEI: US vs
-//               MEI — the USSR alias faction, exercises alias emission + deps)
+//               MEI — real mod faction, deps = the MiddleEastInsurgents GUID)
 //   --bandits   build the Bandit Faction variant (TS_WebSpikeBandits: US vs
 //               PLASTICBANDIT — enemy-only, FactionManager_Base append pattern)
 //   --afrf-mei  build the RHS-vs-MEI variant (TS_WebSpikeAFRFMEI: RHS_AFRF vs
@@ -488,11 +488,9 @@ const UK_ENEMY_MISSION = {
   ],
 };
 
-// Middle East Insurgents spike: vanilla US vs the MEI alias faction — the
-// mission content is identical to the vanilla spike's USSR enemy (alias
-// factions reuse all vanilla USSR refs); only the deps differ (USSR 2 Middle
-// East addon, whose own gproj pulls MiddleEastInsurgents + RussiantoArabic
-// transitively). In-game the USSR troops appear as insurgents with Arabic voices.
+// Middle East Insurgents spike: vanilla US vs the real MEI faction (its own
+// groups + an MEI UAZ mounted patrol). Deps = MiddleEastInsurgents alone — the
+// mod ships its own Arabic voices since 1.3.0, no voice bridge addon needed.
 const MEI_MISSION = {
   ...MISSION,
   addonId: "TSWebSpikeMEI",

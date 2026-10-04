@@ -1,6 +1,6 @@
 # Individual character prefabs — every enemy-capable faction
 
-Harvested 2026-09-21 by `node generator/tools/harvest-characters.mjs` (regenerate, don't hand-edit). Machine-readable twin: `input/characters-harvest.json`.
+Harvested 2026-10-04 by `node generator/tools/harvest-characters.mjs` (regenerate, don't hand-edit). Machine-readable twin: `input/characters-harvest.json`.
 
 **Scope**: every registry faction that can be the enemy side (US_DESERT is `playableOnly` → excluded). Aliases (SFS packs) list their OWN character prefabs, not the base faction's.
 
@@ -29,7 +29,7 @@ Harvested 2026-09-21 by `node generator/tools/harvest-characters.mjs` (regenerat
 | RHS_AFRF | 321 | 151 | 170 | 316 | 178 | 4 | 0 | 88 | 11 |
 | RHS_ION | 61 | 0 | 61 | 61 | 37 | 0 | 0 | 12 | 5 |
 | UK | 97 | 77 | 20 | 91 | 0 | 1 | 0 | 0 | 9 |
-| MEI | 32 | 32 | 0 | 32 | 5 | 2 | 0 | 1 | 2 |
+| MEI | 24 | 24 | 0 | 24 | 4 | 2 | 0 | 1 | 2 |
 | PLASTICBANDIT | 20 | 4 | 16 | 20 | 9 | 0 | 0 | 6 | 4 |
 | SFS_US | 13 | 0 | 13 | 13 | 0 | 0 | 0 | 0 | 0 |
 | SFS_USSR | 13 | 0 | 13 | 13 | 0 | 0 | 0 | 0 | 1 |
@@ -1190,44 +1190,36 @@ Skipped abstract parents (9): Character_UK_1983_Regulars_BaseLoadout, Character_
 
 ## MEI — Middle East Insurgents — enemy-only
 
-Sources: `MiddleEastInsurgents/Configs/EntityCatalog/MEI/Characters_EntityCatalog_MEI.conf`, `MiddleEastInsurgents/Configs/EntityCatalog/FIA/Characters_EntityCatalog_MEI.conf`; sweep of `reference/MiddleEastInsurgents` under `Prefabs/Characters/Factions/IND/MEI/`. Paths below are relative to that prefix.
+Sources: `MiddleEastInsurgents/Configs/EntityCatalog/MEI/Characters_EntityCatalog_MEI.conf`; sweep of `reference/MiddleEastInsurgents` under `Prefabs/Characters/Factions/IND/MEI/`. Paths below are relative to that prefix.
 
-### (root) (32)
+### (root) (24)
 
 | Name | RU | Prefab | GUID | Status | Weapons | Notes |
 |---|---|---|---|---|---|---|
-| Grenadier | Гренадер | `Character_MEI_AG1.et` | `{91D9FF2600E080AF}` | OK | Rifle_AK74N_GP25 |  |
 | Automatic Rifleman | Стрелок-пулеметчик | `Character_MEI_AR.et` | `{18A9F48EBB87D2F0}` | OK | MG_RPK74 |  |
 | Automatic Rifleman | Стрелок-пулеметчик | `Character_MEI_AR2.et` | `{EADA2C708DB52BC8}` | OK | MG_RPK74 | cosmetic variant of Character_MEI_AR |
 | Automatic Rifleman | Стрелок-пулеметчик | `Character_MEI_AR3.et` | `{0F4660898150BCA3}` | OK | MG_RPK74 | cosmetic variant of Character_MEI_AR |
-| Automatic Rifleman | Стрелок-пулеметчик | `Character_MEI_ARifleman1.et` | `{A47DAC6EE8361F75}` | OK | MG_RPK74 |  |
-| Automatic Rifleman | Стрелок-пулеметчик | `Character_MEI_ARifleman2.et` | `{C829988E54F2905B}` | OK | MG_RPK74 |  |
-| Automatic Rifleman | Стрелок-пулеметчик | `Character_MEI_ARifleman3.et` | `{2DB5D47758170730}` | OK | MG_RPK74 |  |
 | Anti-Tank Specialist | Бронебойщик | `Character_MEI_AT.et` | `{46CBE7ED7435A25C}` | OK | Rifle_AK74, Launcher_RPG7_PGO7 | stale parent path relinked: IND/MEI/Character_MEI_Rifle1.et → IND/MEI/Character_MEI_Rifleman1.et |
-| Anti-Tank Specialist | Бронебойщик | `Character_MEI_AT1.et` | `{F6438A49A355F155}` | OK | Rifle_AK74, Launcher_RPG7_PGO7 | cosmetic variant of Character_MEI_AT |
-| Anti-Tank Specialist | Бронебойщик | `Character_MEI_AT2.et` | `{6A455C4D045B7B4F}` | OK | Rifle_AK74, Launcher_RPG7_PGO7 | cosmetic variant of Character_MEI_AT; catalogs disagree: {6A455C4D045B7B4F} / {9A17BEA91F917E7B}; stale parent path relinked: IND/MEI/Character_MEI_Rifle1.et → IND/MEI/Character_MEI_Rifleman1.et |
-| Bomb vest Warrior |  | `Character_MEI_Bomb.et` | `{11CF9580EEE827F6}` | OK | Rifle_AKS74U |  |
+| Anti-Tank Specialist | Бронебойщик | `Character_MEI_AT2.et` | `{6A455C4D045B7B4F}` | OK | Rifle_AK74, Launcher_RPG7_PGO7 | cosmetic variant of Character_MEI_AT; stale parent path relinked: IND/MEI/Character_MEI_Rifle1.et → IND/MEI/Character_MEI_Rifleman1.et |
 | Vest Man | Человек в жилете | `Character_MEI_Bomber.et` | `{958C0AB8ECDA03F9}` | OK | Rifle_AKS74U |  |
 | Crew Commander | Командир экипажа | `Character_MEI_CC.et` | `{1451CFEED16DB58C}` | OK | Rifle_AKS74U |  |
 | Crewman | Член экипажа | `Character_MEI_Crew.et` | `{8B556AC161BE7405}` | OK | Rifle_AKS74U |  |
 | Grenadier | Гренадер | `Character_MEI_GL.et` | `{157C8AAF4C30BBDA}` | OK | Rifle_AK74N_GP25 |  |
 | Helicopter Crew | Экипаж вертолета | `Character_MEI_HeliCrew.et` | `{013E137EEB9F000F}` | OK | — | UNARMED (no weapon in slots or inventory) |
 | Helicopter Pilot | Пилот вертолета | `Character_MEI_HeliPilot.et` | `{9EEA722ACE508FDB}` | OK | — | UNARMED (no weapon in slots or inventory) |
-| Machine-Gunner | Пулеметчик | `Character_MEI_LMG1.et` | `{B582888C61E30624}` | OK | MG_PKM |  |
-| Machine-Gunner | Пулеметчик | `Character_MEI_LMG2.et` | `{D9D6BC6CDD27890A}` | OK | MG_UK59 |  |
-| Officer | Офицер | `Character_MEI_Leader.et` | `{15CD0954AEE19BF2}` | OK | Rifle_AK74 | catalogs disagree: {15CD0954AEE19BF2} / {58B923E15109E91A} |
+| Officer | Офицер | `Character_MEI_Leader.et` | `{15CD0954AEE19BF2}` | OK | Rifle_AK74 |  |
 | Machine-Gunner | Пулеметчик | `Character_MEI_MG.et` | `{8A6672A86B068679}` | OK | MG_PKM |  |
 | Machine-Gunner | Пулеметчик | `Character_MEI_MG2.et` | `{307A5448B2E63ECC}` | OK | MG_UK59 | cosmetic variant of Character_MEI_MG |
 | Medic | Врач | `Character_MEI_Medic.et` | `{E6324648D7C20957}` | OK | Rifle_VZ58V |  |
-| Rifleman | Стрелок | `Character_MEI_Rifleman1.et` | `{F95AEA26749B12EC}` | OK | Rifle_AK74 | catalogs disagree: {F95AEA26749B12EC} / {76B11940F6EDF623} |
-| Rifleman | Стрелок | `Character_MEI_Rifleman2.et` | `{950EDEC6C85F9DC2}` | OK | Rifle_AK74 | catalogs disagree: {950EDEC6C85F9DC2} / {EB364CCCBCFD29A5} |
-| Rifleman | Стрелок | `Character_MEI_Rifleman3.et` | `{7092923FC4BA0AA9}` | OK | Rifle_VZ58V | catalogs disagree: {7092923FC4BA0AA9} / {0EAA0035B018BECE} |
-| Rifleman | Стрелок | `Character_MEI_Rifleman4.et` | `{4DA6B707B1D6839E}` | OK | Rifle_AK74 | catalogs disagree: {4DA6B707B1D6839E} / {339E250DC57437F9} |
-| Rifleman | Стрелок | `Character_MEI_Rifleman5.et` | `{A83AFBFEBD3314F5}` | OK | Rifle_AK74 | catalogs disagree: {A83AFBFEBD3314F5} / {D60269F4C991A092} |
-| Sapper | Сапер | `Character_MEI_Sapper.et` | `{0482D36FE842BB41}` | OK | Rifle_AKS74U | catalogs disagree: {0482D36FE842BB41} / {E1E6ACDA18F1AB27}; stale parent path relinked: IND/MEI/Character_MEI_Rifle1.et → IND/MEI/Character_MEI_Rifleman1.et |
+| Rifleman | Стрелок | `Character_MEI_Rifleman1.et` | `{F95AEA26749B12EC}` | OK | Rifle_AK74 |  |
+| Rifleman | Стрелок | `Character_MEI_Rifleman2.et` | `{950EDEC6C85F9DC2}` | OK | Rifle_AK74 |  |
+| Rifleman | Стрелок | `Character_MEI_Rifleman3.et` | `{7092923FC4BA0AA9}` | OK | Rifle_VZ58V |  |
+| Rifleman | Стрелок | `Character_MEI_Rifleman4.et` | `{4DA6B707B1D6839E}` | OK | Rifle_AK74 |  |
+| Rifleman | Стрелок | `Character_MEI_Rifleman5.et` | `{A83AFBFEBD3314F5}` | OK | Rifle_AK74 |  |
+| Sapper | Сапер | `Character_MEI_Sapper.et` | `{0482D36FE842BB41}` | OK | Rifle_AKS74U | stale parent path relinked: IND/MEI/Character_MEI_Rifle1.et → IND/MEI/Character_MEI_Rifleman1.et |
 | Scout | Разведчик | `Character_MEI_Scout.et` | `{A8DCD6A481346FB4}` | OK | Rifle_VZ58V |  |
 | Sharpshooter | Пехотный снайпер | `Character_MEI_Sharpshooter.et` | `{16269A5F2CD693E4}` | OK | Rifle_SVD_PSO, Handgun_PM |  |
-| Sharpshooter | Пехотный снайпер | `Character_MEI_Sniper.et` | `{95F67CCC15CAB4CE}` | OK | Rifle_SVD_PSO | catalogs disagree: {95F67CCC15CAB4CE} / {8F6B34BB2FDEE4CD} |
+| Sharpshooter | Пехотный снайпер | `Character_MEI_Sniper.et` | `{95F67CCC15CAB4CE}` | OK | Rifle_SVD_PSO |  |
 
 Skipped random/randomized wrappers (1): Character_MEI_Randomized
 

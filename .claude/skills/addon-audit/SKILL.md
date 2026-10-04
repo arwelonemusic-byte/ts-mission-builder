@@ -16,9 +16,9 @@ holds, and produces a triage report + follow-up list. It never edits the registr
 root). It reads the registries (`MODS`, `VEHICLE_MODS`, `CORE_ADDONS`, `TERRAINS`,
 `MOD_ARSENAL_POOLS`, `CORE_ARSENAL_POOL` from `generator/catalogue.mjs`) so the supported
 set is never hand-maintained. `AUDIT_SETS` at the top of the script maps a registry entry
-to the GUIDs it is audited through when they differ from `dependencies` (MEI → its two
-content mods, UK → +Truck Utility companion, bandits → +Bandit Gear, core → ACE Medical
-+ ACE Core with a script-symbol check).
+to the GUIDs it is audited through when they differ from `dependencies` (UK → +Truck
+Utility companion, bandits → +Bandit Gear, core → ACE Medical + ACE Core with a
+script-symbol check).
 
 | command | does |
 |---|---|
@@ -207,11 +207,9 @@ open follow-ups.
 
 `check all` on 2026-09-08 (seed sweep) is clean except these — each is understood; mention
 them only if the evidence CHANGES:
-- **MEI — 3 AMBIGUOUS groups** (`Group_MEI_LightFireTeam` / `PlatoonHQ` / `Team_AT`): MEI
-  1.3.1 ships two group catalogs that disagree (`Configs/EntityCatalog/MEI/…` vs
-  `Configs/EntityCatalog/FIA/…`) and no prefab references a group, so the tool can't rank
-  them. The registry holds the `EntityCatalog/MEI` GUIDs, Workbench-validated 2026-09-04
-  (0 unresolved refs). Re-check only if the diff shows those catalogs changing.
+- ~~MEI — 3 AMBIGUOUS groups~~ RESOLVED by MEI 1.3.2 (2026-09-24): the stale
+  `Configs/EntityCatalog/FIA/*_MEI.conf` catalogs were deleted, only `EntityCatalog/MEI/`
+  remains and it matches the registry (confirmed against the pak's rdb, 2026-10-03).
 - **Bundeswehr — 1 REGENERATED** (`Launchers/PzF3/BWAR_Launcher_PzF3.et`): the tool prefers
   `{AB479EBF284550EC}` because the two AT character prefabs reference the launcher path with
   that GUID — but `BWAR_Launcher_PzF3.et`'s OWN parent line is
@@ -249,7 +247,14 @@ them only if the evidence CHANGES:
 ## Gotchas
 
 - Extractions have NO `.meta` files and prefab root `ID` lines are not resource GUIDs —
-  GUID truth is inline `{GUID}path` refs only, ranked prefab > layer > catalog conf.
+  inside the extraction, GUID truth is inline `{GUID}path` refs only, ranked prefab > layer
+  > catalog conf. **The final word is the `resourceDatabase.rdb` shipped next to the mod's
+  `data.pak`** (game addons dir): it is the packed GUID↔path table the engine loads.
+  `python .claude/skills/addon-audit/scripts/rdb_check.py <rdb> <file-with-refs>…` decodes
+  it and grades every `{GUID}path` ref in the given files (OK / WRONG_GUID / MOVED /
+  NOT_IN_PAK — vanilla refs read NOT_IN_PAK, expected). Use it whenever extraction
+  evidence is ambiguous or Workbench reports `Wrong GUID/name` (MEI 1.3.2, 2026-10-03:
+  settled a regenerated base GUID and the 8 deleted roster characters in one pass).
 - `extract-addon` merges into an existing folder and never deletes — ALWAYS `rotate`
   first, or removed files go unnoticed and the diff lies.
 - The game client auto-updates addons; an on-disk version can be newer than the extraction
@@ -258,7 +263,6 @@ them only if the evidence CHANGES:
   Serhiivka 8.0.0). The fingerprint diff is the truth; the version is a label.
 - Titles with `:` were folder-named by hand (`RHS Status Quo`, `British Forces - Truck,
   Utility`); the tool matches loosely. New extractions follow extract-addon's naming.
-- User-owned anchors (TS MEI Arabic Voices `0B6643C078688A29`, the toolkit) are never
-  audited — their content is the user's.
+- User-owned addons (the toolkit) are never audited — their content is the user's.
 - Never judge a map by the mod's own log noise; only errors referencing OUR entities count
   (Workbench step happens after the Builder is updated, not inside the audit).

@@ -1,7 +1,9 @@
 // Middle East Insurgents — REAL faction from the "MiddleEastInsurgents" mod,
-// voiced Arabic via our own "TS MEI Arabic Voices" addon (see the anchor note
-// on the mod def below; the original Czech to Arabic anchor died 2026-09-04
-// when its direct dependency "Israelite Utility" was blocked by Bohemia).
+// a DIRECT dependency since 2026-10-04: MEI 1.3.0 ships its own Arabic voice
+// lines (Arma 2 samples, Audio/Voice/Arab + its own Character_Voice_Code_MEI /
+// RadioProtocol_*_MEI acps), so the voice bridges are gone — first the Czech
+// to Arabic anchor (died 2026-09-04 with the blocked "Israelite Utility"),
+// then our own "TS MEI Arabic Voices" addon (0B6643C078688A29, retired).
 //
 // Why a real faction (v2, replacing the earlier "USSR 2 Middle East" alias
 // integration): MiddleEastInsurgents defines MEI as a REAL faction (FactionKey
@@ -10,8 +12,7 @@
 // 56B2B4776E6E4499), appending MEI as member {6A4624294CD7E4A0} (+ a MEC
 // civilian-militia member {6A4624294DDAF524} we leave untouched) — the
 // validated RHS entryGuid path. A real faction means USSR-vs-MEI works, no
-// reskin-coverage caveats, and no alias machinery. Plain "MiddleEastInsurgents"
-// alone would leave the insurgents speaking Czech (they inherit FIA voices).
+// reskin-coverage caveats, and no alias machinery.
 //
 // All GUIDs RE-HARVESTED for MEI 1.3.1 (2026-09-04): the author regenerated
 // the resource GUIDs of every group + character prefab AND the FactionManager
@@ -21,10 +22,14 @@
 // the unflagged candidate. Vehicles + squad-name members were NOT regenerated.
 // 1.3.1 also grew the catalog: Team_GL/LAT/Suppress + SharpshooterTeam now
 // have trustworthy GUIDs (unrecoverable in July) and RifleSquad is 7 slots.
+// 1.3.2 (2026-09-24, audited 2026-10-03) deleted the stale FIA-folder catalogs
+// and 8 character variants (AG1, ARifleman1-3, AT1, Bomb, LMG1-2 — the roster
+// lost them) and regenerated only Group_MEI_Base / Character_MEI_Base; every
+// ref below re-verified against the 1.3.2 pak's resourceDatabase.rdb.
 // All GUIDs ground-truthed from the extraction
 // (D:\VSCode_dev\arma-reforger\reference\MiddleEastInsurgents):
 //   - faction member:  Prefabs/MP/Managers/Factions/FactionManager_Editor.et
-//   - groups:          Configs/EntityCatalog/FIA/Groups_EntityCatalog_MEI.conf
+//   - groups:          Configs/EntityCatalog/MEI/Groups_EntityCatalog_MEI.conf
 //   - callsigns:       Configs/Callsigns/Callsigns_MEI.conf (4 squads "1"-"4")
 // MEI ships no vehicle catalog of its own (MEI.conf points at the vanilla FIA
 // vehicle catalog) and no spawn points — vehicles/spawn refs below are the
@@ -36,20 +41,12 @@ const P_SLOT = "Prefabs/Compositions/Slotted";
 export const MEI = {
   id: "mei",
   label: "Middle East Insurgents",
-  // Anchor = our own "TS MEI Arabic Voices" addon (0B6643C078688A29, built
-  // 2026-09-04, source: Workbench addons dir "TS MEI Arabic Voices"): two
-  // resource overrides that route MEI characters through the vanilla Russian
-  // voice pipeline (Character_MEI_Base.et sound component -> vanilla voice
-  // code + RU radio-protocol acps; FactionIdentity_MEI.conf VoiceIDs 201/202
-  // -> 101/102), which "Russian to Arabic" 1.0.9 (65E0AE1A83DA063A, now
-  // self-contained) overrides with Arabic samples. Its .gproj pulls
-  // MiddleEastInsurgents + Russian to Arabic transitively. Replaces the
-  // Czech to Arabic anchor (direct dep on the blocked Israelite Utility).
-  // Side effect: vanilla USSR troops in the same mission speak Arabic too.
-  workshopUrl: "https://reforger.armaplatform.com/workshop/0B6643C078688A29",
-  dependencies: ["0B6643C078688A29"],
-  // Un-hidden 2026-09-04 once the TS MEI Arabic Voices addon was published
-  // to the Workshop (0B6643C078688A29); playtest of the Arabic voices pending.
+  // MiddleEastInsurgents itself (gproj deps = base game only). Its own voice
+  // pipeline (FactionIdentity_MEI VoiceIDs 201/202 -> Character_Voice_Code_MEI
+  // + RadioProtocol_*_MEI acps -> Audio/Voice/Arab samples) is self-contained,
+  // so nothing else is needed and vanilla USSR troops keep their Russian voices.
+  workshopUrl: "https://reforger.armaplatform.com/workshop/64CEC8E005828E5D",
+  dependencies: ["64CEC8E005828E5D"],
   hidden: false,
   factions: {
     MEI: {

@@ -20828,27 +20828,6 @@
   "label": "Middle East Insurgents — enemy-only",
   "rows": [
    {
-    "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_AG1.et",
-    "guid": "91D9FF2600E080AF",
-    "status": "OK",
-    "evidence": "layer",
-    "alt": [],
-    "name": "Grenadier",
-    "nameRu": "Гренадер",
-    "rawName": "#AR-Role_Grenadier",
-    "faction": "MEI",
-    "weapons": [
-     "Rifle_AK74N_GP25"
-    ],
-    "invWeapons": [],
-    "image": "Textures/ImagePreview/AG.edds",
-    "cataloged": true,
-    "enabled": true,
-    "ships": true,
-    "notes": [],
-    "ref": "{91D9FF2600E080AF}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AG1.et"
-   },
-   {
     "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_AR.et",
     "guid": "18A9F48EBB87D2F0",
     "status": "OK",
@@ -20918,69 +20897,6 @@
     "ref": "{0F4660898150BCA3}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AR3.et"
    },
    {
-    "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman1.et",
-    "guid": "A47DAC6EE8361F75",
-    "status": "OK",
-    "evidence": "layer",
-    "alt": [],
-    "name": "Automatic Rifleman",
-    "nameRu": "Стрелок-пулеметчик",
-    "rawName": "#AR-Role_AutomaticRifleman",
-    "faction": "MEI",
-    "weapons": [
-     "MG_RPK74"
-    ],
-    "invWeapons": [],
-    "image": "Textures/ImagePreview/AR1.edds",
-    "cataloged": true,
-    "enabled": true,
-    "ships": true,
-    "notes": [],
-    "ref": "{A47DAC6EE8361F75}Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman1.et"
-   },
-   {
-    "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman2.et",
-    "guid": "C829988E54F2905B",
-    "status": "OK",
-    "evidence": "layer",
-    "alt": [],
-    "name": "Automatic Rifleman",
-    "nameRu": "Стрелок-пулеметчик",
-    "rawName": "#AR-Role_AutomaticRifleman",
-    "faction": "MEI",
-    "weapons": [
-     "MG_RPK74"
-    ],
-    "invWeapons": [],
-    "image": "Textures/ImagePreview/AR2.edds",
-    "cataloged": true,
-    "enabled": true,
-    "ships": true,
-    "notes": [],
-    "ref": "{C829988E54F2905B}Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman2.et"
-   },
-   {
-    "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman3.et",
-    "guid": "2DB5D47758170730",
-    "status": "OK",
-    "evidence": "layer",
-    "alt": [],
-    "name": "Automatic Rifleman",
-    "nameRu": "Стрелок-пулеметчик",
-    "rawName": "#AR-Role_AutomaticRifleman",
-    "faction": "MEI",
-    "weapons": [
-     "MG_RPK74"
-    ],
-    "invWeapons": [],
-    "image": "Textures/ImagePreview/AR3.edds",
-    "cataloged": true,
-    "enabled": true,
-    "ships": true,
-    "notes": [],
-    "ref": "{2DB5D47758170730}Prefabs/Characters/Factions/IND/MEI/Character_MEI_ARifleman3.et"
-   },
-   {
     "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_AT.et",
     "guid": "46CBE7ED7435A25C",
     "status": "OK",
@@ -21003,31 +20919,6 @@
      "stale parent path relinked: IND/MEI/Character_MEI_Rifle1.et → IND/MEI/Character_MEI_Rifleman1.et"
     ],
     "ref": "{46CBE7ED7435A25C}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AT.et"
-   },
-   {
-    "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_AT1.et",
-    "guid": "F6438A49A355F155",
-    "status": "OK",
-    "evidence": "layer",
-    "alt": [],
-    "name": "Anti-Tank Specialist",
-    "nameRu": "Бронебойщик",
-    "rawName": "#AR-Role_AntiTank",
-    "faction": "MEI",
-    "weapons": [
-     "Rifle_AK74",
-     "Launcher_RPG7_PGO7"
-    ],
-    "invWeapons": [],
-    "image": "Textures/ImagePreview/AT.edds",
-    "cataloged": true,
-    "enabled": true,
-    "ships": true,
-    "notes": [
-     "cosmetic variant of Character_MEI_AT"
-    ],
-    "variantOf": "Character_MEI_AT",
-    "ref": "{F6438A49A355F155}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AT1.et"
    },
    {
     "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_AT2.et",
@@ -21055,32 +20946,10 @@
     "ships": true,
     "notes": [
      "cosmetic variant of Character_MEI_AT",
-     "catalogs disagree: {6A455C4D045B7B4F} / {9A17BEA91F917E7B}",
      "stale parent path relinked: IND/MEI/Character_MEI_Rifle1.et → IND/MEI/Character_MEI_Rifleman1.et"
     ],
     "variantOf": "Character_MEI_AT",
     "ref": "{6A455C4D045B7B4F}Prefabs/Characters/Factions/IND/MEI/Character_MEI_AT2.et"
-   },
-   {
-    "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_Bomb.et",
-    "guid": "11CF9580EEE827F6",
-    "status": "OK",
-    "evidence": "layer",
-    "alt": [],
-    "name": "Bomb vest Warrior",
-    "nameRu": null,
-    "rawName": "Bomb vest Warrior",
-    "faction": "MEI",
-    "weapons": [
-     "Rifle_AKS74U"
-    ],
-    "invWeapons": [],
-    "image": "Textures/ImagePreview/Bomb.edds",
-    "cataloged": true,
-    "enabled": true,
-    "ships": true,
-    "notes": [],
-    "ref": "{11CF9580EEE827F6}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Bomb.et"
    },
    {
     "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_Bomber.et",
@@ -21209,48 +21078,6 @@
     "ref": "{9EEA722ACE508FDB}Prefabs/Characters/Factions/IND/MEI/Character_MEI_HeliPilot.et"
    },
    {
-    "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_LMG1.et",
-    "guid": "B582888C61E30624",
-    "status": "OK",
-    "evidence": "layer",
-    "alt": [],
-    "name": "Machine-Gunner",
-    "nameRu": "Пулеметчик",
-    "rawName": "#AR-Role_MachineGunner",
-    "faction": "MEI",
-    "weapons": [
-     "MG_PKM"
-    ],
-    "invWeapons": [],
-    "image": "Textures/ImagePreview/LMG1.edds",
-    "cataloged": true,
-    "enabled": true,
-    "ships": true,
-    "notes": [],
-    "ref": "{B582888C61E30624}Prefabs/Characters/Factions/IND/MEI/Character_MEI_LMG1.et"
-   },
-   {
-    "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_LMG2.et",
-    "guid": "D9D6BC6CDD27890A",
-    "status": "OK",
-    "evidence": "layer",
-    "alt": [],
-    "name": "Machine-Gunner",
-    "nameRu": "Пулеметчик",
-    "rawName": "#AR-Role_MachineGunner",
-    "faction": "MEI",
-    "weapons": [
-     "MG_UK59"
-    ],
-    "invWeapons": [],
-    "image": "Textures/ImagePreview/LMG2.edds",
-    "cataloged": true,
-    "enabled": true,
-    "ships": true,
-    "notes": [],
-    "ref": "{D9D6BC6CDD27890A}Prefabs/Characters/Factions/IND/MEI/Character_MEI_LMG2.et"
-   },
-   {
     "path": "Prefabs/Characters/Factions/IND/MEI/Character_MEI_Leader.et",
     "guid": "15CD0954AEE19BF2",
     "status": "OK",
@@ -21273,9 +21100,7 @@
     "cataloged": true,
     "enabled": true,
     "ships": true,
-    "notes": [
-     "catalogs disagree: {15CD0954AEE19BF2} / {58B923E15109E91A}"
-    ],
+    "notes": [],
     "ref": "{15CD0954AEE19BF2}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Leader.et"
    },
    {
@@ -21367,9 +21192,7 @@
     "cataloged": true,
     "enabled": true,
     "ships": true,
-    "notes": [
-     "catalogs disagree: {F95AEA26749B12EC} / {76B11940F6EDF623}"
-    ],
+    "notes": [],
     "ref": "{F95AEA26749B12EC}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman1.et"
    },
    {
@@ -21395,9 +21218,7 @@
     "cataloged": true,
     "enabled": true,
     "ships": true,
-    "notes": [
-     "catalogs disagree: {950EDEC6C85F9DC2} / {EB364CCCBCFD29A5}"
-    ],
+    "notes": [],
     "ref": "{950EDEC6C85F9DC2}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman2.et"
    },
    {
@@ -21423,9 +21244,7 @@
     "cataloged": true,
     "enabled": true,
     "ships": true,
-    "notes": [
-     "catalogs disagree: {7092923FC4BA0AA9} / {0EAA0035B018BECE}"
-    ],
+    "notes": [],
     "ref": "{7092923FC4BA0AA9}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman3.et"
    },
    {
@@ -21451,9 +21270,7 @@
     "cataloged": true,
     "enabled": true,
     "ships": true,
-    "notes": [
-     "catalogs disagree: {4DA6B707B1D6839E} / {339E250DC57437F9}"
-    ],
+    "notes": [],
     "ref": "{4DA6B707B1D6839E}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman4.et"
    },
    {
@@ -21479,9 +21296,7 @@
     "cataloged": true,
     "enabled": true,
     "ships": true,
-    "notes": [
-     "catalogs disagree: {A83AFBFEBD3314F5} / {D60269F4C991A092}"
-    ],
+    "notes": [],
     "ref": "{A83AFBFEBD3314F5}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Rifleman5.et"
    },
    {
@@ -21508,7 +21323,6 @@
     "enabled": true,
     "ships": true,
     "notes": [
-     "catalogs disagree: {0482D36FE842BB41} / {E1E6ACDA18F1AB27}",
      "stale parent path relinked: IND/MEI/Character_MEI_Rifle1.et → IND/MEI/Character_MEI_Rifleman1.et"
     ],
     "ref": "{0482D36FE842BB41}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Sapper.et"
@@ -21579,9 +21393,7 @@
     "cataloged": true,
     "enabled": true,
     "ships": true,
-    "notes": [
-     "catalogs disagree: {95F67CCC15CAB4CE} / {8F6B34BB2FDEE4CD}"
-    ],
+    "notes": [],
     "ref": "{95F67CCC15CAB4CE}Prefabs/Characters/Factions/IND/MEI/Character_MEI_Sniper.et"
    }
   ],

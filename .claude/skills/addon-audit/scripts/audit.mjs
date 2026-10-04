@@ -34,15 +34,11 @@ const PREV_DIR = join(REFERENCE, "_prev");
 // ---------------------------------------------------------------------------
 // Audit sets: which GUIDs each Builder registry entry is audited through.
 // Default = the registry's `dependencies`. Overrides exist where the content
-// the Builder references lives elsewhere (MEI: the anchor is the user's own
-// voice addon, the harvested content is in the two mods it pulls) or where a
-// companion addon must be re-checked by standing decision (BF Truck, Utility).
+// the Builder references lives elsewhere (core: ACE Core is transitive) or
+// where a companion addon must be re-checked by standing decision (BF Truck,
+// Utility).
 // ---------------------------------------------------------------------------
 const AUDIT_SETS = {
-  mei: {
-    guids: ["64CEC8E005828E5D", "65E0AE1A83DA063A"],
-    note: "anchor 0B6643C078688A29 (TS MEI Arabic Voices) is the user's own addon — not audited; 64CE… = MiddleEastInsurgents (harvest source), 65E0… = Russian to Arabic (voice pipeline)",
-  },
   uk: {
     extra: ["66D74CE7E94C5D05"],
     note: "66D7… = British Forces: Truck, Utility — NOT a dependency; re-check it stays a pure duplicate of BF's Land Rover content (drop the exclusion if BF ever dedupes)",
