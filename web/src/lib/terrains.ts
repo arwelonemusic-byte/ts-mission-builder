@@ -88,8 +88,9 @@ export const TERRAIN_LIST: TerrainConfig[] = [
     // ?v=2: cache-buster for the 2026-08-19 terrain-update re-capture — the
     // tile/heightmap URLs are otherwise stable and browsers cache the old
     // bytes with heuristic freshness (Caddy sends no Cache-Control). Bump on
-    // every future asset refresh.
-    heightmapBin: "/heightmaps/chernarus.bin?v=2",
+    // every future asset refresh. Heightmap ?v=3 = the 2026-10-08 re-ship from
+    // the map's 2.1.3 terrain (interior raised ~10 m, up to 43 m).
+    heightmapBin: "/heightmaps/chernarus.bin?v=3",
     heightmapMeta: "/heightmaps/chernarus.json",
     tilePattern: "/tiles/chernarus/{z}/{x}/{y}.jpg?v=2",
     tileMaxZoom: 6,

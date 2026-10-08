@@ -148,14 +148,17 @@ export const TERRAINS = {
   },
   // ChernarusMinus (map addon deps MinusBuildingPack/RailEnfusionRedux/
   // OutsideTerrainCore resolve transitively from the map's own gproj — we
-  // list only the map itself).
+  // list only the map itself). 2.1.3 rebuilt the terrain (ChernoT -> A2_T) and
+  // moved the navmeshes to Worlds/Navmesh/ with new GUIDs — refs copied verbatim
+  // from the GM world's default.layer ("soliders" and "LowRes" are the author's
+  // spelling; the rdb registers the latter as lowres.nmn, same GUID).
   chernarus: {
     label: "Chernarus",
     parent: "{F513898A573B9C3F}Worlds/ChernarusMinusBeta.ent",
     nav: [
-      "{AE973AF9E88AD3FC}Worlds/ChernoT/terrainName_soldiers.nmn",
-      "{1A6F9D049B8B476F}Worlds/ChernoT/terrainName_BTRlike.nmn",
-      "{C5EB0E76B45B4179}Worlds/ChernoT/terrainName_LowRes.nmn",
+      "{A73C56FB3B82C174}Worlds/Navmesh/soliders.nmn",
+      "{496DB79F7F4F33BE}Worlds/Navmesh/BTRlike.nmn",
+      "{7C34271D8EC6FA18}Worlds/Navmesh/LowRes.nmn",
     ],
     dependencies: ["665D1AA55B5D8076"],
   },
