@@ -166,3 +166,15 @@ pointing mode lookups at `data/rhs/items.json` — not done yet).
   chain; (6) removed prefabs = BMPT-2/T-90M turret parts, Ataka missiles, UH-1Y cockpit bits,
   AOR2 Crye pants, a 2000-rnd PK box — none referenced by the Builder. Main-mod baseline left
   STALE until the pool re-harvest lands.
+- **2026-10-06 — 0.16.5208 → 0.16.5237 (main) / 0.16.5236 (content packs)** (`/addon-audit`
+  faction sweep; `_prev` = the 2026-09-17 extractions). Content Pack 01/02: binary-only churn
+  (3 materials, 1 texture, 16 animations), NO CHANGE — baselines advanced. Main mod: no catalog
+  conf and no FactionManager changes; `check rhs` = 0 breaks (OK 1295 / OK_CATALOG 640, all
+  bare GUIDs OK) apart from the same 10 `Vest_6Sh117*` → `RHS_Vest_6Sh117*` MOVED pool refs.
+  The update is 405 prefab edits (vests, weapons, optics, T-14/K-17 turrets) + an AN/PRC-152A
+  touch-screen radio system (21 new scripts, a `Radio_ANPRC152A_DEV.et` dev prefab and dev
+  world, none cataloged) + 1.8 fixes in `RHS_M_ArsenalManagerComponent` /
+  `RHS_M_PlayerArsenalLoadout` / `RHS_M_InventoryStorageManagerComponent` (the toolkit mods none
+  of those classes). `Vest_AACPC_NeckProtection_Groin_АП.et` was renamed `…_AP.et` (mojibake
+  filename fixed; not cataloged, not in any pool). The pool re-harvest follow-up from 0.16.5150
+  is unchanged (catalogs identical to 5208), so the main-mod baseline stays STALE.

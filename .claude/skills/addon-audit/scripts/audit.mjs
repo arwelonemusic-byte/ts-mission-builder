@@ -461,8 +461,10 @@ function printDiff(loc, old, cur, d, full, kind) {
 function collectBuilderRefs(entry) {
   const refs = new Map(); // "{G}path" → source label
   const bare = new Map(); // "G" → source label
+  // `retiredVehicles` holds refs of Workshop-removed content that only migrate()
+  // reads (old key → replacement); they are never emitted, so they can't break.
   const scan = (obj, label) => {
-    const s = JSON.stringify(obj);
+    const s = JSON.stringify(obj, (k, v) => (k === "retiredVehicles" ? undefined : v));
     for (const m of s.matchAll(/\{([0-9A-F]{16})\}([^"\\]*)/g)) {
       if (m[2]) { if (!refs.has(`{${m[1]}}${m[2]}`)) refs.set(`{${m[1]}}${m[2]}`, label); }
       else if (!bare.has(m[1])) bare.set(m[1], label);
