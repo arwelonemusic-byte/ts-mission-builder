@@ -456,14 +456,29 @@ export default function MarkersPanel({
             </p>
           ) : (
             <>
-              <GhostButton active={drawingLine} onClick={onArmLineDraw}>
+              <GhostButton onClick={onArmLineDraw}>
                 {!drawingLine && <PlusIcon />}
-                {t("Draw line")}
+                {drawingLine ? t("Cancel") : t("Draw line")}
               </GhostButton>
               {drawingLine && lineDraftCount > 0 && (
                 <GhostButton disabled={lineDraftCount < 2} onClick={onFinishLine}>
                   {t("Finish line")} · {lineDraftCount}
                 </GhostButton>
+              )}
+              {drawingLine && (
+                <div
+                  className="rounded-[8px] px-4 py-5 flex flex-col items-center gap-[6px] text-center"
+                  style={{ border: "1px dashed rgba(244,219,80,0.55)" }}
+                >
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#f4db50" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="mb-1">
+                    <path d="M3 18 L9 9 L14 14 L21 5" />
+                    <circle cx="3" cy="18" r="1.3" fill="#f4db50" />
+                    <circle cx="21" cy="5" r="1.3" fill="#f4db50" />
+                  </svg>
+                  <span className="text-[13px] font-medium text-[#f4db50]">{t("Click the map to add a point")}</span>
+                  <span className="text-[11px] leading-4 text-white/60">{t("Double-click to finish the line")}</span>
+                  <span className="text-[11px] leading-4 text-white/40">{t("Right-click or Esc to start over")}</span>
+                </div>
               )}
               {mission.lines.length === 0 && !drawingLine && (
                 <div className="border border-dashed border-[#2e3439] rounded-[8px] px-4 py-6 flex flex-col items-center gap-[10px] text-center">

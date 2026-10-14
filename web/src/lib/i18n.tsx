@@ -521,6 +521,10 @@ const RU: Record<string, string> = {
   "Click the map to add points": "Кликайте по карте, чтобы добавить точки",
   "· double-click to finish, Esc cancels": "· двойной клик — завершить, Esc — отмена",
   "Click a line on the map to edit it.": "Клик по линии на карте — редактирование.",
+  // Draw-mode instruction card
+  "Click the map to add a point": "Кликните по карте, чтобы добавить точку",
+  "Double-click to finish the line": "Двойной клик — завершить линию",
+  "Right-click or Esc to start over": "ПКМ или Esc — начать заново",
   // Colour names (line + marker swatch tooltips)
   Black: "Чёрный",
   "Dark Brown": "Тёмно-коричневый",

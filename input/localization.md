@@ -201,6 +201,7 @@ destroy/props keys where they collide (Weapons, Other).
 | No lines yet | Линии не добавлены |
 | Lines are drawn on the in-game map: phase lines, routes, boundaries. | Линии рисуются на игровой карте: рубежи, маршруты, границы. |
 | Click a line on the map to edit it. | Клик по линии на карте — редактирование. |
+| Draw-mode card: Click the map to add a point / Double-click to finish the line / Right-click or Esc to start over | Кликните по карте, чтобы добавить точку / Двойной клик — завершить линию / ПКМ или Esc — начать заново |
 | Click the map to add points · double-click to finish, Esc cancels *(line banner)* | Кликайте по карте, чтобы добавить точки · двойной клик — завершить, Esc — отмена |
 | Black / Dark Brown / Purple / Ping / Navy Blue / Cyan / Blue / Dark Green / Green / Red / Dark Red / Dark Orange / Orange / White *(swatch tooltips)* | Чёрный / Тёмно-коричневый / Фиолетовый / Розовый / Тёмно-синий / Голубой / Синий / Тёмно-зелёный / Зелёный / Красный / Тёмно-красный / Тёмно-оранжевый / Оранжевый / Белый |
 

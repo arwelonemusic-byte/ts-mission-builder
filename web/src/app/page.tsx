@@ -625,9 +625,9 @@ export default function Editor() {
     markFresh(id);
   };
   /* ----- lines (Ops Planner line tool) ----- */
-  // Draw mode toggles from the Lines tab button; drafting is 2D-only (like the
-  // sector rubber band). It stays armed after a commit so the next click
-  // starts a new line — Ops Planner keeps its Line tool selected the same way.
+  // Draw mode toggles from the Lines tab button (Draw line ↔ Cancel); drafting
+  // is 2D-only (like the sector rubber band). Committing a line ends the mode
+  // (user decision 2026-10-14 — Ops Planner keeps its Line tool armed instead).
   const armLineDraw = () => {
     setLineDraft([]);
     if (placeMode === "line") {
@@ -639,7 +639,8 @@ export default function Editor() {
     setSelectedMarkerId(null);
     armPlaceMode("line");
   };
-  /** Commit the draft as a line (≥ 2 distinct points); the mode stays armed. */
+  /** Commit the draft as a line (≥ 2 distinct points) and leave draw mode;
+   * fewer points just clears the draft and keeps the mode armed. */
   const finishLine = () => {
     // A double-click lands two clicks on the same spot first — drop repeats
     const pts = lineDraftRef.current.filter(
@@ -649,6 +650,7 @@ export default function Editor() {
     if (pts.length < 2) return;
     const line: MissionLine = { id: freshLineId(), color: lineTemplate.color, width: lineTemplate.width, points: pts };
     setMission((m) => (m ? { ...m, lines: [...m.lines, line] } : m));
+    setPlaceMode(null);
     revealLayer("markers");
     markFresh(line.id);
   };
