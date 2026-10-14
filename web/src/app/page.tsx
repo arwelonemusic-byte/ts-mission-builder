@@ -13,6 +13,7 @@ import {
   scrubVehicleMods,
   factionMeta,
   freshenGuids,
+  freshLineId,
   freshSpawnElemId,
   loadMission,
   materializeSpawnAt,
@@ -22,6 +23,7 @@ import {
   parseMissionJson,
   saveMission,
   type Mission,
+  type MissionLine,
   type MissionMarker,
   type MissionObjective,
   type MissionProp,
@@ -54,6 +56,7 @@ import {
 } from "@/lib/mapLayers";
 import { findColor, findIcon, MARKER_LABEL_OUTLINE, maskIconStyle, militaryIconUrl } from "@/lib/markers";
 import { ORIGIN_COLORS } from "@/lib/zoneModules";
+import { DEFAULT_LINE_COLOR, DEFAULT_LINE_WIDTH } from "@/lib/lines";
 import { ARTY_STOP_COLOR, OBJECTIVE_COLOR, PROP_COLOR, ZONE_ELEMENT_COLORS } from "@/lib/overlayHtml";
 import { LangProvider, loadLang, saveLang, tr, zonesCountLabel, type Lang } from "@/lib/i18n";
 import AppBar, { type StepId } from "@/components/AppBar";
@@ -67,7 +70,7 @@ import SpawnPanel from "@/components/panels/SpawnPanel";
 import ZonesPanel from "@/components/panels/ZonesPanel";
 import ObjectivesPanel from "@/components/panels/ObjectivesPanel";
 import PropsPanel from "@/components/panels/PropsPanel";
-import MarkersPanel, { type MarkerDraft, type MarkersTab } from "@/components/panels/MarkersPanel";
+import MarkersPanel, { type LineTemplate, type MarkerDraft, type MarkersTab } from "@/components/panels/MarkersPanel";
 import BriefingPanel from "@/components/panels/BriefingPanel";
 
 const MissionMap = dynamic(() => import("@/components/MissionMap"), { ssr: false });
@@ -125,6 +128,7 @@ const NO_OBJECTIVES: MissionObjective[] = [];
 const NO_PROPS: MissionProp[] = [];
 const NO_MARKERS: MissionMarker[] = [];
 const NO_SECTORS: MissionSector[] = [];
+const NO_LINES: MissionLine[] = [];
 
 export default function Editor() {
   const [mission, setMission] = useState<Mission | null>(null);
@@ -171,6 +175,18 @@ export default function Editor() {
   const [markersTab, setMarkersTab] = useState<MarkersTab>("military");
   const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [sectorDraw, setSectorDraw] = useState<"ao" | "objective" | null>(null);
+  // Lines (Ops Planner line tool): selection, the new-line template, and the
+  // in-progress draft (vertices clicked so far while placeMode === "line").
+  // The ref mirrors the draft synchronously — a double-click's commit runs
+  // right after its two clicks, before React has re-rendered.
+  const [selectedLineId, setSelectedLineId] = useState<string | null>(null);
+  const [lineTemplate, setLineTemplateState] = useState<LineTemplate>({ color: DEFAULT_LINE_COLOR, width: DEFAULT_LINE_WIDTH });
+  const [lineDraft, setLineDraftState] = useState<{ x: number; z: number }[]>([]);
+  const lineDraftRef = useRef<{ x: number; z: number }[]>([]);
+  const setLineDraft = (pts: { x: number; z: number }[]) => {
+    lineDraftRef.current = pts;
+    setLineDraftState(pts);
+  };
   const [status, setStatus] = useState<Status>(null);
   const [focus, setFocus] = useState<{ x: number; z: number; radius: number; seq: number } | null>(null);
   const [gen, setGen] = useState<GenState>(null);
@@ -239,6 +255,7 @@ export default function Editor() {
     if (!layers.markers) {
       setSelectedMarkerId(null);
       setSelectedSectorId(null);
+      setSelectedLineId(null);
     }
     if (!layers.zones) {
       setSelectedZoneId(null);
@@ -321,7 +338,10 @@ export default function Editor() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (genRef.current?.phase === "done") setGen(null);
-      else {
+      else if (lineDraftRef.current.length > 0) {
+        lineDraftRef.current = [];
+        setLineDraftState([]);
+      } else {
         setPlaceMode(null);
         setOriginTarget(null);
         setElementTarget(null);
@@ -510,17 +530,26 @@ export default function Editor() {
     setSelectedSectorId((cur) => (cur === id ? null : cur));
   };
 
+  const updateLine = (id: string, patch: Partial<MissionLine>) =>
+    setMission((m) => (m ? { ...m, lines: m.lines.map((ln) => (ln.id === id ? { ...ln, ...patch } : ln)) } : m));
+  const removeLine = (id: string) => {
+    setMission((m) => (m ? { ...m, lines: m.lines.filter((ln) => ln.id !== id) } : m));
+    setSelectedLineId((cur) => (cur === id ? null : cur));
+  };
+
   /* ----- sector (TS_MapOverlay rectangle) placement + selection ----- */
   // Arming the draw mode and arming a click-place mode are mutually exclusive.
   const armSectorDraw = (kind: "ao" | "objective") => {
     setView3D(false); // rubber-band drawing is 2D-only (v1)
     setPlaceMode(null);
+    setLineDraft([]);
     setOriginTarget(null);
     setSelectedSectorId(null);
     setSectorDraw((cur) => (cur === kind ? null : kind));
   };
   const armPlaceMode = (m: PlaceMode) => {
     setSectorDraw(null);
+    if (m !== "line") setLineDraft([]);
     if (m !== "qrf-origin") setOriginTarget(null);
     if (m !== "zone-element") setElementTarget(null);
     if (m !== "objective") setPendingObjectiveType(null);
@@ -595,6 +624,66 @@ export default function Editor() {
     setSectorDraw(null);
     markFresh(id);
   };
+  /* ----- lines (Ops Planner line tool) ----- */
+  // Draw mode toggles from the Lines tab button; drafting is 2D-only (like the
+  // sector rubber band). It stays armed after a commit so the next click
+  // starts a new line — Ops Planner keeps its Line tool selected the same way.
+  const armLineDraw = () => {
+    setLineDraft([]);
+    if (placeMode === "line") {
+      setPlaceMode(null);
+      return;
+    }
+    setView3D(false);
+    setSelectedLineId(null);
+    setSelectedMarkerId(null);
+    armPlaceMode("line");
+  };
+  /** Commit the draft as a line (≥ 2 distinct points); the mode stays armed. */
+  const finishLine = () => {
+    // A double-click lands two clicks on the same spot first — drop repeats
+    const pts = lineDraftRef.current.filter(
+      (p, i, all) => i === 0 || Math.hypot(p.x - all[i - 1].x, p.z - all[i - 1].z) >= 0.5
+    );
+    setLineDraft([]);
+    if (pts.length < 2) return;
+    const line: MissionLine = { id: freshLineId(), color: lineTemplate.color, width: lineTemplate.width, points: pts };
+    setMission((m) => (m ? { ...m, lines: [...m.lines, line] } : m));
+    revealLayer("markers");
+    markFresh(line.id);
+  };
+  const onLineClick = (id: string) => {
+    setSelectedLineId(id);
+    setSelectedMarkerId(null);
+    setSelectedSectorId(null);
+    setMarkersTab("lines");
+    setStep("markers");
+  };
+  // The draw mode belongs to the Lines tab in 2D: leaving the tab/step or
+  // flipping to 3D disarms it and drops the draft (map clicks on other
+  // entities can switch steps without going through goStep).
+  useEffect(() => {
+    if (placeMode === "line" && (step !== "markers" || markersTab !== "lines" || view3D)) {
+      setPlaceMode(null);
+      lineDraftRef.current = [];
+      setLineDraftState([]);
+    }
+  }, [placeMode, step, markersTab, view3D]);
+  // Delete / Backspace removes the selected line (Ops Planner shortcut).
+  useEffect(() => {
+    if (!selectedLineId) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT" || el.isContentEditable)) return;
+      e.preventDefault();
+      removeLine(selectedLineId);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLineId]);
+
   // Leaving the Sectors sub-tab disarms a pending draw mode.
   const goMarkersTab = (tab: MarkersTab) => {
     if (tab !== "sectors") setSectorDraw(null);
@@ -603,6 +692,7 @@ export default function Editor() {
   const onSectorClick = (id: string) => {
     setSelectedSectorId(id);
     setSelectedMarkerId(null);
+    setSelectedLineId(null);
     setMarkersTab("sectors");
     setStep("markers");
   };
@@ -805,6 +895,7 @@ export default function Editor() {
       setSelectedMarkerId(null);
       setSelectedZoneId(null);
       setSelectedSectorId(null);
+      setSelectedLineId(null);
       setSelectedOrigin(null);
       setSelectedObjectiveId(null);
       setSelectedPropId(null);
@@ -816,7 +907,10 @@ export default function Editor() {
     const xi = +x.toFixed(1);
     const zi = +z.toFixed(1);
     revealLayer(placeModeLayer(placeMode));
-    if (placeMode === "spawn") {
+    if (placeMode === "line") {
+      // Vertex of the line being drawn; double-click / Finish commits
+      setLineDraft([...lineDraftRef.current, { x: xi, z: zi }]);
+    } else if (placeMode === "spawn") {
       // First placement: spawn point at the click + one crate. Everything
       // else is added via per-element map-click placement ("spawn" mode is
       // only reachable from the un-placed state — Move spawn was removed
@@ -1147,6 +1241,7 @@ export default function Editor() {
   const onMarkerClick = (id: string) => {
     setSelectedMarkerId((cur) => (cur === id ? null : id));
     setSelectedSectorId(null);
+    setSelectedLineId(null);
     const mk = mission?.markers.find((m2) => m2.id === id);
     if (mk) setMarkersTab(mk.kind);
     setStep("markers");
@@ -1273,6 +1368,8 @@ export default function Editor() {
     setSelectedZoneId(null);
     setSelectedMarkerId(null);
     setSelectedSectorId(null);
+    setSelectedLineId(null);
+    setLineDraft([]);
     setSelectedOrigin(null);
     setSelectedObjectiveId(null);
     setSelectedPropId(null);
@@ -1405,6 +1502,10 @@ export default function Editor() {
             sectors: layers.markers ? mission.sectors : NO_SECTORS,
             selectedSectorId,
             sectorDraw,
+            lines: layers.markers ? mission.lines : NO_LINES,
+            selectedLineId,
+            lineDraft:
+              placeMode === "line" ? { points: lineDraft, color: lineTemplate.color, width: lineTemplate.width } : null,
             fresh,
             placeMode,
             focus,
@@ -1451,6 +1552,14 @@ export default function Editor() {
             onSectorDrawn,
             onSectorClick,
             onSectorChanged: updateSector,
+            onLineClick,
+            onLineChanged: (id: string, points: { x: number; z: number }[]) => updateLine(id, { points }),
+            onMapDoubleClick: () => {
+              if (placeMode === "line") finishLine();
+            },
+            onMapContextMenu: () => {
+              if (placeMode === "line") setLineDraft([]);
+            },
           };
           return (
             <>
@@ -1510,7 +1619,12 @@ export default function Editor() {
         <div className="absolute top-[72px] left-1/2 -translate-x-1/2 z-[1700] pointer-events-none flex items-center gap-[10px] bg-[rgba(32,36,39,0.95)] rounded-[8px] px-4 py-[9px] shadow-[0px_16px_32px_0px_rgba(0,0,0,0.4)] animate-[mbFadeSlide_0.25s_ease] max-md:max-w-[calc(100vw-24px)]">
           <span className="w-2 h-2 rounded-full bg-[#f4db50] animate-[mbPulseDot_1.2s_ease-in-out_infinite]" />
           <span className="text-[12px] leading-[1.4] text-white">
-            {placeMode ? (
+            {placeMode === "line" ? (
+              <>
+                {t("Click the map to add points")}
+                <span className="text-white/45"> {t("· double-click to finish, Esc cancels")}</span>
+              </>
+            ) : placeMode ? (
               <>
                 {t("Click the map to place")} <span className="text-[#f4db50] font-medium">{placeNoun}</span>
               </>
@@ -1519,12 +1633,14 @@ export default function Editor() {
                 {t("Drag on the map to draw")} <span className="text-[#f4db50] font-medium">{sectorNoun}</span>
               </>
             )}
-            <span className="text-white/45">
-              {" "}
-              {placeMode === "zone-element" && elementTarget?.elementId
-                ? t("· press the button again to finish")
-                : t("· press the button again to cancel")}
-            </span>
+            {placeMode !== "line" && (
+              <span className="text-white/45">
+                {" "}
+                {placeMode === "zone-element" && elementTarget?.elementId
+                  ? t("· press the button again to finish")
+                  : t("· press the button again to cancel")}
+              </span>
+            )}
           </span>
         </div>
       )}
@@ -1704,6 +1820,15 @@ export default function Editor() {
                 updateSector={updateSector}
                 removeSector={removeSector}
                 onDeselectMarker={() => setSelectedMarkerId(null)}
+                selectedLineId={selectedLineId}
+                lineTemplate={lineTemplate}
+                setLineTemplate={(patch) => setLineTemplateState((cur) => ({ ...cur, ...patch }))}
+                drawingLine={placeMode === "line"}
+                lineDraftCount={lineDraft.length}
+                onArmLineDraw={armLineDraw}
+                onFinishLine={finishLine}
+                updateLine={updateLine}
+                removeLine={removeLine}
               />
             )}
             {step === "briefing" && <BriefingPanel mission={mission} update={update} />}

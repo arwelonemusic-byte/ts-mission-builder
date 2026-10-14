@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import type { Mission, MissionMarker, MissionSector } from "@/lib/mission";
+import type { Mission, MissionLine, MissionMarker, MissionSector } from "@/lib/mission";
 import {
   findColor,
   findIcon,
@@ -14,14 +14,27 @@ import {
   MILITARY_TYPES,
   militaryIconUrl,
 } from "@/lib/markers";
-import { useT } from "@/lib/i18n";
+import {
+  LIGHT_LINE_COLORS,
+  LINE_COLORS,
+  LINE_WIDTH_METERS,
+  LINE_WIDTHS,
+  lineColorHex,
+  lineWidthPreviewPx,
+} from "@/lib/lines";
+import { scaleLabel, useLang, useT } from "@/lib/i18n";
 import { Field, GhostButton, PlusIcon, Segmented, Slider, TextInput } from "../ui";
 
 /** Template for new markers — a MissionMarker minus id/position. */
 export type MarkerDraft = Omit<MissionMarker, "id" | "x" | "z">;
 
-/** Panel sub-tab: the two marker kinds plus the Sectors (TS_MapOverlay) tab. */
-export type MarkersTab = "military" | "custom" | "sectors";
+/** Panel sub-tab: the two marker kinds, Lines (ts-ops-planner's line tool) and
+ * Sectors (TS_MapOverlay rectangles). */
+export type MarkersTab = "military" | "custom" | "lines" | "sectors";
+
+/** Colour + width a new line is drawn with (the Lines tab edits it while no
+ * line is selected — Ops Planner's tool template). */
+export type LineTemplate = Pick<MissionLine, "color" | "width">;
 
 /** Editor swatch color per sector kind (matches MissionMap's rendering). */
 const SECTOR_COLORS: Record<MissionSector["kind"], string> = {
@@ -117,6 +130,15 @@ export default function MarkersPanel({
   updateSector,
   removeSector,
   onDeselectMarker,
+  selectedLineId,
+  lineTemplate,
+  setLineTemplate,
+  drawingLine,
+  lineDraftCount,
+  onArmLineDraw,
+  onFinishLine,
+  updateLine,
+  removeLine,
 }: {
   mission: Mission;
   tab: MarkersTab;
@@ -134,8 +156,20 @@ export default function MarkersPanel({
   updateSector: (id: string, patch: Partial<MissionSector>) => void;
   removeSector: (id: string) => void;
   onDeselectMarker: () => void;
+  selectedLineId: string | null;
+  lineTemplate: LineTemplate;
+  setLineTemplate: (patch: Partial<LineTemplate>) => void;
+  /** Line draw mode armed (placeMode "line") */
+  drawingLine: boolean;
+  /** Vertices clicked so far in the line being drawn */
+  lineDraftCount: number;
+  onArmLineDraw: () => void;
+  onFinishLine: () => void;
+  updateLine: (id: string, patch: Partial<MissionLine>) => void;
+  removeLine: (id: string) => void;
 }) {
   const t = useT();
+  const lang = useLang();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [wellHover, setWellHover] = useState(false);
 
@@ -158,15 +192,25 @@ export default function MarkersPanel({
   const sectorLabel = (s: MissionSector) =>
     s.kind === "ao" ? "AO" : `${t("Objective")} ${objectiveNo(s.id)}`;
 
+  const selectedLine = mission.lines.find((ln) => ln.id === selectedLineId) ?? null;
+  // Panel edits the selected line live, or the new-line template.
+  const lineActive: LineTemplate = selectedLine ?? lineTemplate;
+  const applyLine = (patch: Partial<LineTemplate>) => {
+    if (selectedLine) updateLine(selectedLine.id, patch);
+    else setLineTemplate(patch);
+  };
+  const isMarkerTab = tab === "military" || tab === "custom";
+
   const TAB_LABELS: Record<MarkersTab, string> = {
-    military: t("Military"),
+    military: t("NATO"),
     custom: t("Vanilla"),
+    lines: t("Lines"),
     sectors: t("Sectors"),
   };
 
   return (
     <>
-      {tab !== "sectors" && selected && (
+      {isMarkerTab && selected && (
         <div className="flex items-center justify-between">
           <span className="text-[14px] text-white/60">{t("Editing marker")}</span>
           <GhostButton small destructive onClick={() => removeMarker(selected.id)}>
@@ -190,15 +234,30 @@ export default function MarkersPanel({
         </div>
       )}
 
-      {!(tab === "sectors" && selectedSector) && (
+      {tab === "lines" && selectedLine && (
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-2 text-[14px] text-white/60">
+            {t("Editing line")}
+            <span
+              className="inline-block w-[18px] rounded-[1px] border border-[rgba(255,255,255,0.24)]"
+              style={{ height: 4, background: lineColorHex(selectedLine.color) }}
+            />
+          </span>
+          <GhostButton small destructive onClick={() => removeLine(selectedLine.id)}>
+            {t("Delete")}
+          </GhostButton>
+        </div>
+      )}
+
+      {!(tab === "sectors" && selectedSector) && !(tab === "lines" && selectedLine) && (
       <Segmented
         value={tab}
         onChange={(kind) => {
           setTab(kind);
-          if (kind === "sectors") onDeselectMarker();
+          if (kind === "sectors" || kind === "lines") onDeselectMarker();
           else apply({ kind });
         }}
-        options={(["military", "custom", "sectors"] as const).map((kind) => ({ value: kind, label: TAB_LABELS[kind] }))}
+        options={(["military", "custom", "lines", "sectors"] as const).map((kind) => ({ value: kind, label: TAB_LABELS[kind] }))}
       />
       )}
 
@@ -286,7 +345,7 @@ export default function MarkersPanel({
                   <button
                     key={c.name}
                     type="button"
-                    title={c.label}
+                    title={t(c.label)}
                     onClick={() => apply({ color: c.name })}
                     className="h-[32px] rounded-[4px] border border-[rgba(255,255,255,0.24)] flex items-center justify-center transition-transform hover:scale-[1.05]"
                     style={{ background: c.hex }}
@@ -311,7 +370,7 @@ export default function MarkersPanel({
         </>
       )}
 
-      {tab !== "sectors" && (
+      {isMarkerTab && (
         <Field label={t("Text")}>
           <TextInput
             value={active.text}
@@ -336,6 +395,95 @@ export default function MarkersPanel({
             onChange={(v) => apply({ rotation: ((Math.round(v) % 360) + 360) % 360 })}
           />
         </div>
+      )}
+
+      {tab === "lines" && (
+        <>
+          <Field label={t("Thickness")}>
+            <div className="bg-[#14181a] rounded-[8px] h-[44px] flex items-center w-full">
+              {LINE_WIDTHS.map((w) => {
+                const on = lineActive.width === w;
+                return (
+                  <button
+                    key={w}
+                    type="button"
+                    onClick={() => applyLine({ width: w })}
+                    title={scaleLabel(lang, LINE_WIDTH_METERS[w])}
+                    className={`flex-1 h-full rounded-[6px] flex items-center justify-center transition-colors border-2 ${
+                      on ? "bg-[rgba(244,219,80,0.16)] border-[#f4db50]" : "border-transparent hover:bg-white/5"
+                    }`}
+                  >
+                    <div className="bg-[#f4db50] rounded-[1px]" style={{ width: lineWidthPreviewPx(w), height: 20 }} />
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+          <Field label={t("Color")}>
+            <div className="grid grid-cols-7 gap-2">
+              {LINE_COLORS.map((c) => {
+                const sel = c.name === lineActive.color;
+                return (
+                  <button
+                    key={c.name}
+                    type="button"
+                    title={t(c.label)}
+                    onClick={() => applyLine({ color: c.name })}
+                    className="h-[32px] rounded-[4px] border border-[rgba(255,255,255,0.24)] flex items-center justify-center transition-transform hover:scale-[1.05]"
+                    style={{ background: c.hex }}
+                  >
+                    {sel && (
+                      <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden>
+                        <path
+                          d="M3 8l3.5 3.5L13 5"
+                          stroke={LIGHT_LINE_COLORS.has(c.name) ? "#202427" : "#fff"}
+                          strokeWidth="2"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          {selectedLine ? (
+            <p className="text-[11px] font-mono text-white/30">
+              {t("Points")}: <span className="text-white/60">{selectedLine.points.length}</span>
+            </p>
+          ) : (
+            <>
+              <GhostButton active={drawingLine} onClick={onArmLineDraw}>
+                {!drawingLine && <PlusIcon />}
+                {t("Draw line")}
+              </GhostButton>
+              {drawingLine && lineDraftCount > 0 && (
+                <GhostButton disabled={lineDraftCount < 2} onClick={onFinishLine}>
+                  {t("Finish line")} · {lineDraftCount}
+                </GhostButton>
+              )}
+              {mission.lines.length === 0 && !drawingLine && (
+                <div className="border border-dashed border-[#2e3439] rounded-[8px] px-4 py-6 flex flex-col items-center gap-[10px] text-center">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f4db50" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M3 18 L9 9 L14 14 L21 5" />
+                    <circle cx="3" cy="18" r="1.3" fill="#f4db50" />
+                    <circle cx="21" cy="5" r="1.3" fill="#f4db50" />
+                  </svg>
+                  <span className="text-[13px] font-medium text-white">{t("No lines yet")}</span>
+                  <span className="text-[11px] leading-4 text-white/40 max-w-[260px]">
+                    {t("Lines are drawn on the in-game map: phase lines, routes, boundaries.")}
+                  </span>
+                </div>
+              )}
+              {mission.lines.length > 0 && !drawingLine && (
+                <p className="text-[11px] leading-4 text-white/40">{t("Click a line on the map to edit it.")}</p>
+              )}
+            </>
+          )}
+        </>
       )}
 
       {tab === "sectors" && selectedSector && (
@@ -404,7 +552,7 @@ export default function MarkersPanel({
         </>
       )}
 
-      {tab !== "sectors" && !selected && (
+      {isMarkerTab && !selected && (
         <div
           onPointerDown={onDragStart}
           onMouseEnter={() => setWellHover(true)}

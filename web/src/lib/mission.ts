@@ -1,5 +1,6 @@
 import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
 import { defaultGroupKey, defaultRoleKey, rosterGroupExists, rosterRoleExists } from "./roster";
+import { DEFAULT_LINE_COLOR, DEFAULT_LINE_WIDTH, isLineWidth, LINE_COLORS, type LineWidth } from "./lines";
 
 /** Armed click-to-place mode (page.tsx ↔ panels ↔ map views). */
 export type PlaceMode =
@@ -16,6 +17,7 @@ export type PlaceMode =
   | "prop"
   | "arty-stop"
   | "zone-element"
+  | "line"
   | null;
 
 /** sizes = Foot Patrols weight-slider selection (size classes for the group
@@ -150,6 +152,16 @@ export type MissionSector = {
   rotation: number;
 };
 
+/** Map line (Markers tab → Lines, ts-ops-planner's line tool): an open
+ * polyline drawn on the in-game map. color = LINE_COLORS name, width = step
+ * 1..5 (→ LINE_WIDTH_METERS). points ≥ 2, world coords. */
+export type MissionLine = {
+  id: string;
+  color: string;
+  width: LineWidth;
+  points: { x: number; z: number }[];
+};
+
 /** Mission objective (Objectives tab) → a real SF task in Objectives.layer
  * (LIST_ONLY visibility — task list entry, no map marker) + a completion hint.
  * radius only applies to area types (clear/reach); hvt/destroy have none.
@@ -239,6 +251,7 @@ export type Mission = {
   zones: Zone[];
   markers: MissionMarker[];
   sectors: MissionSector[];
+  lines: MissionLine[];
   objectives: MissionObjective[];
   props: MissionProp[];
   guids: { addon: string; world: string; missionConf: string; thumbnail: string };
@@ -447,6 +460,10 @@ export function freshSpawnElemId(): string {
 
 export function freshGroupId(): string {
   return `g${Math.random().toString(36).slice(2)}`;
+}
+
+export function freshLineId(): string {
+  return `ln${Math.random().toString(36).slice(2)}`;
 }
 
 export function freshZoneElemId(): string {
@@ -720,6 +737,7 @@ export function newMission(): Mission {
     zones: [],
     markers: [],
     sectors: [],
+    lines: [],
     objectives: [],
     props: [],
     guids: { addon: mintGuid(), world: mintGuid(), missionConf: mintGuid(), thumbnail: mintGuid() },
@@ -888,6 +906,23 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     if (seenAo) return false;
     seenAo = true;
     return true;
+  });
+  // Lines arrived 2026-10-14: keep well-formed entries, coerce colour/width to
+  // the palette, drop non-numeric points and anything left with < 2 points
+  m.lines = (Array.isArray(m.lines) ? m.lines : []).flatMap((ln) => {
+    if (!ln || typeof ln !== "object") return [];
+    const points = (Array.isArray(ln.points) ? ln.points : []).filter(
+      (p) => p && Number.isFinite(p.x) && Number.isFinite(p.z)
+    );
+    if (points.length < 2) return [];
+    return [
+      {
+        id: typeof ln.id === "string" && ln.id ? ln.id : freshLineId(),
+        color: LINE_COLORS.some((c) => c.name === ln.color) ? ln.color : DEFAULT_LINE_COLOR,
+        width: isLineWidth(ln.width) ? ln.width : DEFAULT_LINE_WIDTH,
+        points: points.map((p) => ({ x: p.x, z: p.z })),
+      },
+    ];
   });
   // Objectives arrived after the first saves; sanitize hand-edited entries
   // (known type, numeric coords, string texts, radius clamped by type)

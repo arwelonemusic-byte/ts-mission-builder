@@ -5,7 +5,7 @@ import type { PlaceMode } from "@/lib/mission";
 // neither renders nor catches clicks/drags in either view. The spawn base and
 // the stop-artillery trigger are always visible by decision (2026-09-22);
 // QRF origins, advanced elements and waypoints belong to their zone and follow
-// the AI-zones flag; sectors live on the Markers tab and follow markers.
+// the AI-zones flag; sectors and lines live on the Markers tab and follow markers.
 export type MapLayerKey = "markers" | "zones" | "props" | "objectives";
 export type MapLayers = Record<MapLayerKey, boolean>;
 
@@ -65,6 +65,7 @@ export function soloLayer(v: MapLayers, key: MapLayerKey): MapLayers {
 export function placeModeLayer(mode: PlaceMode): MapLayerKey | null {
   switch (mode) {
     case "marker":
+    case "line":
       return "markers";
     case "zone":
     case "qrf-origin":

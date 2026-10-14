@@ -353,6 +353,7 @@ export default function MissionPanel({
               zones: [],
               markers: [],
               sectors: [],
+              lines: [],
               objectives: [],
               props: [],
               aiArty: { ...mission.aiArty, stopTrigger: null },

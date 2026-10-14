@@ -199,6 +199,13 @@ const MISSION = {
     // objective: red component override + rotation (angles 0 30 0)
     { kind: "objective", pos: [2795.3, 74.1, 1628.7], length: 300, width: 200, rotation: 30 },
   ],
+  // Lines (Ops Planner-style map drawings): standalone open PolylineShapeEntity,
+  // metric width + pixel fallback. Phase line (black, 8 m → px 4) and an
+  // attack route (red, 4 m → px 2) toward Area1.
+  lines: [
+    { color: "#000000", widthM: 8, points: [[2350, 60, 1350], [2500, 66, 1500], [2550, 68, 1900]] },
+    { color: "#ee2e2e", widthM: 4, points: [[2380, 55, 1250], [2600, 70, 1450], [2760, 73, 1600]] },
+  ],
   // Objectives: one of each MVP type. HVT inside Area1 (garrisoned zone), clear
   // area on Area1's center, reach point on the road south of the AO.
   objectives: [

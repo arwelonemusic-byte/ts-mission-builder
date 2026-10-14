@@ -460,9 +460,9 @@ const RU: Record<string, string> = {
   "UH-1H wreck": "Остов UH-1H",
   Excrement: "Экскременты",
 
-  // Markers tab
-  Military: "Военные",
-  Vanilla: "Стандартные",
+  // Markers tab (sub-tabs: NATO / Vanilla / Lines / Sectors)
+  NATO: "НАТО",
+  Vanilla: "Стандарт",
   Faction: "Фракция",
   Type: "Тип",
   Marker: "Маркер",
@@ -507,6 +507,35 @@ const RU: Record<string, string> = {
   "Drag on the map to draw": "Проведите по карте, чтобы нарисовать",
   "the AO sector": "район операции",
   "an objective sector": "район задачи",
+
+  // Markers tab — Lines sub-tab (ts-ops-planner's line tool)
+  Lines: "Линии",
+  "Draw line": "Нарисовать линию",
+  "Finish line": "Завершить линию",
+  "Editing line": "Редактирование линии",
+  Thickness: "Толщина",
+  Points: "Точек",
+  "No lines yet": "Линии не добавлены",
+  "Lines are drawn on the in-game map: phase lines, routes, boundaries.":
+    "Линии рисуются на игровой карте: рубежи, маршруты, границы.",
+  "Click the map to add points": "Кликайте по карте, чтобы добавить точки",
+  "· double-click to finish, Esc cancels": "· двойной клик — завершить, Esc — отмена",
+  "Click a line on the map to edit it.": "Клик по линии на карте — редактирование.",
+  // Colour names (line + marker swatch tooltips)
+  Black: "Чёрный",
+  "Dark Brown": "Тёмно-коричневый",
+  Purple: "Фиолетовый",
+  Ping: "Розовый",
+  "Navy Blue": "Тёмно-синий",
+  Cyan: "Голубой",
+  Blue: "Синий",
+  "Dark Green": "Тёмно-зелёный",
+  Green: "Зелёный",
+  Red: "Красный",
+  "Dark Red": "Тёмно-красный",
+  "Dark Orange": "Тёмно-оранжевый",
+  Orange: "Оранжевый",
+  White: "Белый",
 
   // Briefing tab
   Situation: "Ситуация",

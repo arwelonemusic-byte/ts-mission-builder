@@ -1344,6 +1344,47 @@ ${slotBlocks}
     markersLayer += `$grp PolylineShapeEntity : "${K.MAPOVERLAY_PREFAB}" {\n${sectorInstances}\n}\n`;
   }
 
+  // --- Lines (TS Ops Planner-style map drawings), appended after the sectors ---
+  // Standalone PolylineShapeEntity (no prefab: TS_MapOverlay.et's 4 fixed
+  // ShapePoints can't be removed by a delta, and a line has any number of
+  // points) — the hand-placed form in HillSweepers / Operation NewOp, so every
+  // sub-object GUID is fresh. IsClosed is omitted (class default 0 = open →
+  // stroke only). Input is engine-native (Ops Planner plan schema): color
+  // "#rrggbb" sRGB (TS_MapOverlayComponent packs the floats straight into the
+  // LineDrawCommand, no gamma), widthM world metres → m_OutlineWidthMeters
+  // (toolkit 2026-10-14, scales with map zoom), plus a pixel fallback for
+  // toolkit paks that predate it. coords = first point; ShapePoint positions
+  // are relative to it.
+  const missionLines = (mission.lines ?? []).filter((ln) => (ln.points?.length ?? 0) >= 2);
+  for (const ln of missionLines) {
+    const hex = /^#?([0-9a-f]{6})$/i.exec(ln.color ?? "")?.[1] ?? "000000";
+    const rgb = [0, 2, 4].map((i) => +(parseInt(hex.slice(i, i + 2), 16) / 255).toFixed(3));
+    const widthM = Math.max(0.5, +(+ln.widthM || 8).toFixed(1));
+    const px = Math.min(10, Math.max(1, Math.round(widthM / 2)));
+    const o = ln.points[0];
+    const pts = ln.points
+      .map(
+        (p) =>
+          `  ShapePoint "{${mintGuid()}}" {\n   Position ${posStr([p[0] - o[0], p[1] - o[1], p[2] - o[2]])}\n  }`
+      )
+      .join("\n");
+    markersLayer += `PolylineShapeEntity {
+ components {
+  TS_MapOverlayComponent "{${mintGuid()}}" {
+   m_OutlineColor ${rgb.join(" ")} 1${px !== 3 ? `\n   m_OutlineWidth ${px}` : ""}
+   m_OutlineWidthMeters ${widthM}
+  }
+  RplComponent "{${mintGuid()}}" {
+  }
+ }
+ coords ${posStr(o)}
+ Points {
+${pts}
+ }
+}
+`;
+  }
+
   // --- QRF.layer ---
   // Reinforcement origins → TS_QRFSpawnAnchor marker entities, ONE $grp of
   // anonymous instances (Operation Choripan pattern: coords then

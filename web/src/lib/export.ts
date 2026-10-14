@@ -4,6 +4,7 @@ import { missionIds } from "./mission";
 import { propCanDefend, propEntry, propRect } from "./props";
 import { getSampler } from "./terrainSampler";
 import { iconEnum, MARKER_FACTIONS, MILITARY_TYPES } from "./markers";
+import { LINE_WIDTH_METERS, lineColorHex } from "./lines";
 import { thumbnailPixels, thumbnailPngBytes } from "./thumbnail";
 import { encodeEdds } from "./edds";
 
@@ -114,6 +115,16 @@ export async function toGeneratorMission(m: Mission) {
       width: s.width,
       rotation: s.rotation,
     });
+  }
+
+  // Lines → engine-native (Ops Planner plan schema): sRGB hex + world-metre
+  // width. Per-point heightmap Y only makes the polyline hug the terrain in
+  // the World Editor — the map draw ignores it.
+  const lines = [];
+  for (const ln of m.lines) {
+    const points = [];
+    for (const p of ln.points) points.push([y(p.x), y(await elevationAt(m.terrain, p.x, p.z)), y(p.z)]);
+    lines.push({ color: lineColorHex(ln.color), widthM: LINE_WIDTH_METERS[ln.width], points });
   }
 
   // Objectives → Objectives.layer LayerTask/Slot blocks (heightmap Y)
@@ -229,6 +240,7 @@ export async function toGeneratorMission(m: Mission) {
     zones,
     markers,
     sectors,
+    lines,
     objectives,
     props,
   };

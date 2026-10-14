@@ -21,6 +21,9 @@
  * Rendering is on-demand — every mutation calls world.render().
  *
  * Overlay model:
+ *   - map lines = Line2 strokes in world metres (worldUnits — the in-game
+ *     m_OutlineWidthMeters), resampled at half a terrain cell so they follow
+ *     ridges; selected by a screen-space pick on canvas clicks.
  *   - zones / sectors / spawn bundle = WebGL lines + translucent fills whose
  *     vertices are draped onto the RENDERED terrain (meshY interpolates the
  *     same decimated grid buildTerrain produced, so nothing pokes through).
@@ -35,11 +38,15 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { CSS2DRenderer, CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer.js";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { spawnElements, itemWorldCorners, rotateLocal, vehicleWorldOutline, FARP_DETAIL } from "mission-gen";
 import { terrainByKey } from "@/lib/terrains";
 import { getSampler } from "@/lib/terrainSampler";
 import { compositeTerrainTexture } from "@/lib/tileComposite";
 import { propEntry, propRect } from "@/lib/props";
+import { LINE_HALO, LINE_WIDTH_METERS, lineColorHex } from "@/lib/lines";
 import {
   artyStopBadgeHtml,
   deliveryBadgeHtml,
@@ -95,6 +102,8 @@ const FOV = 55;
 
 /** Movement below this many px counts as a click, not a drag. */
 const CLICK_SLOP_PX = 5;
+/** Line pick radius (px) — parity with the 2D hit stroke. */
+const LINE_PICK_PX = 14;
 /** CSS2D drag controller threshold. */
 const DRAG_THRESHOLD_PX = 4;
 
@@ -157,6 +166,8 @@ type World = {
   /** Per-element live re-drape at (x, z) during a drag, keyed like
    * selectedSpawnEl ("farp" | "sp:<id>" | "crate:<id>" | "veh:<id>"). */
   spawnSetters: Map<string, (x: number, z: number) => void>;
+  /** Map lines as resampled world points — screen-space click picking. */
+  linePicks: { id: string; pts: [number, number][]; widthM: number }[];
   target: THREE.Vector3;
   minDistance: number;
   maxDistance: number;
@@ -455,6 +466,85 @@ function clearOverlays(world: World): void {
   world.overlay.clear();
   world.spawnPick = [];
   world.spawnSetters = new Map();
+  world.linePicks = [];
+}
+
+/** Resample a polyline at half a terrain cell so its draped copy follows the
+ * rendered mesh between vertices (ts-ops-planner samplePolyline). */
+function samplePolyline(g: MeshGrid, pts: { x: number; z: number }[]): [number, number][] {
+  const step = Math.max(2, Math.min(g.w / (g.vertsX - 1), g.h / (g.vertsY - 1)) * 0.5);
+  const out: [number, number][] = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i];
+    const b = pts[i + 1];
+    const n = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / step));
+    for (let k = 0; k < n; k++) {
+      const f = k / n;
+      out.push([a.x + (b.x - a.x) * f, a.z + (b.z - a.z) * f]);
+    }
+  }
+  const last = pts[pts.length - 1];
+  out.push([last.x, last.z]);
+  return out;
+}
+
+/** World-metre Line2 stroke over pre-draped positions. */
+function metricLine(positions: number[], color: string, widthM: number, opacity: number, res: THREE.Vector2): Line2 {
+  const mat = new LineMaterial({
+    color: new THREE.Color(color).getHex(),
+    linewidth: widthM,
+    worldUnits: true,
+    transparent: opacity < 1,
+    opacity,
+  });
+  mat.resolution.copy(res);
+  const geom = new LineGeometry();
+  geom.setPositions(positions);
+  const line = new Line2(geom, mat);
+  line.renderOrder = 2;
+  return line;
+}
+
+/** Screen-space pick against the map lines: closest point-to-segment
+ * distance in px, threshold = max(LINE_PICK_PX, projected half width + 4)
+ * (ts-ops-planner pickPlanLine). Returns the hit line's id or null. */
+function pickLine(world: World, clientX: number, clientY: number): string | null {
+  const rect = world.webgl.domElement.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return null;
+  const px = clientX - rect.left;
+  const py = clientY - rect.top;
+  const tanHalfFov = Math.tan((world.camera.fov * Math.PI) / 360);
+  const v = new THREE.Vector3();
+  let bestId: string | null = null;
+  let best = Infinity;
+  for (const line of world.linePicks) {
+    let prev: { sx: number; sy: number; w: THREE.Vector3 } | null = null;
+    for (const [wx, wz] of line.pts) {
+      const wp = new THREE.Vector3(wx, meshY(world.grid, wx, wz) + LINE_LIFT, -wz);
+      v.copy(wp).project(world.camera);
+      if (v.z < -1 || v.z > 1) {
+        prev = null; // behind the camera / past far — break the chain
+        continue;
+      }
+      const sx = ((v.x + 1) / 2) * rect.width;
+      const sy = ((1 - v.y) / 2) * rect.height;
+      if (prev) {
+        const dx = sx - prev.sx;
+        const dy = sy - prev.sy;
+        const lenSq = dx * dx + dy * dy;
+        const t = lenSq > 1e-9 ? Math.min(1, Math.max(0, ((px - prev.sx) * dx + (py - prev.sy) * dy) / lenSq)) : 0;
+        const d = Math.hypot(px - (prev.sx + t * dx), py - (prev.sy + t * dy));
+        const dist = world.camera.position.distanceTo(prev.w);
+        const halfPx = ((line.widthM / 2) * rect.height) / Math.max(1, 2 * dist * tanHalfFov);
+        if (d < Math.max(LINE_PICK_PX, halfPx + 4) && d < best) {
+          best = d;
+          bestId = line.id;
+        }
+      }
+      prev = { sx, sy, w: wp };
+    }
+  }
+  return bestId;
 }
 
 /* ---------------------------------------------------------------------------
@@ -555,6 +645,7 @@ export default function MissionMap3D(props: Map3DProps) {
       overlay,
       spawnPick: [],
       spawnSetters: new Map(),
+      linePicks: [],
       target,
       minDistance: MIN_DISTANCE,
       maxDistance,
@@ -713,6 +804,23 @@ export default function MissionMap3D(props: Map3DProps) {
           onDragLive: (x, z) => drapeAt(x, z),
           onDragEnd: (x, z) => propsRef.current.onSectorChanged(s.id, { x, z }),
         });
+      }
+
+      /* -- map lines: draped world-metre strokes (+ halo when selected) -- */
+      const lineRes = new THREE.Vector2(webgl.domElement.clientWidth || 1, webgl.domElement.clientHeight || 1);
+      for (const ln of p.lines) {
+        if (ln.points.length < 2) continue;
+        const widthM = LINE_WIDTH_METERS[ln.width];
+        const sampled = samplePolyline(grid, ln.points);
+        const positions: number[] = [];
+        for (const [x, z] of sampled) positions.push(x, meshY(grid, x, z) + LINE_LIFT, -z);
+        world.linePicks.push({ id: ln.id, pts: sampled, widthM });
+        if (ln.id === p.selectedLineId) {
+          const halo = metricLine(positions, LINE_HALO, widthM + 6, 0.55, lineRes);
+          halo.renderOrder = 1;
+          overlay.add(halo);
+        }
+        overlay.add(metricLine(positions, lineColorHex(ln.color), widthM, 1, lineRes));
       }
 
       /* -- spawn elements: draped footprints, per-element drag via canvas
@@ -1462,6 +1570,12 @@ export default function MissionMap3D(props: Map3DProps) {
       dragButton = -1;
       restoreCursor();
       if (wasButton === 0 && moveAccum < CLICK_SLOP_PX) {
+        // Lines catch clicks only while no placement mode is armed (2D parity)
+        const lineId = propsRef.current.placeMode ? null : pickLine(world, e.clientX, e.clientY);
+        if (lineId) {
+          propsRef.current.onLineClick(lineId);
+          return;
+        }
         const hit = pickTerrain(world, e.clientX, e.clientY);
         if (hit) propsRef.current.onMapClick(+hit.x.toFixed(1), +hit.z.toFixed(1));
       }
@@ -1638,6 +1752,11 @@ export default function MissionMap3D(props: Map3DProps) {
       css2d.setSize(cw, ch);
       camera.aspect = cw / ch;
       camera.updateProjectionMatrix();
+      // LineMaterial needs the render-target size for its width math
+      overlay.traverse((obj) => {
+        const mat = (obj as THREE.Mesh).material;
+        if (mat instanceof LineMaterial) mat.resolution.set(cw, ch);
+      });
       world.render();
     });
     ro.observe(mount);
@@ -1749,6 +1868,8 @@ export default function MissionMap3D(props: Map3DProps) {
     props.stopTriggerSelected,
     props.sectors,
     props.selectedSectorId,
+    props.lines,
+    props.selectedLineId,
     props.playableFaction,
     props.lang,
     props.fresh,

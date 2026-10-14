@@ -9,9 +9,10 @@ import { getSampler } from "@/lib/terrainSampler";
 import { renderElevationOverlay, RAMP_CSS } from "@/lib/elevationOverlay";
 import type { HeightmapSampler } from "@/lib/heightmap";
 import type { MapLayers } from "@/lib/mapLayers";
-import type { MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone, ZoneElement } from "@/lib/mission";
+import type { MissionLine, MissionMarker, MissionObjective, MissionProp, MissionSector, MissionSpawn, PlaceMode, StopTrigger, Zone, ZoneElement } from "@/lib/mission";
 import { elementSpawnOutsideZone, isPatrolElement, pointOutsideZone } from "@/lib/mission";
 import { propEntry, propRect } from "@/lib/props";
+import { LINE_HALO, LINE_WIDTH_METERS, lineColorHex, metersToWeight, type LineWidth } from "@/lib/lines";
 import {
   distanceLabel,
   ARTY_STOP_COLOR,
@@ -77,6 +78,12 @@ export type MapProps = {
   selectedSectorId: string | null;
   /** Armed sector draw mode: drag on the map creates an AO/objective rectangle */
   sectorDraw: "ao" | "objective" | null;
+  /** Map lines (Ops Planner line tool) — world-metre strokes */
+  lines: MissionLine[];
+  selectedLineId: string | null;
+  /** Line being drawn (placeMode "line"): vertices so far + the template
+   * look; null when the draw mode is off. 2D only. */
+  lineDraft: { points: { x: number; z: number }[]; color: string; width: LineWidth } | null;
   /** Freshly placed ids ("spawn" / zone id / marker id) → entrance animation */
   fresh: Record<string, boolean>;
   placeMode: PlaceMode;
@@ -117,6 +124,12 @@ export type MapProps = {
     id: string,
     patch: Partial<Pick<MissionSector, "x" | "z" | "length" | "width" | "rotation">>
   ) => void;
+  onLineClick: (id: string) => void;
+  /** Selected line moved (outline drag) or reshaped (vertex drag) */
+  onLineChanged: (id: string, points: { x: number; z: number }[]) => void;
+  /** Double-click commits a line draft; right-click discards it (Ops Planner) */
+  onMapDoubleClick: () => void;
+  onMapContextMenu: () => void;
   onApi?: (api: MapApi) => void;
   /** 2D/3D view toggle state + handler (rendered in the HUD cluster) */
   view3D: boolean;
@@ -156,6 +169,11 @@ export default function MissionMap(props: MapProps) {
   // Set after a bundle drag so the trailing map "click" doesn't re-place
   // anything while a placeMode is active.
   const suppressClickRef = useRef(false);
+  // Line strokes are world-metre widths: every drawn line registers a restyle
+  // callback that re-derives its px weight on zoomend (overlay + draft).
+  const lineRestyleRef = useRef<(() => void)[]>([]);
+  const draftRestyleRef = useRef<(() => void) | null>(null);
+  const draftLayerRef = useRef<L.LayerGroup | null>(null);
 
   // (Re)create the map when the terrain changes
   useEffect(() => {
@@ -202,6 +220,15 @@ export default function MissionMap(props: MapProps) {
       }
       propsRef.current.onMapClick(e.latlng.lng, e.latlng.lat);
     });
+    map.on("dblclick", () => propsRef.current.onMapDoubleClick());
+    map.on("contextmenu", (e: L.LeafletMouseEvent) => {
+      e.originalEvent.preventDefault();
+      propsRef.current.onMapContextMenu();
+    });
+    map.on("zoomend", () => {
+      for (const restyle of lineRestyleRef.current) restyle();
+      draftRestyleRef.current?.();
+    });
 
     // The tile pyramids are padded to power-of-two squares with a dark-navy
     // filler baked into the JPGs south/east of the map. Mask everything
@@ -228,8 +255,12 @@ export default function MissionMap(props: MapProps) {
     ).addTo(map);
 
     const overlay = L.layerGroup().addTo(map);
+    // Line draft lives in its own group so each clicked vertex doesn't
+    // rebuild the whole overlay (and stays above it).
+    const draftLayer = L.layerGroup().addTo(map);
     mapRef.current = map;
     overlayRef.current = overlay;
+    draftLayerRef.current = draftLayer;
     worldRef.current = [w, h];
 
     // Leaflet only tracks WINDOW resizes; the mobile layout resizes the
@@ -332,6 +363,7 @@ export default function MissionMap(props: MapProps) {
       map.remove();
       mapRef.current = null;
       overlayRef.current = null;
+      draftLayerRef.current = null;
       updateScaleRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -421,6 +453,50 @@ export default function MissionMap(props: MapProps) {
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.focus?.seq]);
+
+  // Line draw mode (Ops Planner): clicked vertices + a rubber band to the
+  // cursor, dashed, at the template's metric width. Double-click zoom is off
+  // while armed — Leaflet would zoom on the commit gesture.
+  const draftActive = !!props.lineDraft;
+  const draftPoints = props.lineDraft?.points;
+  const draftColor = props.lineDraft?.color;
+  const draftWidth = props.lineDraft?.width;
+  useEffect(() => {
+    const map = mapRef.current;
+    const layer = draftLayerRef.current;
+    if (!map || !layer || !draftActive || !draftPoints || !draftColor || !draftWidth) return;
+    map.doubleClickZoom.disable();
+    const widthM = LINE_WIDTH_METERS[draftWidth];
+    const fixed = draftPoints.map((p) => [p.z, p.x] as [number, number]);
+    let cursor: [number, number] | null = null;
+    const latlngs = () => (cursor && fixed.length ? [...fixed, cursor] : fixed);
+    const poly = L.polyline(latlngs(), {
+      color: lineColorHex(draftColor),
+      weight: metersToWeight(widthM, map.getZoom()),
+      opacity: 0.9,
+      dashArray: "6 6",
+      lineCap: "butt",
+      lineJoin: "round",
+      interactive: false,
+    }).addTo(layer);
+    const dots = fixed.map((ll) =>
+      L.circleMarker(ll, { radius: 3, color: "#202427", weight: 1.5, fillColor: "#ffffff", fillOpacity: 1, interactive: false }).addTo(layer)
+    );
+    draftRestyleRef.current = () => poly.setStyle({ weight: metersToWeight(widthM, map.getZoom()) });
+    const onMove = (e: L.LeafletMouseEvent) => {
+      if (!fixed.length) return;
+      cursor = [e.latlng.lat, e.latlng.lng];
+      poly.setLatLngs(latlngs());
+    };
+    map.on("mousemove", onMove);
+    return () => {
+      map.off("mousemove", onMove);
+      poly.remove();
+      dots.forEach((d) => d.remove());
+      draftRestyleRef.current = null;
+      map.doubleClickZoom.enable();
+    };
+  }, [draftActive, draftPoints, draftColor, draftWidth]);
 
   // Sector draw mode: drag an axis-aligned rectangle on the map. Panning is
   // suspended while armed; pointer events give one code path for mouse+touch.
@@ -531,6 +607,27 @@ export default function MissionMap(props: MapProps) {
         suppressClickRef,
         (id) => propsRef.current.onSectorClick(id),
         (id, patch) => propsRef.current.onSectorChanged(id, patch)
+      );
+    }
+
+    // Lines above the sectors, below every badge. Click-through while any
+    // placement/draw mode is armed (Ops Planner: lines stop catching clicks
+    // while the line tool is active) so drawing over a line adds a vertex.
+    lineRestyleRef.current = [];
+    const linesInteractive = !props.placeMode && !props.sectorDraw;
+    for (const ln of props.lines) {
+      lineRestyleRef.current.push(
+        drawLine(
+          map,
+          overlay,
+          ln,
+          ln.id === props.selectedLineId,
+          linesInteractive,
+          !!props.fresh[ln.id],
+          suppressClickRef,
+          (id) => propsRef.current.onLineClick(id),
+          (id, pts) => propsRef.current.onLineChanged(id, pts)
+        )
       );
     }
 
@@ -986,6 +1083,10 @@ export default function MissionMap(props: MapProps) {
     props.stopTriggerSelected,
     props.sectors,
     props.selectedSectorId,
+    props.lines,
+    props.selectedLineId,
+    props.placeMode,
+    props.sectorDraw,
     props.playableFaction,
     props.lang,
     props.fresh,
@@ -1447,6 +1548,183 @@ function drawSector(
   rotHandle.on("dragend", () => {
     activeHandle = null;
     onSectorChanged(s.id, { rotation: temp.rotation });
+  });
+}
+
+/** Map line rendering + interactions (Ops Planner line tool, extended).
+ *
+ * Layer stack: a faint yellow halo under the selected line, the visible
+ * stroke (world-metre width → px at the current zoom, 1.5 px floor), and an
+ * invisible fat hit stroke (≥ 14 px, 24 on touch) so thin lines stay
+ * clickable. Click selects; the SELECTED line can be dragged by its stroke
+ * and reshaped by its vertex handles (Ops Planner can't — added here so a
+ * misplaced point doesn't mean redrawing the line). Returns the zoomend
+ * restyle callback the map registers. */
+function drawLine(
+  map: L.Map,
+  overlay: L.LayerGroup,
+  ln: MissionLine,
+  selected: boolean,
+  interactive: boolean,
+  freshPlace: boolean,
+  suppressClickRef: { current: boolean },
+  onLineClick: (id: string) => void,
+  onLineChanged: (id: string, points: { x: number; z: number }[]) => void
+): () => void {
+  const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+  const widthM = LINE_WIDTH_METERS[ln.width];
+  const weight = () => metersToWeight(widthM, map.getZoom());
+  const hitWeight = () => Math.max(weight(), coarse ? 24 : 14);
+  let pts = ln.points.map((p) => ({ ...p }));
+  const toLatLngs = () => pts.map((p) => [p.z, p.x] as [number, number]);
+
+  const halo = selected
+    ? L.polyline(toLatLngs(), {
+        color: LINE_HALO,
+        weight: weight() + 8,
+        opacity: 0.55,
+        lineCap: "round",
+        lineJoin: "round",
+        interactive: false,
+      }).addTo(overlay)
+    : null;
+  const stroke = L.polyline(toLatLngs(), {
+    color: lineColorHex(ln.color),
+    weight: weight(),
+    opacity: 1,
+    lineCap: "butt",
+    lineJoin: "round",
+    interactive: false,
+    className: freshPlace ? "mb-fresh-path" : "",
+  }).addTo(overlay);
+  const hit = interactive
+    ? L.polyline(toLatLngs(), {
+        color: "#000000",
+        opacity: 0,
+        weight: hitWeight(),
+        lineCap: "butt",
+        lineJoin: "round",
+        interactive: true,
+        bubblingMouseEvents: false,
+      }).addTo(overlay)
+    : null;
+
+  const restyle = () => {
+    halo?.setStyle({ weight: weight() + 8 });
+    stroke.setStyle({ weight: weight() });
+    hit?.setStyle({ weight: hitWeight() });
+  };
+  const handles: L.Marker[] = [];
+  let activeHandle: L.Marker | null = null;
+  const update = () => {
+    const ll = toLatLngs();
+    halo?.setLatLngs(ll);
+    stroke.setLatLngs(ll);
+    hit?.setLatLngs(ll);
+    handles.forEach((hm, i) => {
+      if (hm !== activeHandle) hm.setLatLng(ll[i]);
+    });
+  };
+  const commit = () =>
+    onLineChanged(
+      ln.id,
+      pts.map((p) => ({ x: +p.x.toFixed(1), z: +p.z.toFixed(1) }))
+    );
+
+  if (!hit) return restyle;
+
+  /* ----- stroke: click selects; pointer-drag moves the selected line ----- */
+  let dragMoved = false;
+  hit.on("click", (e) => {
+    L.DomEvent.stopPropagation(e);
+    if (dragMoved) {
+      dragMoved = false;
+      return;
+    }
+    onLineClick(ln.id);
+  });
+  const hitEl = hit.getElement() as SVGElement | null;
+  if (hitEl) {
+    hitEl.style.cursor = selected ? "move" : "pointer";
+    if (selected) {
+      let start: L.LatLng | null = null;
+      const base = ln.points;
+      const onDown = (e: PointerEvent) => {
+        if (!e.isPrimary || (e.pointerType === "mouse" && e.button !== 0)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        hitEl.setPointerCapture(e.pointerId);
+        map.dragging.disable();
+        start = map.mouseEventToLatLng(e);
+        dragMoved = false;
+      };
+      const onMove = (e: PointerEvent) => {
+        if (!start || !e.isPrimary) return;
+        const cur = map.mouseEventToLatLng(e);
+        const dLng = cur.lng - start.lng;
+        const dLat = cur.lat - start.lat;
+        if (Math.abs(dLng) > 0.5 || Math.abs(dLat) > 0.5) dragMoved = true;
+        pts = base.map((p) => ({ x: p.x + dLng, z: p.z + dLat }));
+        update();
+      };
+      const onUp = (e: PointerEvent) => {
+        if (!start || !e.isPrimary) return;
+        start = null;
+        map.dragging.enable();
+        if (dragMoved) {
+          // Swallow the trailing map click (same trick as the sectors)
+          suppressClickRef.current = true;
+          window.setTimeout(() => {
+            suppressClickRef.current = false;
+          }, 100);
+          commit();
+        }
+      };
+      const onCancel = () => {
+        if (!start) return;
+        start = null;
+        map.dragging.enable();
+        pts = base.map((p) => ({ ...p }));
+        update();
+      };
+      hitEl.addEventListener("pointerdown", onDown);
+      hitEl.addEventListener("pointermove", onMove);
+      hitEl.addEventListener("pointerup", onUp);
+      hitEl.addEventListener("pointercancel", onCancel);
+    }
+  }
+
+  if (!selected) return restyle;
+
+  /* ----- vertex handles: drag one point, the rest stay put ----- */
+  toLatLngs().forEach((ll, vi) => {
+    const hm = L.marker(ll, { icon: lineVertexIcon(coarse), draggable: true }).addTo(overlay);
+    hm.on("dragstart", () => (activeHandle = hm));
+    hm.on("drag", () => {
+      const p = hm.getLatLng();
+      pts = pts.map((q, i) => (i === vi ? { x: p.lng, z: p.lat } : q));
+      update();
+    });
+    hm.on("dragend", () => {
+      activeHandle = null;
+      commit();
+    });
+    handles.push(hm);
+  });
+  return restyle;
+}
+
+/** Round vertex handle for the selected line (transparent 28px hit box on touch). */
+function lineVertexIcon(coarse: boolean) {
+  const dot = `<div style="width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid #202427;box-shadow:0 1px 3px rgba(0,0,0,0.6);cursor:move;"></div>`;
+  if (!coarse) {
+    return L.divIcon({ className: "", iconSize: [10, 10], iconAnchor: [5, 5], html: dot });
+  }
+  return L.divIcon({
+    className: "",
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    html: `<div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;">${dot}</div>`,
   });
 }
 

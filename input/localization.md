@@ -179,8 +179,9 @@ destroy/props keys where they collide (Weapons, Other).
 
 | EN | RU |
 |---|---|
-| Military | Военные |
-| Vanilla | Стандартные |
+| NATO *(sub-tab, was Military)* | НАТО |
+| Vanilla | Стандарт |
+| Lines | Линии |
 | Faction | Фракция |
 | Type | Тип |
 | Marker | Маркер |
@@ -194,6 +195,14 @@ destroy/props keys where they collide (Weapons, Other).
 | BLUFOR / OPFOR / INDFOR / Unknown | BLUFOR / OPFOR / INDFOR / Неизвестно |
 | General / Tactical / Arrows *(icon picker categories)* | Общие / Тактические / Стрелки |
 | Infantry / Motorized / Armor / Anti-Armor / Mortar / Artillery / Fixed Wing / Recon / Supply / Maintenance / Medical / Empty | Пехота / Мотопехота / Бронетехника / ПТО / Миномёты / Артиллерия / Авиация / Разведка / Снабжение / Ремонт / Медицина / Пусто |
+| Draw line / Finish line / Editing line | Нарисовать линию / Завершить линию / Редактирование линии |
+| Thickness | Толщина |
+| Points *(selected line's vertex count, "Points: 4")* | Точек |
+| No lines yet | Линии не добавлены |
+| Lines are drawn on the in-game map: phase lines, routes, boundaries. | Линии рисуются на игровой карте: рубежи, маршруты, границы. |
+| Click a line on the map to edit it. | Клик по линии на карте — редактирование. |
+| Click the map to add points · double-click to finish, Esc cancels *(line banner)* | Кликайте по карте, чтобы добавить точки · двойной клик — завершить, Esc — отмена |
+| Black / Dark Brown / Purple / Ping / Navy Blue / Cyan / Blue / Dark Green / Green / Red / Dark Red / Dark Orange / Orange / White *(swatch tooltips)* | Чёрный / Тёмно-коричневый / Фиолетовый / Розовый / Тёмно-синий / Голубой / Синий / Тёмно-зелёный / Зелёный / Красный / Тёмно-красный / Тёмно-оранжевый / Оранжевый / Белый |
 
 ## Briefing tab
 
