@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FACTIONS, MOD_VEHICLES, VEHICLE_MODS, ZONE_MODULES } from "mission-gen";
-import type { Mission, PlaceMode, Zone, ZoneElement, ZoneElementKind, ZoneModule } from "@/lib/mission";
+import { FACTIONS, MOD_VEHICLES, VEHICLE_MODS, ZONE_MODULES, ZONE_NAME_MAX, defaultZoneEntityName } from "mission-gen";
+import { checkZoneName, type Mission, type PlaceMode, type Zone, type ZoneElement, type ZoneElementKind, type ZoneModule } from "@/lib/mission";
 import { rangeLabel, zoneEnemyRange } from "@/lib/enemyEstimate";
 import { MODULE_DESCRIPTIONS, MODULE_ICONS, zoneChipCounts } from "@/lib/zoneModules";
 import { useLang, useT, zoneName } from "@/lib/i18n";
@@ -64,6 +64,69 @@ function BudgetInput({
       }}
       className="w-[52px] h-[28px] shrink-0 bg-[#202427] border border-[#2e3439] rounded-[4px] px-2 text-[12px] text-white text-center focus:border-[#f4db50] focus:outline-none"
     />
+  );
+}
+
+const ZONE_NAME_ERRORS = {
+  chars: "Latin letters, digits and _ only, not starting with a digit",
+  length: "Name is too long",
+  reserved: "This name is reserved by the generator",
+  duplicate: "Another zone already uses this name",
+} as const;
+
+/** Inline zone rename (2026-10-21): the custom name becomes the zone's Area
+ * entity name in the generated AO.layer. Spaces type as underscores; Enter or
+ * blur commits a valid name, Esc (or blur on an invalid one) cancels; empty =
+ * back to the default Area<N>. */
+function ZoneNameEditor({
+  zones,
+  index,
+  onCommit,
+  onClose,
+}: {
+  zones: Zone[];
+  index: number;
+  onCommit: (name: string | undefined) => void;
+  onClose: () => void;
+}) {
+  const t = useT();
+  const [text, setText] = useState(zones[index].name ?? "");
+  const check = checkZoneName(zones, index, text);
+  const commit = () => {
+    if (check.error) return false;
+    onCommit(check.name);
+    onClose();
+    return true;
+  };
+  return (
+    <div className="flex-1 min-w-0 flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
+      <input
+        autoFocus
+        value={text}
+        maxLength={ZONE_NAME_MAX}
+        placeholder={defaultZoneEntityName(index)}
+        spellCheck={false}
+        aria-label={t("Rename zone")}
+        aria-invalid={!!check.error}
+        onChange={(e) => setText(e.target.value.replace(/\s/g, "_"))}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          else if (e.key === "Escape") {
+            e.stopPropagation();
+            onClose();
+          }
+        }}
+        onBlur={() => {
+          if (!commit()) onClose();
+        }}
+        className={`w-full h-[28px] bg-[#202427] border rounded-[4px] px-2 text-[14px] font-bold text-white placeholder:text-white/30 placeholder:font-normal focus:outline-none ${
+          check.error ? "border-[#f87171]" : "border-[#2e3439] focus:border-[#f4db50]"
+        }`}
+      />
+      <span className={`text-[11px] leading-4 ${check.error ? "text-[#f87171]" : "text-white/40"}`}>
+        {t(check.error ? ZONE_NAME_ERRORS[check.error] : "Entity name in Workbench. Empty = default name")}
+      </span>
+    </div>
   );
 }
 
@@ -132,6 +195,8 @@ export default function ZonesPanel({
     (vm) => !vm.hidden && mission.mods.includes(vm.id)
   );
   const placing = placeMode === "zone";
+  /** Zone whose title is being renamed inline (one at a time) */
+  const [renamingId, setRenamingId] = useState<string | null>(null);
 
   // When a zone is selected on the map, reveal its card in the scrollable panel
   const cardRefs = useRef(new Map<string, HTMLDivElement>());
@@ -179,21 +244,55 @@ export default function ZonesPanel({
                 : "gap-3 border-transparent hover:border-[#2e3439] hover:-translate-y-px"
             }`}
           >
-            <div className="flex items-center gap-2">
-              <span className="text-[14px] font-bold text-white">{zoneName(lang, i + 1)}</span>
-              {!selected && (
-                <span className="flex items-center gap-[3px]">
+            <div className={`flex gap-2 ${renamingId === zn.id ? "items-start" : "items-center"}`}>
+              {renamingId === zn.id ? (
+                <ZoneNameEditor
+                  zones={mission.zones}
+                  index={i}
+                  onCommit={(name) => updateZone(zn.id, { name })}
+                  onClose={() => setRenamingId(null)}
+                />
+              ) : (
+                <>
+                  <span className="min-w-0 truncate text-[14px] font-bold text-white" title={zn.name}>
+                    {zoneName(lang, i + 1, zn.name)}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={t("Rename zone")}
+                    title={t("Rename zone")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRenamingId(zn.id);
+                    }}
+                    className="size-[24px] shrink-0 -ml-1 flex items-center justify-center rounded-[4px] text-white/40 hover:text-white hover:bg-[#2e3439] transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden>
+                      <path
+                        d="M11.33 2a1.89 1.89 0 0 1 2.67 2.67L5 13.67l-3.33.66.66-3.33L11.33 2Z"
+                        stroke="currentColor"
+                        strokeWidth="1.33333"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path d="M10 3.33 12.67 6" stroke="currentColor" strokeWidth="1.33333" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                </>
+              )}
+              {renamingId !== zn.id && !selected && (
+                <span className="flex items-center gap-[3px] shrink-0">
                   <img src="/icons/zones/radius.svg" alt="" style={{ width: 16, height: 16 }} />
                   <span className="text-[12px] text-white">{zn.radius} m</span>
                 </span>
               )}
-              {est && (
-                <span className="flex items-center gap-[3px]" title={t("Estimated enemy count")}>
+              {renamingId !== zn.id && est && (
+                <span className="flex items-center gap-[3px] shrink-0" title={t("Estimated enemy count")}>
                   <img src="/icons/zones/skull.svg" alt="" style={{ width: 16, height: 16 }} />
                   <span className="text-[12px] text-white/60">{est}</span>
                 </span>
               )}
-              <span className="flex-1" />
+              {renamingId !== zn.id && <span className="flex-1" />}
               <button
                 type="button"
                 aria-label={t("Delete zone")}

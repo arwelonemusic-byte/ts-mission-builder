@@ -6,6 +6,8 @@
 //               including EnfusionMCP handler scripts
 //   --advanced  build the Advanced AI placement variant (TS_WebSpikeAdvanced:
 //               manually placed foot/mounted patrols, defense groups, statics)
+//   --zone-names build the custom zone-name variant (TS_WebSpikeZoneNames: the
+//               base mission with both Areas renamed, QRF anchor groups follow)
 //   --rhs       build the RHS variant instead (TS_WebSpikeRHS: RHS_USAF vs
 //               RHS_AFRF, exercises mod deps + FactionManager conf-ref entries)
 //   --uk        build the British Forces variant (TS_WebSpikeUK: UK "1989
@@ -2078,8 +2080,31 @@ const ADVANCED_MISSION = {
   props: [],
 };
 
+// Custom zone names (2026-10-21): the base mission with both zones renamed —
+// the Area entities take the names, the QRF anchor groups follow them
+// (North_Checkpoint_Foot / _Mounted), every sub-entity keeps its index name.
+const ZONE_NAMES_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeZoneNames",
+  dirName: "TS_WebSpikeZoneNames",
+  addonTitle: "TS Web Spike ZoneNames Mission",
+  name: "TS_WebSpikeZoneNames",
+  displayName: "TS Web Spike ZoneNames",
+  guids: {
+    addon: "0B5B72145CE0FE4D",
+    world: "D5029F67F4B280C0",
+    missionConf: "6EDBFC00876D01FE",
+  },
+  zones: [
+    { ...MISSION.zones[0], name: "North_Checkpoint" },
+    { ...MISSION.zones[1], name: "Radio_Ridge" },
+  ],
+};
+
 const BUILT = process.argv.includes("--advanced")
   ? ADVANCED_MISSION
+  : process.argv.includes("--zone-names")
+  ? ZONE_NAMES_MISSION
   : process.argv.includes("--seitenbuch")
   ? SEITENBUCH_MISSION
   : process.argv.includes("--zagoria")

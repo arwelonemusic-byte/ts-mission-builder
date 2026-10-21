@@ -666,7 +666,7 @@ export default function MissionMap(props: MapProps) {
         icon: zoneDotIcon(selected),
         draggable: true,
       })
-        .bindTooltip(zoneTooltipHtml(zone, zoneName(props.lang, zi + 1), props.lang), {
+        .bindTooltip(zoneTooltipHtml(zone, zoneName(props.lang, zi + 1, zone.name), props.lang), {
           direction: "top",
           offset: [0, -10],
           opacity: 1,
@@ -706,7 +706,7 @@ export default function MissionMap(props: MapProps) {
             draggable: true,
           })
             .bindTooltip(
-              `${zoneName(props.lang, zi + 1)} · ${tr(props.lang, "Origin")} ${oi + 1}`,
+              `${zoneName(props.lang, zi + 1, zone.name)} · ${tr(props.lang, "Origin")} ${oi + 1}`,
               { direction: "top", offset: [0, -12], opacity: 1 }
             )
             .addTo(overlay);
@@ -787,7 +787,7 @@ export default function MissionMap(props: MapProps) {
           icon: zoneElementIcon(el, sel && selWp === null, !!props.fresh[el.id], elementSpawnOutsideZone(zone, el)),
           draggable: true,
         })
-          .bindTooltip(`${zoneName(props.lang, zi + 1)} · ${kindLabel} ${ordinal}`, { direction: "top", offset: [0, -12], opacity: 1 })
+          .bindTooltip(`${zoneName(props.lang, zi + 1, zone.name)} · ${kindLabel} ${ordinal}`, { direction: "top", offset: [0, -12], opacity: 1 })
           .addTo(overlay);
         badge.on("click", (e) => {
           L.DomEvent.stopPropagation(e);
@@ -809,7 +809,7 @@ export default function MissionMap(props: MapProps) {
         if (isPatrolElement(el)) {
           for (const [wi, wp] of el.waypoints.entries()) {
             const dot = L.marker([wp.z, wp.x], { icon: waypointDotIcon(wi + 1, sel && selWp === wi, color, pointOutsideZone(zone, wp)), draggable: true })
-              .bindTooltip(`${zoneName(props.lang, zi + 1)} · ${kindLabel} ${ordinal} · ${tr(props.lang, "Waypoint")} ${wi + 1}`, {
+              .bindTooltip(`${zoneName(props.lang, zi + 1, zone.name)} · ${kindLabel} ${ordinal} · ${tr(props.lang, "Waypoint")} ${wi + 1}`, {
                 direction: "top",
                 offset: [0, -10],
                 opacity: 1,

@@ -1,4 +1,4 @@
-import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal } from "mission-gen";
+import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal, defaultZoneEntityName, zoneNameError } from "mission-gen";
 import { defaultGroupKey, defaultRoleKey, rosterGroupExists, rosterRoleExists } from "./roster";
 import { DEFAULT_LINE_COLOR, DEFAULT_LINE_WIDTH, isLineWidth, LINE_COLORS, type LineWidth } from "./lines";
 
@@ -90,7 +90,39 @@ export function defenseRadiusClamp(r?: number): number {
 }
 export const isPatrolElement = (el: ZoneElement): el is PatrolElement => el.kind === "foot-patrol" || el.kind === "mounted-patrol";
 
-export type Zone = { id: string; x: number; z: number; radius: number; modules: ZoneModule[]; elements?: ZoneElement[] };
+/** name = optional custom entity name (2026-10-21): becomes the zone's Area
+ * entity name in AO.layer instead of `Area<N>`; absent = default. Rules in
+ * generator/entityNames.mjs (identifier charset, world-unique). */
+export type Zone = { id: string; name?: string; x: number; z: number; radius: number; modules: ZoneModule[]; elements?: ZoneElement[] };
+
+/** Effective entity name of every zone (custom or `Area<N>`), in order. */
+export function zoneEntityNames(zones: Zone[]): string[] {
+  return zones.map((zn, i) => zn.name ?? defaultZoneEntityName(i));
+}
+
+/** Validate a typed zone name for zones[index]. Empty or the zone's own
+ * default = revert ({ name: undefined }); else the name or an error code. */
+export function checkZoneName(
+  zones: Zone[],
+  index: number,
+  input: string
+): { name: string | undefined; error: null } | { name: null; error: NonNullable<ReturnType<typeof zoneNameError>> } {
+  const v = input.trim();
+  if (!v || v.toLowerCase() === defaultZoneEntityName(index).toLowerCase()) return { name: undefined, error: null };
+  const error = zoneNameError(v, index, zoneEntityNames(zones).filter((_, j) => j !== index));
+  return error ? { name: null, error } : { name: v, error: null };
+}
+
+/** migrate(): keep only valid, unique custom names (first one wins). Mutates. */
+function sanitizeZoneNames(zones: Zone[]) {
+  const raw = zones.map((zn) => zn.name as unknown);
+  for (const zn of zones) delete zn.name;
+  zones.forEach((zn, i) => {
+    if (typeof raw[i] !== "string") return;
+    const r = checkZoneName(zones, i, raw[i]);
+    if (r.name) zn.name = r.name;
+  });
+}
 
 /** Spawn elements are individually placed (world coords) since 2026-08-18;
  * rotation is a compass bearing like MissionProp.rotation (0 = north). The
@@ -1045,6 +1077,9 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     if (elements) zn.elements = elements;
     else delete zn.elements;
   }
+  // Custom zone entity names (2026-10-21): invalid/duplicate ones are dropped
+  // (the zone falls back to Area<N>); saves without names are untouched.
+  sanitizeZoneNames(m.zones);
   return m;
 }
 

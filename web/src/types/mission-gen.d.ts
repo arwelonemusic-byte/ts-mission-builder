@@ -212,6 +212,10 @@ declare module "mission-gen" {
   export function resolveSentryPool(factionKey: string, groupSetKeys: string | string[] | undefined): string[];
   export function resolveDefenseGroup(factionKey: string, groupSetKeys: string | string[] | undefined): string;
   export function mintGuid(): string;
+  /** Zone (AI area) custom entity names — generator/entityNames.mjs */
+  export const ZONE_NAME_MAX: number;
+  export function defaultZoneEntityName(index: number): string;
+  export function zoneNameError(name: string, index: number, otherNames: string[]): "chars" | "length" | "reserved" | "duplicate" | null;
   export function buildMissionFiles(
     mission: unknown,
     options?: { sampleY?: (x: number, z: number) => number }

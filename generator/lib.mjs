@@ -6,8 +6,10 @@
 
 import { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, K,ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
+import { zoneNameError, defaultZoneEntityName } from "./entityNames.mjs";
 export { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, K,ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
+export { ZONE_NAME_MAX, zoneNameError, defaultZoneEntityName } from "./entityNames.mjs";
 
 let guidCounter = 0;
 export function mintGuid() {
@@ -126,6 +128,14 @@ export function buildMissionFiles(mission, options = {}) {
     throw new Error(
       `Playable (${mission.playableFaction}) and enemy (${mission.enemyFaction}) sides both resolve to in-game faction ${effKey(mission.playableFaction)}`
     );
+
+  // Zone entity names (custom names from the Zones panel, else Area<N>) are
+  // world-global: the UI validates them inline, this is the backstop.
+  const zoneNames = (mission.zones ?? []).map((z, i) => z.name ?? defaultZoneEntityName(i));
+  zoneNames.forEach((n, i) => {
+    const err = zoneNameError(n, i, zoneNames.filter((_, j) => j !== i));
+    if (err) throw new Error(`Zone ${i + 1} entity name "${n}" is invalid (${err})`);
+  });
 
   const guids = {
     addon: mission.guids?.addon ?? mintGuid(),
@@ -971,7 +981,7 @@ ${farpBlock}`;
 
   const aoLayer = mission.zones
     .map((z, i) => {
-      const zoneName = z.name ?? `Area${i + 1}`;
+      const zoneName = zoneNames[i];
       // QRF modules without a single placed origin can never fire (the plugin
       // disarms at Init when its anchor group is empty) — skip them entirely.
       const pluginMods = z.plugins.filter(
@@ -1395,7 +1405,7 @@ ${pts}
   {
     const anchors = [];
     mission.zones.forEach((z, i) => {
-      const zoneName = z.name ?? `Area${i + 1}`;
+      const zoneName = zoneNames[i];
       for (const p of z.plugins) {
         if (!isQrfModule(p)) continue;
         for (const o of p.origins ?? []) {

@@ -77,7 +77,9 @@ export async function toGeneratorMission(m: Mission) {
       elements.push(e);
     }
     zones.push({
-      name: `Area${i + 1}`,
+      // Custom zone name (Zones panel) or the default Area<N> — the Area
+      // entity's world name; lib.mjs re-validates it.
+      name: zn.name ?? `Area${i + 1}`,
       pos: [y(zn.x), y(zy), y(zn.z)],
       radius: zn.radius,
       plugins,

@@ -205,6 +205,13 @@ const RU: Record<string, string> = {
   "Vehicles patrolling roads in the area": "Техника, патрулирующая дороги в зоне",
   "Bunkers, sandbag positions, MG nests etc.": "Бункеры, укрепы, пулемётные гнёзда и т.п.",
   "Delete zone": "Удалить зону",
+  "Rename zone": "Переименовать зону",
+  "Entity name in Workbench. Empty = default name": "Имя сущности в Workbench. Пусто = имя по умолчанию",
+  "Latin letters, digits and _ only, not starting with a digit":
+    "Только латинские буквы, цифры и _, без цифры в начале",
+  "Name is too long": "Слишком длинное имя",
+  "This name is reserved by the generator": "Это имя занято генератором",
+  "Another zone already uses this name": "Это имя уже есть у другой зоны",
   "Foot Reinforcements": "Пешие подкрепления",
   "Vehicle Reinforcements": "Подкрепления на технике",
   "Squads move in on foot from origin points when players enter the zone":
@@ -610,9 +617,11 @@ export function tr(lang: Lang, s: string): string {
   return s;
 }
 
-/** Display name for AI zone N — "Zone 1" / "Зона 1". Display only: the
- * generated world entities keep their `Area${n}` names (export.ts). */
-export function zoneName(lang: Lang, n: number): string {
+/** Display name for AI zone N — the zone's custom name when set (it is also
+ * its generated Area entity name), else "Zone 1" / "Зона 1" (generated as
+ * `Area${n}`, export.ts). */
+export function zoneName(lang: Lang, n: number, custom?: string): string {
+  if (custom) return custom;
   if (lang === "ru") return `Зона ${n}`;
   return `Zone ${n}`;
 }
