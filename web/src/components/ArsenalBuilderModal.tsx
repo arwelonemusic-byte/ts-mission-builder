@@ -5,7 +5,9 @@
 // category / type filters, checkbox add/remove, per-category select-all);
 // right = current contents in stored order (category-sorted = in-game order)
 // with remove / reset-to-default. Live-commit like every other control — each
-// change calls onChange immediately and autosave persists it.
+// change calls onChange immediately and autosave persists it. Every browse row
+// also copies its prefab ref to the clipboard, so admins use this list to look
+// up paths for the toolkit's in-game "Add Arsenal Item" / "Spawn item" dialogs.
 //
 // Item names are the harvested in-game names (nameRu when the UI is Russian).
 // Mod-faction baked refs aren't in the vanilla pool — they show a humanized
@@ -72,6 +74,74 @@ function ItemThumb({ refStr, onHover }: { refStr: string; onHover?: OnThumbHover
   );
 }
 
+/** Copy text to the clipboard; falls back to a hidden textarea where the async
+ * Clipboard API is unavailable (non-secure origin, older browsers). */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // permission denied / insecure context: try the legacy path
+  }
+  const area = document.createElement("textarea");
+  area.value = text;
+  area.setAttribute("readonly", "");
+  area.style.position = "fixed";
+  area.style.opacity = "0";
+  document.body.appendChild(area);
+  area.select();
+  let ok = false;
+  try {
+    ok = document.execCommand("copy");
+  } catch {
+    ok = false;
+  }
+  area.remove();
+  return ok;
+}
+
+/** Copies the item's full prefab ref ("{GUID}Prefabs/...et") — what the
+ * toolkit's in-game "Add Arsenal Item" / "Spawn item" dialogs take, so an
+ * admin can look an item up here mid-mission without Workbench. */
+function CopyRefButton({ refStr }: { refStr: string }) {
+  const t = useT();
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!copied) return;
+    const id = setTimeout(() => setCopied(false), 1500);
+    return () => clearTimeout(id);
+  }, [copied]);
+  return (
+    <button
+      type="button"
+      aria-label={t("Copy prefab path")}
+      title={copied ? t("Copied") : `${t("Copy prefab path")}\n${refStr}`}
+      onClick={(e) => {
+        // inside the row's <label>: don't toggle the checkbox
+        e.preventDefault();
+        e.stopPropagation();
+        copyText(refStr).then((ok) => ok && setCopied(true));
+      }}
+      className={`size-[24px] shrink-0 flex items-center justify-center rounded-[4px] transition-colors ${
+        copied ? "text-[#4ade80]" : "text-white/40 hover:text-white hover:bg-[#2e3439]"
+      }`}
+    >
+      {copied ? (
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+          <path d="M3 8.5 6.5 12 13 4.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" aria-hidden>
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
+          <path d="M10.5 5.5V3.5a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 const BrowseRow = memo(function BrowseRow({
   entry,
   name,
@@ -107,6 +177,7 @@ const BrowseRow = memo(function BrowseRow({
           {f}
         </span>
       ))}
+      <CopyRefButton refStr={entry.ref} />
     </label>
   );
 });

@@ -175,6 +175,8 @@ const RU: Record<string, string> = {
   "Clear filters": "Сбросить фильтры",
   "Select all": "Выбрать все",
   "Remove item": "Убрать предмет",
+  "Copy prefab path": "Скопировать путь к префабу",
+  Copied: "Скопировано",
   "No items match the filters.": "Ничего не найдено по фильтрам.",
   "The arsenal must keep at least one item.": "В арсенале должен остаться хотя бы один предмет.",
   // Pool category labels ("Weapons"/"Other" reuse the destroy/props keys below)
