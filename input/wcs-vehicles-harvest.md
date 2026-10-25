@@ -16,11 +16,11 @@ Seven "Worst Case Scenario" (WCS) vehicle mods, downloaded headless + extracted 
 | WCS_M1A1 | `5D1880C4AD410C14` | 8.1.1 | 91 MB | 56 | 11 | 56 | heavy (3.8×8.5 m) |
 | WCS_BMP-3 | `5B383D4CB27E0D54` | 8.1.1 | 60 MB | 1 | 1 | 1 | heavy (3.2×7.2 m) |
 | WCS_BMP-1 | `5E524E4FEECCA92B` | 8.1.1 | 121 MB | 8 | 4 | 8 | heavy (3.0×6.7 m) |
-| WCS_FMTV | `65B60A48AEC31157` | 8.1.1 | 85 MB | 30 | 10 | 6 | heavy (2.8×7.6 m) |
+| WCS_FMTV | `65B60A48AEC31157` | 8.4.0 | 85 MB | 36 | 12 | 12 | heavy (2.8×7.6 m) |
 | WCS_Stryker | `5B02128D896F7DE8` | 8.1.0 | 68 MB | 24 | 8 | 18 | heavy (3.2×7.5 m) |
 | WCS_MRZR | `64900A5A31F5DCB5` | 8.1.1 | 81 MB | 9 | 5 | 5 | light (1.5×3.6 m) |
 | WCS_T-72 | `5E0AB16BEB16D6A4` | 8.2.1 | 90 MB | 6 | 2 | 6 | heavy (3.6×6.8 m) |
-| **all** | | | | **170** | | **132** | |
+| **all** | | | | **176** | | **138** | |
 
 ## WCS_JLTV (`5C721177A220B42F`, v8.1.3, folder `JointLightTacticalVehicle_5C721177A220B42F`)
 
@@ -385,7 +385,7 @@ Seven "Worst Case Scenario" (WCS) vehicle mods, downloaded headless + extracted 
 | BMP1P_Desert | `{C334AD811A3BFFFC}Prefabs/Vehicles/Tracked/BMP1/BMP1P_Desert.et` | BMP1P_Desert |
 
 
-## WCS_FMTV (`65B60A48AEC31157`, v8.1.1, folder `WCS_FMTV_65B60A48AEC31157`)
+## WCS_FMTV (`65B60A48AEC31157`, v8.1.1 → 8.4.0 audited 2026-10-25, folder `WCS_FMTV_65B60A48AEC31157`)
 
 ### [US] M1083A1P2 FMTV Transport Truck — unarmed
 
@@ -493,6 +493,10 @@ Seven "Worst Case Scenario" (WCS) vehicle mods, downloaded headless + extracted 
 
 ### [US] M1083A1P2 FMTV Transport Truck (M2HB) — ARMED
 
+8.4.0 renamed these prefabs `M1083_Transport_Armed*` → `M1083_Transport_M2HB*` (same GUIDs)
+and moved the mounts to `VehParts/Turrets/M2HB/`. Registry keys keep the old
+`WCS_M1083_Transport_Armed*` names; the old refs live in the def's `movedRefs`.
+
 - weapon slots: M1083_Gun_Mount_M2HB, M1083_Gun_Mount_M2HB_Tan
 - footprint (xob): 2.8×7.6 m, h 2.5 (M1083_Base.xob)
 - default occupants: Character_US_Rifleman
@@ -500,11 +504,13 @@ Seven "Worst Case Scenario" (WCS) vehicle mods, downloaded headless + extracted 
 
 | livery variant | ref | thumb (EditorPreview basename) |
 |---|---|---|
-| M1083_Transport_Armed | `{BE134ED7F4CCB5B9}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Armed.et` | M1083_Transport_Armed |
-| M1083_Transport_Armed_Tan | `{EEF937341E143F0F}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Armed_Tan.et` | M1083_Transport_Armed_Tan |
-| M1083_Transport_Armed_Woodland | `{4630C86216C9197A}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Armed_Woodland.et` | M1083_Transport_Armed_Woodland |
+| M1083_Transport_M2HB | `{BE134ED7F4CCB5B9}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M2HB.et` | M1083_Transport_M2HB |
+| M1083_Transport_M2HB_Tan | `{EEF937341E143F0F}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M2HB_Tan.et` | M1083_Transport_M2HB_Tan |
+| M1083_Transport_M2HB_Woodland | `{4630C86216C9197A}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M2HB_Woodland.et` | M1083_Transport_M2HB_Woodland |
 
 ### [US] M1083A1P2 FMTV Covered Transport Truck (M2HB) — ARMED
+
+Renamed in 8.4.0 like the open truck (`M1083_Transport_Covered_Armed*` → `M1083_Transport_Covered_M2HB*`, same GUIDs).
 
 - weapon slots: M1083_Gun_Mount_M2HB, M1083_Gun_Mount_M2HB_Tan
 - footprint (xob): 2.8×7.6 m, h 2.5 (M1083_Base.xob)
@@ -513,9 +519,35 @@ Seven "Worst Case Scenario" (WCS) vehicle mods, downloaded headless + extracted 
 
 | livery variant | ref | thumb (EditorPreview basename) |
 |---|---|---|
-| M1083_Transport_Covered_Armed | `{E2751F78ABD079B3}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_Armed.et` | M1083_Transport_Covered_Armed |
-| M1083_Transport_Covered_Armed_Tan | `{5AB4A22570AD6B48}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_Armed_Tan.et` | M1083_Transport_Covered_Armed_Tan |
-| M1083_Transport_Covered_Armed_Woodland | `{A815C3244E04D61A}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_Armed_Woodland.et` | M1083_Transport_Covered_Armed_Woodland |
+| M1083_Transport_Covered_M2HB | `{E2751F78ABD079B3}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M2HB.et` | M1083_Transport_Covered_M2HB |
+| M1083_Transport_Covered_M2HB_Tan | `{5AB4A22570AD6B48}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M2HB_Tan.et` | M1083_Transport_Covered_M2HB_Tan |
+| M1083_Transport_Covered_M2HB_Woodland | `{A815C3244E04D61A}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M2HB_Woodland.et` | M1083_Transport_Covered_M2HB_Woodland |
+
+### [US] M1083A1P2 FMTV Transport Truck - M134 — ARMED (new in 8.4.0)
+
+- weapon slots: M1083_Gun_Mount_M134, M1083_Gun_Mount_M134_Tan (parent `{BC0896B57E2A68B6}Prefabs/Vehicles/Wheeled/M998/VehParts/M1025_gun_mount_M134.et`, shipped by WCS_Armaments 8.4.0); 3 × `Box_762x51_M134_2500rnd` in the truck storage + rearm data
+- footprint (xob): 2.8×7.6 m, h 2.5 (M1083_Base.xob)
+- default occupants: Character_US_Rifleman (`m_aOccupantFillCompartmentTypes + { TURRET }`)
+- name: `#WCS-Vehicle_M1083A1P2_Transport_Name - #WCS-Weapon_M134_Name` (hybrid; Builder label writes "(M134)" to match the M2HB siblings)
+
+| livery variant | ref | thumb (EditorPreview basename) |
+|---|---|---|
+| M1083_Transport_M134 | `{49BB0E5941743E2B}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M134.et` | M1083_Transport_M134 |
+| M1083_Transport_M134_Tan | `{A23609B38D83FEF5}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M134_Tan.et` | M1083_Transport_M134_Tan |
+| M1083_Transport_M134_Woodland | `{8A080D22C4525356}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M134_Woodland.et` | M1083_Transport_M134_Woodland |
+
+### [US] M1083A1P2 FMTV Covered Transport Truck - M134 — ARMED (new in 8.4.0)
+
+- weapon slots: M1083_Gun_Mount_M134, M1083_Gun_Mount_M134_Tan (inherited from the open M134 truck)
+- footprint (xob): 2.8×7.6 m, h 2.5 (M1083_Base.xob)
+- default occupants: Character_US_Rifleman
+- name: `#WCS-Vehicle_M1083A1P2_Transport_Covered_Name - #WCS-Weapon_M134_Name`
+
+| livery variant | ref | thumb (EditorPreview basename) |
+|---|---|---|
+| M1083_Transport_Covered_M134 | `{3ABDE4D910BBDAAD}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M134.et` | M1083_Transport_Covered_M134 |
+| M1083_Transport_Covered_M134_Tan | `{BFE121B9609B57F8}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M134_Tan.et` | M1083_Transport_Covered_M134_Tan |
+| M1083_Transport_Covered_M134_Woodland | `{99ED584E04DFCF51}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M134_Woodland.et` | M1083_Transport_Covered_M134_Woodland |
 
 
 ## WCS_Stryker (`5B02128D896F7DE8`, v8.1.0, folder `STRYKER_5B02128D896F7DE8`)
@@ -625,7 +657,7 @@ Seven "Worst Case Scenario" (WCS) vehicle mods, downloaded headless + extracted 
 | Stryker_MGS_Tan | `{533DA733380D5E55}Prefabs/Vehicles/Wheeled/Stryker/M1128/Stryker_MGS_Tan.et` | Stryker_MGS_Tan |
 
 
-## WCS_MRZR (`64900A5A31F5DCB5`, v8.1.1, folder `WCS_MRZR_64900A5A31F5DCB5`)
+## WCS_MRZR (`64900A5A31F5DCB5`, v8.1.1 → 8.4.0 audited 2026-10-25, folder `WCS_MRZR_64900A5A31F5DCB5`)
 
 ### [US] MRZR D4 — unarmed
 
@@ -743,3 +775,28 @@ T-72B Green in the mounted patrol (8 GUIDs in addon.gproj). Baseline seeded 2026
 4. **Size class**: `vehicleSizeClass` regex → heavy for `WCS_M1A[12]_ | WCS_BMP[13]P?_ | WCS_Stryker_ | WCS_M108x_/M109x_` (footprint rule: hulls > 6 m need the 5×10 heavy slot; role stays "transport" via the unarmed list). JLTV (5.9 m) and MRZR light.
 5. **Thumbnails**: 164 PNGs at 200×150 in `web/public/icons/prefabs/`, named by PREFAB basename (20 entries share a preview with a sibling — M1A2 SEP/SEPv2 Black+Woodland reuse the M1A2 images, FMTV Ammo→Arsenal / Repair→Engineer, BMPx_Base→BMPx — copied under the prefab name, no THUMB_FALLBACKS needed).
 6. **Spike** `--wcs` (TS_WebSpikeWCS): 4 spawn vehicles (JLTV CROWS, MRZR, FMTV covered, Stryker ICV — light + heavy slots), BRDM2+BMP-1+BMP-3 mounted patrol, M1A1 Olive deliver target → .gproj lists the 7 GUIDs exactly once. Workbench-validated 2026-09-10 via temporary junctions (9 addons resolved, all slots present, 0 errors on our resources; the mods' `Wrong GUID/name … Language/*.st` lines are their stripped string-table sources, same as ACE's). Audit baselines seeded (`fingerprint --write` × 7), `check` clean for all seven (the "unreferenced catalog prefabs" are the vehicle-ammo inventory appends).
+
+## Audit log
+
+- **2026-10-25 — WCS_MRZR 8.1.1 → 8.4.0, WCS_FMTV 8.1.1 → 8.4.0** (`/addon-audit`, both pulled in
+  as dependencies of "FIA RHS and WCS as PMC"). **MRZR: NO-OP**, `check` 9/9 OK. 23 `.et`
+  changed, none added or removed, catalogs unchanged: suspension animation signals, a
+  `m_fFireDamageOccupants` flag and the shared rearm/fire-extinguisher action and particle
+  paths moved into `Prefabs/Vehicles/Core/…` / `Particles/Vehicle/…` (same GUIDs, all in the
+  8.4.0 WCS_Armaments rdb). **FMTV: registry updated.** The six M2HB trucks were RENAMED
+  `M1083_Transport[_Covered]_Armed*` → `…_M2HB*` under the same GUIDs (mounts moved to
+  `VehParts/Turrets/M2HB/`). Their keys stay, `vehicles` holds the new paths, and the def's new
+  `movedRefs` (key → old ref) feeds `remapRetiredVehicles()` in mission.ts, so a save whose
+  deliver/destroy `objectRef` holds an old path is rewritten on load (otherwise the exact-string
+  dep derivation in lib.mjs would drop the FMTV dependency). The deliver trigger itself would
+  have kept working: `SCR_CustomTriggerConditionsSpecificPrefabCount` compares the
+  `Resource.Load` container, i.e. by GUID. The six thumbnails were `git mv`'d to the new
+  basenames. NEW: six M134 minigun trucks (open + covered × Green/Tan/Woodland, keys
+  `WCS_M1083_Transport[_Covered]_M134[_Tan|_Woodland]`). Their mount parents the WCS_Armaments
+  `M1025_gun_mount_M134`, and they carry three 2500-round M134 boxes. Added to
+  `armedVehicleKeys`; the two Green ones also go in `patrolVehicleKeys`. Thumbnails come from
+  the mod's previews. Heavy size class via the existing `WCS_M108x_` rule. Browser-verified:
+  all 36 FMTV picker tiles load, and a seeded save with two old-path refs came back rewritten
+  and highlighted in the picker. `--wcs` spike regenerated (it only uses the unarmed covered
+  truck). `check wcsfmtv`: 36/36 current refs OK. The 6 MOVED lines it still prints are the
+  `movedRefs` entries themselves (the tool reads every ref in the def), so that is expected.

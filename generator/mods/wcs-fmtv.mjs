@@ -1,8 +1,9 @@
-// WCS FMTV — "WCS_FMTV" (65B60A48AEC31157) by Worst Case Scenario, v8.1.1 harvested 2026-09-10.
+// WCS FMTV — "WCS_FMTV" (65B60A48AEC31157) by Worst Case Scenario, v8.1.1 harvested 2026-09-10,
+// v8.4.0 audited 2026-10-25 (M2HB trucks renamed *_Armed -> *_M2HB, same GUIDs; +6 M134 trucks).
 // Full provenance (refs, names, weapon slots, footprints, occupants): input/wcs-vehicles-harvest.md.
 //
 // VEHICLE MOD (side-agnostic pool contributor, Dax Humvees pattern) — NOT a
-// faction. 30 catalog entries = 10 distinct vehicles x livery variants;
+// faction. 36 catalog entries = 12 distinct vehicles x livery variants;
 // every livery is its own key so the spawn picker offers the camo choice (user
 // decision 2026-09-10), while patrolVehicleKeys/transportVehicleKeys list ONE
 // representative livery per vehicle so the zone multiselects stay short.
@@ -43,6 +44,25 @@ export const WCS_FMTV = {
     WCS_M1083_Command: "{DE1947A6D4DECD2C}Prefabs/Vehicles/Wheeled/M1083/M1083_Command.et",
     WCS_M1083_Command_Tan: "{888FFC71FC66385F}Prefabs/Vehicles/Wheeled/M1083/M1083_Command_Tan.et",
     WCS_M1083_Command_Woodland: "{E5D66B1A14745C24}Prefabs/Vehicles/Wheeled/M1083/M1083_Command_Woodland.et",
+    // Keys keep the 8.1.1 "_Armed" names (saves store them); 8.4.0 renamed the
+    // prefabs to "_M2HB" under the same GUIDs — see movedRefs below.
+    WCS_M1083_Transport_Armed: "{BE134ED7F4CCB5B9}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M2HB.et",
+    WCS_M1083_Transport_Armed_Tan: "{EEF937341E143F0F}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M2HB_Tan.et",
+    WCS_M1083_Transport_Armed_Woodland: "{4630C86216C9197A}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M2HB_Woodland.et",
+    WCS_M1083_Transport_Covered_Armed: "{E2751F78ABD079B3}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M2HB.et",
+    WCS_M1083_Transport_Covered_Armed_Tan: "{5AB4A22570AD6B48}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M2HB_Tan.et",
+    WCS_M1083_Transport_Covered_Armed_Woodland: "{A815C3244E04D61A}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M2HB_Woodland.et",
+    WCS_M1083_Transport_M134: "{49BB0E5941743E2B}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M134.et",
+    WCS_M1083_Transport_M134_Tan: "{A23609B38D83FEF5}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M134_Tan.et",
+    WCS_M1083_Transport_M134_Woodland: "{8A080D22C4525356}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_M134_Woodland.et",
+    WCS_M1083_Transport_Covered_M134: "{3ABDE4D910BBDAAD}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M134.et",
+    WCS_M1083_Transport_Covered_M134_Tan: "{BFE121B9609B57F8}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M134_Tan.et",
+    WCS_M1083_Transport_Covered_M134_Woodland: "{99ED584E04DFCF51}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Covered_M134_Woodland.et",
+  },
+  // Prefabs the author renamed (same GUID, new path), key -> the ref string old
+  // saves still hold (deliver/destroy objectRef). migrate() rewrites those onto
+  // the current ref so usage-derived deps and thumbnails keep matching.
+  movedRefs: {
     WCS_M1083_Transport_Armed: "{BE134ED7F4CCB5B9}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Armed.et",
     WCS_M1083_Transport_Armed_Tan: "{EEF937341E143F0F}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Armed_Tan.et",
     WCS_M1083_Transport_Armed_Woodland: "{4630C86216C9197A}Prefabs/Vehicles/Wheeled/M1083/Armed/M1083_Transport_Armed_Woodland.et",
@@ -81,11 +101,20 @@ export const WCS_FMTV = {
     WCS_M1083_Transport_Covered_Armed: "M1083A1P2 FMTV Covered Transport Truck (M2HB) (Green)",
     WCS_M1083_Transport_Covered_Armed_Tan: "M1083A1P2 FMTV Covered Transport Truck (M2HB) (Tan)",
     WCS_M1083_Transport_Covered_Armed_Woodland: "M1083A1P2 FMTV Covered Transport Truck (M2HB) (Woodland)",
+    // Mod name is "<truck> - M134"; written "(M134)" to match the M2HB siblings.
+    WCS_M1083_Transport_M134: "M1083A1P2 FMTV Transport Truck (M134) (Green)",
+    WCS_M1083_Transport_M134_Tan: "M1083A1P2 FMTV Transport Truck (M134) (Tan)",
+    WCS_M1083_Transport_M134_Woodland: "M1083A1P2 FMTV Transport Truck (M134) (Woodland)",
+    WCS_M1083_Transport_Covered_M134: "M1083A1P2 FMTV Covered Transport Truck (M134) (Green)",
+    WCS_M1083_Transport_Covered_M134_Tan: "M1083A1P2 FMTV Covered Transport Truck (M134) (Tan)",
+    WCS_M1083_Transport_Covered_M134_Woodland: "M1083A1P2 FMTV Covered Transport Truck (M134) (Woodland)",
   },
   // Armed -> zone multiselect "Armed" group (one livery per vehicle).
   patrolVehicleKeys: [
     "WCS_M1083_Transport_Armed",
     "WCS_M1083_Transport_Covered_Armed",
+    "WCS_M1083_Transport_M134",
+    "WCS_M1083_Transport_Covered_M134",
   ],
   // Unarmed -> zone multiselect "Unarmed" group (one livery per vehicle).
   transportVehicleKeys: [
@@ -106,5 +135,11 @@ export const WCS_FMTV = {
     "WCS_M1083_Transport_Covered_Armed",
     "WCS_M1083_Transport_Covered_Armed_Tan",
     "WCS_M1083_Transport_Covered_Armed_Woodland",
+    "WCS_M1083_Transport_M134",
+    "WCS_M1083_Transport_M134_Tan",
+    "WCS_M1083_Transport_M134_Woodland",
+    "WCS_M1083_Transport_Covered_M134",
+    "WCS_M1083_Transport_Covered_M134_Tan",
+    "WCS_M1083_Transport_Covered_M134_Woodland",
   ],
 };

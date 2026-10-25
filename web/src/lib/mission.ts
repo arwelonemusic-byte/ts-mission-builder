@@ -419,7 +419,9 @@ export function scrubVehicleMods(m: Mission, mods: string[]): Partial<Mission> {
  * left the Workshop — the PZG GER reskins, 2026-09-29) onto their replacement,
  * everywhere a save stores a vehicle: spawn elements, zone-module selections,
  * advanced mounted patrols and deliver/destroy targets. Positions and every
- * other field are kept; saves without retired keys are left untouched. */
+ * other field are kept; saves without retired keys are left untouched.
+ * Vehicle-mod `movedRefs` (prefab renamed under the same GUID, WCS FMTV 8.4.0)
+ * keep their key, so only the stored objectRef string is rewritten. */
 function remapRetiredVehicles(m: Mission) {
   const retired = (k: unknown) => typeof k === "string" && k in RETIRED_VEHICLES;
   for (const v of Array.isArray(m.spawn?.vehicles) ? m.spawn.vehicles : []) {
@@ -436,6 +438,9 @@ function remapRetiredVehicles(m: Mission) {
     }
   }
   const byRef = new Map(Object.values(RETIRED_VEHICLES).map((r) => [r.ref, r.toRef]));
+  for (const vm of Object.values(VEHICLE_MODS)) {
+    for (const [key, oldRef] of Object.entries(vm.movedRefs ?? {})) byRef.set(oldRef, vm.vehicles[key]);
+  }
   for (const o of Array.isArray(m.objectives) ? m.objectives : []) {
     const to = typeof o?.objectRef === "string" ? byRef.get(o.objectRef) : undefined;
     if (to) o.objectRef = to;

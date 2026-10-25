@@ -110,6 +110,9 @@ declare module "mission-gen" {
       /** Every armed key incl. livery variants (picker Armed/Unarmed chips);
        * absent = patrolVehicleKeys is the full armed set (Dax). */
       armedVehicleKeys?: string[];
+      /** Prefabs renamed by the author under the same GUID: key -> the old ref
+       * string saves may still hold; migrate() rewrites it to `vehicles[key]`. */
+      movedRefs?: Record<string, string>;
     }
   >;
   /** Flat modded-vehicle lookup: key -> { ref, label, mod } */
