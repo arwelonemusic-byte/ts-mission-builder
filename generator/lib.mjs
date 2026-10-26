@@ -112,6 +112,21 @@ function aiArtilleryBlock(a) {
   }`;
 }
 
+// Role selection lock: TS_LoadoutLockComponent override on the same GameModeSF
+// entity. The toolkit prefab sets m_bLockedOnStart 0 (players pick their role
+// at the crate). A ROSTERED mission (Advanced slotting: any group carrying
+// seats) hands out the kits through the seats, so crate self-selection starts
+// locked; an admin can still /unlockroles in-game. Simple missions emit
+// nothing here (byte-identical output).
+function loadoutLockBlock(groups) {
+  const rostered = (Array.isArray(groups) ? groups : []).some((g) => Array.isArray(g?.slots) && g.slots.length > 0);
+  if (!rostered) return "";
+  return `
+  TS_LoadoutLockComponent "${K.CMP_LOADOUT_LOCK}" {
+   m_bLockedOnStart 1
+  }`;
+}
+
 // Mission start time + date: SCR_TimeAndWeatherHandlerComponent is in neither
 // the vanilla nor the toolkit GameModeSF chain, so it is a NEW component on
 // the instance (fresh GUID — the production ops' default.layer pattern,
@@ -560,7 +575,7 @@ ${TERRAIN.parentHasRadioManager ? "" : `RadioManagerEntity RadioManager : "{B8E0
   SCR_RespawnSystemComponent "{56B2B4793051E7C9}" {
    m_SpawnLogic SCR_MenuSpawnLogic "{5D36888CC966608A}" {
    }
-  }${timeAndDateBlock(mission.time)}${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}
+  }${timeAndDateBlock(mission.time)}${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}${loadoutLockBlock(mission.groups)}
  }
  coords ${mgr(-20, 0, -21)}
 }

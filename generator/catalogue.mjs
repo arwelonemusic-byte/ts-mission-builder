@@ -1186,6 +1186,11 @@ export const K = {
   // not set by the prefab: m_bEnabled 0, m_fStrikeChance 0.6 (omit the block
   // to keep enemy artillery off).
   CMP_AI_ARTILLERY: "{69B743637B168ACE}",
+  // TS_LoadoutLockComponent instance GUID inside the toolkit's GameModeSF.et.
+  // The prefab sets m_bLockedOnStart 0 (crate role selection open from the
+  // start); the generator flips it to 1 for rostered missions (Advanced
+  // slotting), where the seats hand out the kits and the crate must not.
+  CMP_LOADOUT_LOCK: "{6E4C10CC00000001}",
   // Vanilla SlotPlayerTrigger.et + its fixed component/plugin instance GUIDs
   // (Stop Artillery triggers; serialization ground truth: Operation_Base_Jumping
   // AO.layer SlotPlayerTrigger1). Plugin default m_eActivationPresence PLAYER
