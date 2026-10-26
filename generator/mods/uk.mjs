@@ -210,6 +210,10 @@ export const UK = {
       },
       patrolVehicleKeys: ["LR3_SWB_GPMG", "LR3_LWB_GPMG", "LR3_LWB_recce", "LR3_LWB_recce_M2HB", "BRDM2_UK"],
       transportVehicleKeys: ["LR3_SWB_transport", "LR3_LWB_transport", "M923A1_transport_covered_UK"],
+      // BF ships 18 vehicles (Land Rovers + a few UK-painted vanilla ones), so
+      // the whole vanilla US garage (US paint) is appended after them at the
+      // catalogue merge — Builder-user request 2026-10-26.
+      vehiclesFrom: "US",
       // Mounted-patrol / vehicle-QRF crew — always emitted (m_aCrewPrefabPool)
       // so captured/borrowed vehicles never spawn their prefab-default crews
       patrolCrew: [

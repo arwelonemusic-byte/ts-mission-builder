@@ -72,7 +72,9 @@ Subfactions (user decision 2026-07-29): "1989 Regulars", "1989 Special Forces",
 entirely (not playable, no enemy group sets). Group sets: Regulars_1989 (13 groups),
 SF_1989 (2), Regulars_1983 (12), SF_1983 (2); sentry = MachineGunTeam (Regulars) /
 Patrol (SF); defense = InfantrySection / SF Team (size 8). Vehicles: 18 (8 Land Rovers,
-M997, 5 M923A1 UK skins, BRDM-2 UK, 3 UH1H). Loadouts: 18/13/18/12 primary-variant
+M997, 5 M923A1 UK skins, BRDM-2 UK, 3 UH1H) — plus, since 2026-10-26, the whole vanilla
+US garage appended by the catalogue merge (`vehiclesFrom: "US"`, labels suffixed "US";
+user request, both sides). Loadouts: 18/13/18/12 primary-variant
 rosters. Arsenal: 28-item mixed-era starter set (no primary weapons per the project-wide
 arsenal rule — launchers, Schermuly flares, ammo, mines/explosives, medical, utility,
 4 backpacks; UK backpacks are era-identical so no subfaction split).

@@ -59,6 +59,8 @@ declare module "mission-gen" {
       /** Keys that left the registry (their addon left the Workshop): old key
        *  -> its old prefab ref + the replacement key. Flattened into RETIRED_VEHICLES. */
       retiredVehicles?: Record<string, { ref: string; to: string }>;
+      /** Vanilla faction whose vehicles the catalogue merge appended (UK → US) */
+      vehiclesFrom?: string;
       fortifications: { road: string[]; roadside: string[] };
       defaultGroupSet: string;
       groupSets: Record<

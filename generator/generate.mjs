@@ -357,6 +357,8 @@ const UK_MISSION = {
       { type: "LR3_LWB_transport" },
       { type: "LR3_LWB_transport" },
       { type: "M923A1_transport_covered_UK" },
+      // borrowed vanilla US vehicle (UK vehiclesFrom: "US", 2026-10-26)
+      { type: "M151A2_M2HB" },
     ],
   },
 };
@@ -491,7 +493,8 @@ const UK_ENEMY_MISSION = {
     {
       ...MISSION.zones[1],
       plugins: [
-        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 1 }, vehicles: ["LR3_SWB_GPMG"] },
+        // + a borrowed vanilla US vehicle (UK vehiclesFrom: "US", 2026-10-26)
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 2 }, vehicles: ["LR3_SWB_GPMG", "M1025_armed_M2HB"] },
       ],
     },
   ],

@@ -1088,11 +1088,31 @@ export const FACTIONS = {
 // (e.g. MEI = USSR + character/voice overrides): the whole vanilla entry is
 // copied underneath the def, and lib.mjs skips it in the FactionManager
 // emission because the vanilla member covers it.
+// `vehiclesFrom: "<vanillaKey>"` APPENDS that vanilla faction's whole vehicle
+// garage (spawn picker + patrol/transport candidates) after the mod's own, the
+// labels tagged with the donor key ("M923A1 Truck (covered, US)") so they read
+// apart from the mod's own same-chassis reskins. Keys must not collide.
 export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS, [SFS.id]: SFS, [SFSRF.id]: SFSRF, [SFSFIA.id]: SFSFIA, [ARMA2.id]: ARMA2, [USDESERT.id]: USDESERT, [BUNDESWEHR.id]: BUNDESWEHR };
+const donorLabel = (label, donor) =>
+  label.endsWith(")") ? `${label.slice(0, -1)}, ${donor})` : `${label} (${donor})`;
 for (const mod of Object.values(MODS)) {
   for (const [key, faction] of Object.entries(mod.factions)) {
     const base = faction.aliasOf ? FACTIONS[faction.aliasOf] : undefined;
-    FACTIONS[key] = { ...base, ...faction, mod: mod.id };
+    const merged = { ...base, ...faction, mod: mod.id };
+    const donor = faction.vehiclesFrom ? FACTIONS[faction.vehiclesFrom] : undefined;
+    if (donor) {
+      for (const k of Object.keys(donor.vehicles)) {
+        if (k in merged.vehicles) throw new Error(`${key}: vehiclesFrom key collision "${k}"`);
+      }
+      merged.vehicles = { ...merged.vehicles, ...donor.vehicles };
+      merged.vehicleLabels = { ...merged.vehicleLabels };
+      for (const [k, label] of Object.entries(donor.vehicleLabels)) {
+        merged.vehicleLabels[k] = donorLabel(label, faction.vehiclesFrom);
+      }
+      merged.patrolVehicleKeys = [...merged.patrolVehicleKeys, ...donor.patrolVehicleKeys];
+      merged.transportVehicleKeys = [...merged.transportVehicleKeys, ...donor.transportVehicleKeys];
+    }
+    FACTIONS[key] = merged;
   }
 }
 
