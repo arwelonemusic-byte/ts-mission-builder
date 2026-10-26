@@ -4,12 +4,14 @@
 // All GUIDs ground-truthed from TS Mission Toolkit / vanilla data / production ops.
 // See CLAUDE.md "Validated architecture facts" before changing formats.
 
+import { MAX_SLOTS } from "./slotPresets.mjs";
 import { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, K,ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
 import { zoneNameError, defaultZoneEntityName } from "./entityNames.mjs";
 export { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, K,ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
 export { ZONE_NAME_MAX, zoneNameError, defaultZoneEntityName } from "./entityNames.mjs";
+export { SLOT_TEAMS, SLOT_ROLES, MAX_SLOTS, ROLE_LOADOUTS, SLOT_PRESETS, resolveRoleLoadout } from "./slotPresets.mjs";
 
 let guidCounter = 0;
 export function mintGuid() {
@@ -415,10 +417,31 @@ ${briefEntries}
   const squadNamesBlock = squadCallsigns
     .map(([guid, cs]) => `     SCR_CallsignInfo "${guid}" {\n      m_sCallsign "${cs}"\n     }`)
     .join("\n");
+  // Optional slot roster (toolkit TS_SlotRoster, pak-gated since 2026-10-22):
+  // g.slots = [{name, loadout?, leader?, team?}] → m_aTS_Slots on the preset, one
+  // TS_SlotDef per seat (fresh nested-object GUIDs like TS_LoadoutConfig
+  // entries). team = "red"|"blue"|"green"|"yellow" → m_eTeam (TS_ESlotTeam, the
+  // seat's accent colour; absent/none = NONE = white, omitted). Absent/empty
+  // slots = vanilla group, byte-identical output.
+  const SLOT_TEAMS = new Set(["RED", "BLUE", "GREEN", "YELLOW"]);
   const groupPresets = groups
     .map((g) => {
-      const size = Math.max(1, Math.min(9, Math.floor(+g.size) || 9));
-      return `    SCR_GroupPreset "{${mintGuid()}}" {\n     m_iGroupSize ${size}\n    }`;
+      const size = Math.max(1, Math.min(MAX_SLOTS, Math.floor(+g.size) || 9));
+      const slots = (Array.isArray(g.slots) ? g.slots : []).slice(0, MAX_SLOTS);
+      const slotBlock = slots.length
+        ? `\n     m_aTS_Slots {\n${slots
+            .map((s) => {
+              const name = String(s?.name ?? "").trim().replace(/"/g, "'") || "Rifleman";
+              let body = `       m_sName "${name}"`;
+              if (s?.loadout) body += `\n       m_sLoadoutPrefab "${s.loadout}"`;
+              if (s?.leader) body += `\n       m_bLeader 1`;
+              const team = String(s?.team ?? "").trim().toUpperCase();
+              if (SLOT_TEAMS.has(team)) body += `\n       m_eTeam ${team}`;
+              return `      TS_SlotDef "{${mintGuid()}}" {\n${body}\n      }`;
+            })
+            .join("\n")}\n     }`
+        : "";
+      return `    SCR_GroupPreset "{${mintGuid()}}" {\n     m_iGroupSize ${size}${slotBlock}\n    }`;
     })
     .join("\n");
 

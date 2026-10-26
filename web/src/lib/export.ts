@@ -1,6 +1,6 @@
 import { buildMissionFiles, FACTIONS, itemWorldCorners } from "mission-gen";
 import type { Mission, MissionProp } from "./mission";
-import { missionIds } from "./mission";
+import { missionIds, slotLoadoutRefs } from "./mission";
 import { propCanDefend, propEntry, propRect } from "./props";
 import { getSampler } from "./terrainSampler";
 import { iconEnum, MARKER_FACTIONS, MILITARY_TYPES } from "./markers";
@@ -171,9 +171,34 @@ export async function toGeneratorMission(m: Mission) {
     });
   }
 
-  // Selected loadouts resolved to {name, prefab}, keeping catalogue order
+  // Loadouts resolved to {name, prefab}, keeping catalogue order. Simple mode =
+  // the checked crate loadouts; Advanced = the distinct seat loadouts (the crate
+  // offers exactly the mission's roles, no extras — user decision 2026-10-26).
+  const advanced = m.squadMode === "advanced";
   const loadoutSet = FACTIONS[m.playableFaction]?.loadoutSets[m.playableSubfaction] ?? [];
-  const loadouts = loadoutSet.filter((l) => m.loadouts.includes(l.prefab));
+  const crateRefs = advanced
+    ? new Set(slotLoadoutRefs(m.groups, m.playableFaction, m.playableSubfaction))
+    : new Set(m.loadouts);
+  const loadouts = loadoutSet.filter((l) => crateRefs.has(l.prefab));
+  // Squads: Simple = {id, name, size} only (seats left over from an Advanced
+  // detour must not reach the generator); Advanced = seats with the first seat
+  // as the leader, team omitted when none (white), size = seat count.
+  const groups = advanced
+    ? m.groups.map((g) => {
+        const slots = g.slots ?? [];
+        return {
+          id: g.id,
+          name: g.name,
+          size: Math.max(1, slots.length),
+          slots: slots.map((s, i) => ({
+            name: s.name,
+            loadout: s.loadout || undefined,
+            leader: i === 0,
+            team: s.team !== "none" ? s.team : undefined,
+          })),
+        };
+      })
+    : m.groups.map(({ id, name, size }) => ({ id, name, size }));
 
   return {
     addonId: ids.addonId,
@@ -191,7 +216,7 @@ export async function toGeneratorMission(m: Mission) {
     // Ordered refs (= in-game arsenal order); migrate() sanitized them and
     // lib.mjs resolves modes from ARSENAL_POOL / the baked set.
     arsenal: m.arsenal,
-    groups: m.groups,
+    groups,
     guids: m.guids,
     // Flag only — the generator emits the ref + .edds.meta, the binaries are
     // added in exportMission (canvas isn't available to the Node CLI).

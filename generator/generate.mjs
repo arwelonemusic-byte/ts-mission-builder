@@ -8,6 +8,9 @@
 //               manually placed foot/mounted patrols, defense groups, statics)
 //   --zone-names build the custom zone-name variant (TS_WebSpikeZoneNames: the
 //               base mission with both Areas renamed, QRF anchor groups follow)
+//   --slots     build the slot-roster variant (TS_WebSpikeSlots: squads 1'1/1'2
+//               carry named seats bound to loadouts — toolkit TS_SlotRoster, Arma 3
+//               style role slotting in the deploy menu; 1'3 stays vanilla)
 //   --rhs       build the RHS variant instead (TS_WebSpikeRHS: RHS_USAF vs
 //               RHS_AFRF, exercises mod deps + FactionManager conf-ref entries)
 //   --uk        build the British Forces variant (TS_WebSpikeUK: UK "1989
@@ -2104,10 +2107,56 @@ const ZONE_NAMES_MISSION = {
   ],
 };
 
+// --slots: slot roster (toolkit TS_SlotRoster, pak-gated). Squads 1'1 and 1'2
+// carry named seats bound to the mission's loadouts (Arma 3 style role slotting
+// in the deploy menu), 1'3 stays a plain vanilla group so both code paths show
+// up in one mission. Seats reference loadout PREFABS (the TS_MissionLoadouts
+// entries of this mission). Seat teams colour the deploy-menu accent bar (1'1
+// red/blue fireteams under a white SL + medic, 1'2 green/yellow).
+const SLOTS_LOADOUT = (name) => MISSION.loadouts.find((l) => l.name === name)?.prefab;
+const SLOTS_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeSlots",
+  dirName: "TS_WebSpikeSlots",
+  addonTitle: "TS Web Spike Slots Mission",
+  name: "TS_WebSpikeSlots",
+  displayName: "TS Web Spike Slots",
+  guids: {
+    addon: "5B0C7A1E2D93F4A6",
+    world: "4C8E9D2B7F1A3E50",
+    missionConf: "7A2F4B9C1E6D8035",
+  },
+  groups: [
+    {
+      id: "g1", name: "1'1", size: 6,
+      slots: [
+        { name: "Squad Leader", loadout: SLOTS_LOADOUT("SL"), leader: true },
+        { name: "Medic", loadout: SLOTS_LOADOUT("Medic") },
+        { name: "Automatic Rifleman", loadout: SLOTS_LOADOUT("Automatic Rifleman"), team: "red" },
+        { name: "Grenadier", loadout: SLOTS_LOADOUT("Grenadier"), team: "red" },
+        { name: "Rifleman", loadout: SLOTS_LOADOUT("Rifleman"), team: "blue" },
+        { name: "Rifleman", loadout: SLOTS_LOADOUT("Rifleman"), team: "blue" },
+      ],
+    },
+    {
+      id: "g2", name: "1'2", size: 4,
+      slots: [
+        { name: "Team Leader", loadout: SLOTS_LOADOUT("FTL"), leader: true, team: "green" },
+        { name: "Automatic Rifleman", loadout: SLOTS_LOADOUT("Automatic Rifleman"), team: "green" },
+        { name: "Grenadier", loadout: SLOTS_LOADOUT("Grenadier"), team: "yellow" },
+        { name: "Rifleman", loadout: SLOTS_LOADOUT("Rifleman"), team: "yellow" },
+      ],
+    },
+    { id: "g3", name: "1'3", size: 9 },
+  ],
+};
+
 const BUILT = process.argv.includes("--advanced")
   ? ADVANCED_MISSION
   : process.argv.includes("--zone-names")
   ? ZONE_NAMES_MISSION
+  : process.argv.includes("--slots")
+  ? SLOTS_MISSION
   : process.argv.includes("--seitenbuch")
   ? SEITENBUCH_MISSION
   : process.argv.includes("--zagoria")

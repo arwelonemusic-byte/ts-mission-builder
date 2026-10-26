@@ -304,4 +304,16 @@ declare module "mission-gen" {
     spawn: PositionedSpawn,
     kind: "crate" | "light" | "heavy" | "heli" | "spawnPoint"
   ): { x: number; z: number; rotation: number };
+  // --- Advanced squad mode: slot presets + role → loadout tables (generator/slotPresets.mjs) ---
+  export type SlotPresetSlot = { team: "none" | "red" | "blue" | "green" | "yellow"; role: string; name: string };
+  export type SlotPreset = { id: string; side: "opfor" | "blufor"; title: { en: string; ru: string }; slots: SlotPresetSlot[] };
+  export const SLOT_TEAMS: string[];
+  export const SLOT_ROLES: string[];
+  export const MAX_SLOTS: number;
+  export const SLOT_PRESETS: SlotPreset[];
+  export function resolveRoleLoadout(
+    faction: string,
+    subfaction: string,
+    role: string,
+  ): { prefab: string; name: string; approximate: boolean } | null;
 }

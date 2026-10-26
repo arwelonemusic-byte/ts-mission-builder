@@ -1,4 +1,4 @@
-import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal, defaultZoneEntityName, zoneNameError } from "mission-gen";
+import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal, defaultZoneEntityName, zoneNameError, SLOT_PRESETS, SLOT_ROLES, MAX_SLOTS, resolveRoleLoadout } from "mission-gen";
 import { defaultGroupKey, defaultRoleKey, rosterGroupExists, rosterRoleExists } from "./roster";
 import { DEFAULT_LINE_COLOR, DEFAULT_LINE_WIDTH, isLineWidth, LINE_COLORS, type LineWidth } from "./lines";
 
@@ -152,7 +152,22 @@ export type MissionSpawn = {
 /** Player squad: callsign (m_sCallsign) + max players (m_iGroupSize 1-9).
  * id = stable identity for spawn-point deny lists — survives renames; minted
  * by freshGroupId() (backfilled for old saves in migrate()). */
-export type MissionGroup = { id: string; name: string; size: number };
+/** Seat accent colour in the deploy menu (toolkit TS_ESlotTeam; "none" = white) */
+export type SlotTeam = "none" | "red" | "blue" | "green";
+/** The teams the Builder offers (the toolkit enum also has YELLOW, dropped from the UI - user decision 2026-10-26) */
+const BUILDER_TEAMS: readonly string[] = ["none", "red", "blue", "green"];
+/** One seat of a squad in Advanced squad mode (the toolkit slot roster): the
+ * title shown in the deploy menu, the bound loadout (prefab ref from the playable
+ * subfaction roster, "" = not chosen yet — blocks export), the team colour and,
+ * for seats created from a preset, the role they came from (re-resolved on
+ * faction changes; cleared when the user picks a loadout by hand). */
+export type SquadSlot = { id: string; name: string; loadout: string; team: SlotTeam; role?: string };
+/** `slots` exist in Advanced mode (size = seat count there); Simple mode ignores them. */
+export type MissionGroup = { id: string; name: string; size: number; slots?: SquadSlot[] };
+/** "simple" = squads by size + crate loadout checkboxes (the original flow);
+ * "advanced" = seats per squad, each bound to a loadout (slot roster). Both
+ * live on the same groups array; the generator emits seats only in advanced. */
+export type SquadMode = "simple" | "advanced";
 
 export type MissionMarker = {
   id: string;
@@ -269,6 +284,8 @@ export type Mission = {
   coreArsenalApplied: string[];
   /** Player squads (1-8) → playable faction's m_aSquadNames + m_aPredefinedGroups */
   groups: MissionGroup[];
+  /** Squad editing mode — see SquadMode */
+  squadMode: SquadMode;
   /** Artillery support → TS_FireSupportManagerComponent on GameModeSF */
   arty: ArtySupport;
   /** Enemy AI artillery → TS_AiArtilleryComponent on GameModeSF (+ optional
@@ -357,7 +374,12 @@ export function sanitizeArsenal(refs: unknown, mods: string[], faction: string, 
     ...mods.flatMap((id) => (MOD_ARSENAL_POOLS[id] ?? []).map((i) => i.ref)),
     ...fallback,
   ]);
-  const kept = [...new Set(refs.map(String))].filter((r) => known.has(r));
+  // A ref whose path the author renamed under the same GUID (RHS 0.16.5237:
+  // Vest_6Sh117_* -> RHS_Vest_6Sh117_*) follows the item to its current ref —
+  // the engine resolves by GUID, and lib.mjs only accepts current pool refs.
+  const byGuid = new Map([...known].map((r) => [r.slice(0, 18), r]));
+  const current = (r: string) => (known.has(r) ? r : byGuid.get(r.slice(0, 18)));
+  const kept = [...new Set(refs.map(String).map(current).filter((r): r is string => !!r))];
   return kept.length ? kept : fallback;
 }
 
@@ -497,6 +519,132 @@ export function freshSpawnElemId(): string {
 
 export function freshGroupId(): string {
   return `g${Math.random().toString(36).slice(2)}`;
+}
+
+// ---------------------------------------------------------------------------
+// Advanced squad mode (seats bound to loadouts — the toolkit slot roster)
+// ---------------------------------------------------------------------------
+
+/** Seats per squad — mirrors generator/slotPresets.mjs (the Blufor motorized preset needs 11) */
+export const MAX_SQUAD_SLOTS: number = MAX_SLOTS;
+/** Editor colours of the team dots + the seat accent bar (Figma 140:30; the in-game bar uses the toolkit palette) */
+export const SLOT_TEAM_COLORS: Record<SlotTeam, string> = {
+  none: "#a6a7a9",
+  red: "#d93333",
+  blue: "#3362a9",
+  green: "#3b883e",
+};
+
+export function freshSlotId(): string {
+  return `s${Math.random().toString(36).slice(2)}`;
+}
+
+export function isSlotTeam(v: unknown): v is SlotTeam {
+  return typeof v === "string" && BUILDER_TEAMS.includes(v);
+}
+
+function rosterOf(faction: string, subfaction: string): { name: string; prefab: string }[] {
+  return FACTIONS[faction]?.loadoutSets[subfaction] ?? [];
+}
+
+/** A seat for `role` resolved on the roster (preset tables in slotPresets.mjs),
+ * else the roster's first loadout; title = the given one or the loadout's name. */
+export function newSlot(faction: string, subfaction: string, role = "RIFLE", team: SlotTeam = "none", name?: string): SquadSlot {
+  const r = resolveRoleLoadout(faction, subfaction, role);
+  const first = rosterOf(faction, subfaction)[0];
+  const loadout = r?.prefab ?? first?.prefab ?? "";
+  const loadoutName = r?.name ?? first?.name ?? "";
+  return { id: freshSlotId(), name: name ?? loadoutName, loadout, team, role };
+}
+
+export function slotsFromPreset(presetId: string, faction: string, subfaction: string): SquadSlot[] {
+  const preset = SLOT_PRESETS.find((p) => p.id === presetId);
+  if (!preset) return [];
+  return preset.slots.map((s) => newSlot(faction, subfaction, s.role, isSlotTeam(s.team) ? s.team : "none", s.name));
+}
+
+/** Simple → Advanced conversion of a squad: seat 1 = the SL kit (the leader seat), the rest Riflemen. */
+export function defaultSlotsForSize(size: number, faction: string, subfaction: string): SquadSlot[] {
+  const n = Math.max(1, Math.min(MAX_SQUAD_SLOTS, Math.floor(size) || 1));
+  return Array.from({ length: n }, (_, i) => newSlot(faction, subfaction, i === 0 ? "SL" : "RIFLE"));
+}
+
+export function ensureGroupSlots(groups: MissionGroup[], faction: string, subfaction: string): MissionGroup[] {
+  return groups.map((g) => (g.slots?.length ? g : { ...g, slots: defaultSlotsForSize(g.size, faction, subfaction) }));
+}
+
+/** Advanced mode: a squad's size IS its seat count (kept in sync so Simple mode shows it) */
+export function syncGroupSizes(groups: MissionGroup[]): MissionGroup[] {
+  return groups.map((g) => (g.slots?.length ? { ...g, size: g.slots.length } : g));
+}
+
+/** Re-bind seats after a faction/subfaction change: preset roles re-resolve on
+ * the new roster, hand-picked loadouts follow their NAME when the new roster
+ * has it, anything else becomes "not chosen" (flagged in the panel). */
+export function retargetSlots(
+  groups: MissionGroup[],
+  from: { faction: string; subfaction: string },
+  to: { faction: string; subfaction: string },
+): MissionGroup[] {
+  const oldRoster = rosterOf(from.faction, from.subfaction);
+  const newRoster = rosterOf(to.faction, to.subfaction);
+  return groups.map((g) => {
+    if (!g.slots?.length) return g;
+    return {
+      ...g,
+      slots: g.slots.map((s) => {
+        if (s.role) {
+          const r = resolveRoleLoadout(to.faction, to.subfaction, s.role);
+          if (r) return { ...s, loadout: r.prefab };
+        }
+        const oldName = oldRoster.find((l) => l.prefab === s.loadout)?.name;
+        const byName = oldName ? newRoster.find((l) => l.name === oldName) : undefined;
+        if (byName) return { ...s, loadout: byName.prefab };
+        return { ...s, loadout: newRoster.some((l) => l.prefab === s.loadout) ? s.loadout : "" };
+      }),
+    };
+  });
+}
+
+/** Distinct seat loadouts in roster order — the crate list in Advanced mode (no extras, user decision) */
+export function slotLoadoutRefs(groups: MissionGroup[], faction: string, subfaction: string): string[] {
+  const used = new Set(groups.flatMap((g) => (g.slots ?? []).map((s) => s.loadout)).filter(Boolean));
+  return rosterOf(faction, subfaction)
+    .map((l) => l.prefab)
+    .filter((p) => used.has(p));
+}
+
+/** What blocks generation in Advanced mode, if anything */
+export function squadIssue(m: Mission): "no-groups" | "missing-loadout" | null {
+  if (m.squadMode !== "advanced") return null;
+  if (m.groups.length === 0) return "no-groups";
+  if (m.groups.some((g) => !g.slots?.length || g.slots.some((s) => !s.loadout))) return "missing-loadout";
+  return null;
+}
+
+/** The untouched default squads (1'1–1'4 + 1'6 at 9/9/9/9/3): switching to
+ * Advanced on those starts empty (user decision: no squads by default there). */
+export function isDefaultGroups(groups: MissionGroup[]): boolean {
+  const d = defaultGroups();
+  return groups.length === d.length && groups.every((g, i) => g.name === d[i].name && g.size === d[i].size && !g.slots?.length);
+}
+
+function sanitizeSlots(raw: unknown, faction: string, subfaction: string): SquadSlot[] {
+  if (!Array.isArray(raw)) return [];
+  const roster = new Set(rosterOf(faction, subfaction).map((l) => l.prefab));
+  const seen = new Set<string>();
+  const out: SquadSlot[] = [];
+  for (const s of raw.slice(0, MAX_SQUAD_SLOTS)) {
+    if (!s || typeof s !== "object") continue;
+    const o = s as { id?: unknown; name?: unknown; loadout?: unknown; team?: unknown; role?: unknown };
+    const id = typeof o.id === "string" && o.id && !seen.has(o.id) ? o.id : freshSlotId();
+    seen.add(id);
+    const loadout = typeof o.loadout === "string" && roster.has(o.loadout) ? o.loadout : "";
+    const slot: SquadSlot = { id, name: String(o.name ?? "").slice(0, 40), loadout, team: isSlotTeam(o.team) ? o.team : "none" };
+    if (typeof o.role === "string" && (SLOT_ROLES as string[]).includes(o.role)) slot.role = o.role;
+    out.push(slot);
+  }
+  return out;
 }
 
 export function freshLineId(): string {
@@ -758,6 +906,7 @@ export function newMission(): Mission {
     arsenal: defaultArsenal("US", "US_Army"),
     coreArsenalApplied: CORE_ARSENAL_ITEMS.map((i) => i.ref),
     groups: defaultGroups(),
+    squadMode: "simple",
     arty: defaultArty(),
     aiArty: defaultAiArty(),
     thumbnail: null,
@@ -852,22 +1001,34 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
     m.enemyGroupSets = [FACTIONS[m.enemyFaction].defaultGroupSet];
   }
   if (!m.loadouts?.length) m.loadouts = defaultLoadouts(m.playableFaction, m.playableSubfaction);
-  // Squads: default old saves; clamp hand-edited ones (1-8 groups, size 1-9).
+  // Squad mode: old saves are "simple" (squads by size + crate loadouts).
+  m.squadMode = m.squadMode === "advanced" ? "advanced" : "simple";
+  // Squads: default old saves (Simple only — Advanced starts empty and blocks
+  // export instead); clamp hand-edited ones (1-8 groups, size 1-MAX_SQUAD_SLOTS).
   // Stable ids arrived with multi-spawn-point deny lists — backfill (and
   // dedupe hand-edited collisions) so renames keep spawn restrictions.
-  if (!Array.isArray(m.groups) || m.groups.length === 0) m.groups = defaultGroups();
-  else {
+  // Seats are sanitized against the playable roster (an unknown loadout becomes
+  // "not chosen" rather than dropping the seat).
+  if (!Array.isArray(m.groups) || m.groups.length === 0) {
+    m.groups = m.squadMode === "advanced" ? [] : defaultGroups();
+  } else {
     const seen = new Set<string>();
     m.groups = m.groups.slice(0, 8).map((g) => {
       const raw = (g as { id?: unknown })?.id;
       const id = typeof raw === "string" && raw && !seen.has(raw) ? raw : freshGroupId();
       seen.add(id);
-      return {
+      const slots = sanitizeSlots((g as { slots?: unknown })?.slots, m.playableFaction, m.playableSubfaction);
+      const group: MissionGroup = {
         id,
         name: String(g?.name ?? ""),
-        size: Math.max(1, Math.min(9, Math.floor(+g?.size) || 9)),
+        size: Math.max(1, Math.min(MAX_SQUAD_SLOTS, Math.floor(+g?.size) || 9)),
       };
+      if (slots.length) group.slots = slots;
+      return group;
     });
+  }
+  if (m.squadMode === "advanced") {
+    m.groups = syncGroupSizes(ensureGroupSlots(m.groups, m.playableFaction, m.playableSubfaction));
   }
   // Mods gate: default old saves to none; if a save somehow uses a mod
   // faction without the mod enabled, enable it rather than break the mission

@@ -8,6 +8,8 @@ import {
   DEFAULT_DESTROY_OBJECT,
   defaultArsenal,
   defaultLoadouts,
+  retargetSlots,
+  squadIssue,
   downloadMissionJson,
   sanitizeArsenal,
   scrubVehicleMods,
@@ -730,6 +732,11 @@ export default function Editor() {
       playableSubfaction: sub,
       loadouts: defaultLoadouts(pf, sub),
       arsenal: defaultArsenal(pf, sub),
+      groups: retargetSlots(
+        mission.groups,
+        { faction: mission.playableFaction, subfaction: mission.playableSubfaction },
+        { faction: pf, subfaction: sub },
+      ),
       // Faction vehicles reset with the faction; modded vehicles are
       // side-agnostic and keep their placement across faction changes
       spawn: { ...mission.spawn, vehicles: mission.spawn.vehicles.filter((v) => !!MOD_VEHICLES[v.type]) },
@@ -764,6 +771,11 @@ export default function Editor() {
       playableFaction: pf,
       playableSubfaction: sub,
       loadouts: loadouts.length ? loadouts : defaultLoadouts(pf, sub),
+      groups: retargetSlots(
+        mission.groups,
+        { faction: mission.playableFaction, subfaction: mission.playableSubfaction },
+        { faction: pf, subfaction: sub },
+      ),
       spawn: {
         ...mission.spawn,
         vehicles: mission.spawn.vehicles.filter((v) => !!F.vehicles?.[v.type] || !!MOD_VEHICLES[v.type]),
@@ -797,6 +809,11 @@ export default function Editor() {
           playableSubfaction: sub,
           loadouts: defaultLoadouts(playable, sub),
           arsenal: defaultArsenal(playable, sub),
+          groups: retargetSlots(
+            mission.groups,
+            { faction: mission.playableFaction, subfaction: mission.playableSubfaction },
+            { faction: playable, subfaction: sub },
+          ),
           spawn: { ...mission.spawn, vehicles: mission.spawn.vehicles.filter((v) => !!MOD_VEHICLES[v.type]) },
         });
       }
@@ -1303,7 +1320,19 @@ export default function Editor() {
       goStep("spawn");
       return;
     }
-    if (mission.loadouts.length === 0) {
+    if (mission.squadMode === "advanced") {
+      const issue = squadIssue(mission);
+      if (issue === "no-groups") {
+        say(t("Add at least one squad (Players tab)."), "warn");
+        goStep("players");
+        return;
+      }
+      if (issue === "missing-loadout") {
+        say(t("Pick a loadout for every slot (Players tab)."), "warn");
+        goStep("players");
+        return;
+      }
+    } else if (mission.loadouts.length === 0) {
       say(t("Select at least one loadout (Players tab)."), "warn");
       goStep("players");
       return;
