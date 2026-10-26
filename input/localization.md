@@ -209,6 +209,11 @@ destroy/props keys where they collide (Weapons, Other).
 
 | EN | RU |
 |---|---|
+| Start time | Время начала |
+| Hours / Minutes *(aria labels of the HH:MM fields)* | Часы / Минуты |
+| Date | Дата |
+| Day / Month / Year *(aria labels of the date fields)* | День / Месяц / Год |
+| January … December *(month dropdown)* | Январь / Февраль / Март / Апрель / Май / Июнь / Июль / Август / Сентябрь / Октябрь / Ноябрь / Декабрь |
 | Situation | Ситуация |
 | Objectives | Задачи |
 | Hostile forces | Враждебные силы |

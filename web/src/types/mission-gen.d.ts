@@ -221,6 +221,13 @@ declare module "mission-gen" {
   export const ZONE_NAME_MAX: number;
   export function defaultZoneEntityName(index: number): string;
   export function zoneNameError(name: string, index: number, otherNames: string[]): "chars" | "length" | "reserved" | "duplicate" | null;
+  /** Mission start time + date — generator/missionTime.mjs */
+  export type MissionTimeInput = { hours: number; minutes: number; day: number; month: number; year: number };
+  export const MISSION_YEAR_MIN: number;
+  export const MISSION_YEAR_MAX: number;
+  export const DEFAULT_MISSION_TIME: MissionTimeInput;
+  export function daysInMonth(month: number, year: number): number;
+  export function clampMissionTime(t: unknown): MissionTimeInput;
   export function buildMissionFiles(
     mission: unknown,
     options?: { sampleY?: (x: number, z: number) => number }

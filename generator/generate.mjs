@@ -8,6 +8,8 @@
 //               manually placed foot/mounted patrols, defense groups, statics)
 //   --zone-names build the custom zone-name variant (TS_WebSpikeZoneNames: the
 //               base mission with both Areas renamed, QRF anchor groups follow)
+//   --time      build the start time + date variant (TS_WebSpikeTime: the base
+//               mission at 04:45 on 29 Feb 1988 — SCR_TimeAndWeatherHandlerComponent)
 //   --slots     build the slot-roster variant (TS_WebSpikeSlots: squads 1'1/1'2
 //               carry named seats bound to loadouts — toolkit TS_SlotRoster, Arma 3
 //               style role slotting in the deploy menu; 1'3 stays vanilla)
@@ -2107,6 +2109,24 @@ const ZONE_NAMES_MISSION = {
   ],
 };
 
+// --time: mission start time + date (2026-10-26) — the base mission with an
+// SCR_TimeAndWeatherHandlerComponent on GameModeSF: 04:45 on 29 Feb 1988 (a
+// leap day, so the generator's days-in-month clamp must let it through).
+const TIME_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeTime",
+  dirName: "TS_WebSpikeTime",
+  addonTitle: "TS Web Spike Time Mission",
+  name: "TS_WebSpikeTime",
+  displayName: "TS Web Spike Time",
+  guids: {
+    addon: "EE2082D269236A67",
+    world: "0C3AD90B7A9CC68B",
+    missionConf: "A4340A07EBB3813C",
+  },
+  time: { hours: 4, minutes: 45, day: 29, month: 2, year: 1988 },
+};
+
 // --slots: slot roster (toolkit TS_SlotRoster, pak-gated). Squads 1'1 and 1'2
 // carry named seats bound to the mission's loadouts (Arma 3 style role slotting
 // in the deploy menu), 1'3 stays a plain vanilla group so both code paths show
@@ -2155,6 +2175,8 @@ const BUILT = process.argv.includes("--advanced")
   ? ADVANCED_MISSION
   : process.argv.includes("--zone-names")
   ? ZONE_NAMES_MISSION
+  : process.argv.includes("--time")
+  ? TIME_MISSION
   : process.argv.includes("--slots")
   ? SLOTS_MISSION
   : process.argv.includes("--seitenbuch")

@@ -227,6 +227,8 @@ export async function toGeneratorMission(m: Mission) {
       threats: m.briefing.threats.split("\n"),
       extra: m.briefing.extra.map((e) => ({ title: e.title, text: e.text.split("\n") })),
     },
+    // Start time + date → SCR_TimeAndWeatherHandlerComponent on GameModeSF
+    time: m.time,
     // Positioned spawn shape (per-element world coords + rotation); lib.mjs
     // samples each element's Y itself via options.sampleY.
     spawn: {

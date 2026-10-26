@@ -1,4 +1,4 @@
-import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal, defaultZoneEntityName, zoneNameError, SLOT_PRESETS, SLOT_ROLES, MAX_SLOTS, resolveRoleLoadout } from "mission-gen";
+import { ARSENAL_POOL, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, MOD_ARSENAL_POOLS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, FACTIONS, OBJECTIVE_TYPES, PROPS, PROP_CATEGORIES, DEFAULT_PROP, mintGuid, layoutSpawnBundle, rotateLocal, defaultZoneEntityName, zoneNameError, SLOT_PRESETS, SLOT_ROLES, MAX_SLOTS, resolveRoleLoadout, DEFAULT_MISSION_TIME, clampMissionTime, type MissionTimeInput } from "mission-gen";
 import { defaultGroupKey, defaultRoleKey, rosterGroupExists, rosterRoleExists } from "./roster";
 import { DEFAULT_LINE_COLOR, DEFAULT_LINE_WIDTH, isLineWidth, LINE_COLORS, type LineWidth } from "./lines";
 
@@ -50,6 +50,13 @@ export type AiArtillery = {
   /** Kept while the toggle is off (hidden + not emitted), like farpPos */
   stopTrigger: StopTrigger | null;
 };
+/** Mission start time + calendar date → SCR_TimeAndWeatherHandlerComponent on
+ * GameModeSF (m_bDateOverride always on). Ranges/clamp shared with the
+ * generator: generator/missionTime.mjs. */
+export type MissionTime = MissionTimeInput;
+export function defaultMissionTime(): MissionTime {
+  return { ...DEFAULT_MISSION_TIME };
+}
 export const STOP_TRIGGER_RADIUS = { min: 25, max: 200, default: 50 };
 /** Clamp + round a stop-trigger radius to the slider's 5 m steps. */
 export function stopTriggerRadius(r?: number): number {
@@ -271,6 +278,8 @@ export type Mission = {
     /** Additional custom briefing sections (in-game journal tabs), ids 3+ */
     extra: { title: string; text: string }[];
   };
+  /** Start time + date (Briefing tab) — see MissionTime */
+  time: MissionTime;
   /** Selected loadout prefab refs (from the playable subfaction's loadout set) */
   loadouts: string[];
   /** Arsenal-crate item refs, in TS_CustomArsenal.conf (= in-game) order —
@@ -902,6 +911,7 @@ export function newMission(): Mission {
     enemyGroupSets: ["USSR_Army"],
     mods: [],
     briefing: { situation: "", objectives: "", threats: "", extra: [] },
+    time: defaultMissionTime(),
     loadouts: defaultLoadouts("US", "US_Army"),
     arsenal: defaultArsenal("US", "US_Army"),
     coreArsenalApplied: CORE_ARSENAL_ITEMS.map((i) => i.ref),
@@ -1180,6 +1190,9 @@ function migrate(m: Mission & { enemyGroupSet?: string }): Mission {
         })(),
       };
     });
+  // Start time + date (2026-10-26): old saves get the default (noon,
+  // 20 Aug 1989); hand-edited values are clamped like the generator does.
+  m.time = clampMissionTime(m.time);
   if (!m.arty) m.arty = defaultArty();
   // Early builds shipped invented defaults (60/40/40); if the user never
   // touched artillery, silently swap in the prefab-matching counts.

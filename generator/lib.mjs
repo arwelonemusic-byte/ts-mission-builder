@@ -8,9 +8,11 @@ import { MAX_SLOTS } from "./slotPresets.mjs";
 import { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, K,ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole } from "./catalogue.mjs";
 import { layoutSpawnBundle, rotateLocal, ELEMENT_SIZES, SLOT, vehicleSizeClass } from "./layout.mjs";
 import { zoneNameError, defaultZoneEntityName } from "./entityNames.mjs";
+import { clampMissionTime } from "./missionTime.mjs";
 export { TERRAINS, FACTIONS, MODS, VEHICLE_MODS, MOD_VEHICLES, RETIRED_VEHICLES, K,ZONE_MODULES, OBJECTIVE_TYPES, DESTROY_OBJECTS, PROPS, PROP_CATEGORIES, DEFAULT_PROP, ARSENAL_POOL, MOD_ARSENAL_POOLS, CORE_ADDONS, ACE_MEDICAL_SETTINGS, CORE_ARSENAL_POOL, CORE_ARSENAL_ITEMS, resolveGroupPool, resolveSentryPool, resolveDefenseGroup, resolvePropDefenseGroup, ENEMY_GROUPS, ENEMY_ROLES, pickVariant, rosterFactionsFor, resolveAdvancedGroup, resolveAdvancedRole };
 export { layoutSpawnBundle, rotateLocal, itemWorldCorners, vehicleWorldOutline, vehicleSizeClass, ELEMENT_SIZES, FARP_DETAIL, spawnElements, spawnElementsBounds, rectsOverlap, autoPlaceSpawnElement } from "./layout.mjs";
 export { ZONE_NAME_MAX, zoneNameError, defaultZoneEntityName } from "./entityNames.mjs";
+export { MISSION_YEAR_MIN, MISSION_YEAR_MAX, DEFAULT_MISSION_TIME, daysInMonth, clampMissionTime } from "./missionTime.mjs";
 export { SLOT_TEAMS, SLOT_ROLES, MAX_SLOTS, ROLE_LOADOUTS, SLOT_PRESETS, resolveRoleLoadout } from "./slotPresets.mjs";
 
 let guidCounter = 0;
@@ -107,6 +109,28 @@ function aiArtilleryBlock(a) {
   return `
   TS_AiArtilleryComponent "${K.CMP_AI_ARTILLERY}" {
    m_bEnabled 1${f}
+  }`;
+}
+
+// Mission start time + date: SCR_TimeAndWeatherHandlerComponent is in neither
+// the vanilla nor the toolkit GameModeSF chain, so it is a NEW component on
+// the instance (fresh GUID — the production ops' default.layer pattern,
+// e.g. Foxhound/Copperhead). Every field is written explicitly; nothing below
+// it to inherit from. m_bAllowHeaderSettings stays at its default 0, so the
+// mission header's m_bRandomStartingDaytime never overrides the chosen time.
+// mission.time = { hours, minutes, day, month, year }, or absent = no block
+// (the terrain's own default time/date — CLI spikes stay byte-identical).
+function timeAndDateBlock(time) {
+  if (!time) return "";
+  const t = clampMissionTime(time);
+  return `
+  SCR_TimeAndWeatherHandlerComponent "{${mintGuid()}}" {
+   m_iStartingHours ${t.hours}
+   m_iStartingMinutes ${t.minutes}
+   m_bDateOverride 1
+   m_iDay ${t.day}
+   m_iMonth ${t.month}
+   m_iYear ${t.year}
   }`;
 }
 
@@ -536,7 +560,7 @@ ${TERRAIN.parentHasRadioManager ? "" : `RadioManagerEntity RadioManager : "{B8E0
   SCR_RespawnSystemComponent "{56B2B4793051E7C9}" {
    m_SpawnLogic SCR_MenuSpawnLogic "{5D36888CC966608A}" {
    }
-  }${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}
+  }${timeAndDateBlock(mission.time)}${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}
  }
  coords ${mgr(-20, 0, -21)}
 }
