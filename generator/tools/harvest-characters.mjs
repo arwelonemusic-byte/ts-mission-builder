@@ -52,6 +52,9 @@ const SOURCES = [
   { key: "Ses_ChDKZ", label: "ChDKZ — Chedaki Insurgents (Arma II Factions)", roots: [`${REF}/Arma II Factions`], catalogs: [cat(`${REF}/Arma II Factions`, "ChDKZ", "ChDKZ_Characters.conf")], pathRe: /^Prefabs\/Characters\/Factions\/OPFOR\/ChDKZ\//i, lang: [`${REF}/Arma II Factions/Language/SesFactionsLocalization`] },
   { key: "Ses_NAPA", label: "NAPA — Chernarussian Guerrillas (Arma II Factions; its catalog lists vanilla USSR by mistake)", roots: [`${REF}/Arma II Factions`], catalogs: [cat(`${REF}/Arma II Factions`, "NAPA", "NAPA_Characters.conf")], pathRe: /^Prefabs\/Characters\/Factions\/INDFOR\/NAPA\//i, lang: [`${REF}/Arma II Factions/Language/SesFactionsLocalization`] },
   { key: "BWAR", label: "Bundeswehr (Bundeswehr Mod)", roots: [`${REF}/Bundeswehr Mod`], catalogs: [cat(`${REF}/Bundeswehr Mod`, "BWAR", "BWAR_Characters_EntityCatalog.conf")], pathRe: /^Prefabs\/Characters\/Factions\/BLUFOR\/Bundeswehr\//i, lang: [`${REF}/Bundeswehr Mod/Language/BWAR_Localization`] },
+  // Konni keeps its soldiers OUTSIDE Prefabs/Characters/Factions (KON/<Subfaction>/; KON/Gear holds kit, not soldiers)
+  // and catalogs them in its override of the vanilla USSR character catalog; names are literal English (no string tables).
+  { key: "KONNI", label: "Konni Group (alias of USSR) — enemy-only", roots: [`${REF}/Konni Group`], catalogs: [cat(`${REF}/Konni Group`, "USSR", "Characters_EntityCatalog_USSR.conf")], pathRe: /^Prefabs\/Characters\/KON\/(Konni|K07|K00|Elite|Barkov)\//i, sweepBase: ["Prefabs", "Characters", "KON"], lang: [] },
 ];
 
 const SKIP_RANDOM = /random/i;
@@ -319,7 +322,7 @@ for (const src of SOURCES) {
   const sweepRoots = src.modOnlySweep || roots.length ? roots : [VAN];
   const onDisk = new Set();
   for (const root of sweepRoots) {
-    const base = join(root, "Prefabs", "Characters", "Factions");
+    const base = join(root, ...(src.sweepBase ?? ["Prefabs", "Characters", "Factions"]));
     for (const p of walk(base)) { if (extname(p) !== ".et") continue; const r = rel(root, p); if (src.pathRe.test(r)) onDisk.add(r); }
   }
 

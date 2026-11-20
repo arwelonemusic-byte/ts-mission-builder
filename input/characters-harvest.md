@@ -1,6 +1,6 @@
 # Individual character prefabs — every enemy-capable faction
 
-Harvested 2026-10-04 by `node generator/tools/harvest-characters.mjs` (regenerate, don't hand-edit). Machine-readable twin: `input/characters-harvest.json`.
+Harvested 2026-11-20 by `node generator/tools/harvest-characters.mjs` (regenerate, don't hand-edit). Machine-readable twin: `input/characters-harvest.json`.
 
 **Scope**: every registry faction that can be the enemy side (US_DESERT is `playableOnly` → excluded). Aliases (SFS packs) list their OWN character prefabs, not the base faction's.
 
@@ -38,6 +38,7 @@ Harvested 2026-10-04 by `node generator/tools/harvest-characters.mjs` (regenerat
 | Ses_ChDKZ | 102 | 14 | 88 | 102 | 79 | 5 | 0 | 21 | 2 |
 | Ses_NAPA | 83 | 0 | 83 | 83 | 61 | 0 | 0 | 21 | 2 |
 | BWAR | 34 | 34 | 0 | 34 | 0 | 2 | 0 | 2 | 4 |
+| KONNI | 239 | 169 | 70 | 239 | 0 | 19 | 0 | 0 | 0 |
 
 ## US — US Army (vanilla)
 
@@ -1064,7 +1065,7 @@ Sources: `British Forces/Configs/EntityCatalog/UK/UK_Characters.conf`; sweep of 
 | Helicopter Pilot | Пилот вертолета | `Character_UK_1983_HeliPilot.et` | `{B85BC71B4D06D60F}` | OK_CATALOG | Rifle_L2A3_Sterling, Schermuly_Rocket_Flare_White (inv), Schermuly_Rocket_Flare_Orange (inv) |  |
 | Machine-Gunner Assistant | Помощник пулеметчика | `Character_UK_1983_Regulars_AMG.et` | `{327FBCA6B02BC5A8}` | OK | Rifle_L1A1_SLR_Plastic |  |
 | Machine-Gunner | Пулеметчик | `Character_UK_1983_Regulars_GPMG_No1.et` | `{D005E20AE7CB8431}` | OK | MG_GPMG_L7A2 |  |
-| Light Machine-Gunner |  | `Character_UK_1983_Regulars_L4LMG_No1.et` | `{B3BBFBAC7CBF582E}` | OK_CATALOG | MG_L4_LMG |  |
+| Light Machine-Gunner | Пулеметчик ручного пулемета | `Character_UK_1983_Regulars_L4LMG_No1.et` | `{B3BBFBAC7CBF582E}` | OK_CATALOG | MG_L4_LMG |  |
 | Anti-Tank Specialist | Бронебойщик | `Character_UK_1983_Regulars_MAW_No1.et` | `{8C380664085E4A89}` | OK | Rifle_L2A3_Sterling, Launcher_84mm_MAW_Optic | carries VariantData |
 | Anti-Tank Specialist Assistant | Помощник бронебойщика | `Character_UK_1983_Regulars_Maw_No2.et` | `{E06C3284B49AC5A7}` | OK | Rifle_L1A1_SLR_Plastic | carries VariantData |
 | Medic | Врач | `Character_UK_1983_Regulars_Medic.et` | `{AF1B1F8F59BB3B0F}` | OK | Rifle_L2A3_Sterling |  |
@@ -1075,37 +1076,37 @@ Sources: `British Forces/Configs/EntityCatalog/UK/UK_Characters.conf`; sweep of 
 | Light AT Rifleman | Легкий бронебойщик | `Character_UK_1983_Regulars_Rifleman_LAT.et` | `{F5B9FF92DBFB520C}` | OK | Rifle_L1A1_SLR_Plastic, Launcher_LAW66_L1A1 |  |
 | Rifleman | Стрелок | `Character_UK_1983_Regulars_Rifleman_Sterling.et` | `{AD4C5059DE96F917}` | UNCATALOGED_PREFAB | Rifle_L2A3_Sterling |  |
 | Sapper | Сапер | `Character_UK_1983_Regulars_Sapper.et` | `{E41871B093958DD1}` | OK | Rifle_L2A3_Sterling |  |
-| Section 2IC |  | `Character_UK_1983_Regulars_Section2IC.et` | `{2C69231254D1AEDB}` | OK | Rifle_L1A1_SLR_Plastic_SUIT |  |
-| Section Commander |  | `Character_UK_1983_Regulars_SectionCommander.et` | `{FFB42452E9AD5FFC}` | OK | Rifle_L1A1_SLR_Plastic |  |
+| Section 2IC | Заместитель командира отделения | `Character_UK_1983_Regulars_Section2IC.et` | `{2C69231254D1AEDB}` | OK | Rifle_L1A1_SLR_Plastic_SUIT |  |
+| Section Commander | Командир отделения | `Character_UK_1983_Regulars_SectionCommander.et` | `{FFB42452E9AD5FFC}` | OK | Rifle_L1A1_SLR_Plastic |  |
 | Platoon Sergeant | Взводный сержант | `Character_UK_1983_Regulars_Sergeant.et` | `{F1DC0DCDD8677485}` | OK | Rifle_L1A1_SLR_Plastic |  |
-| Trained Sniper |  | `Character_UK_1983_Regulars_Sniper.et` | `{FB8600CB9B527FCB}` | OK | Rifle_L42A1, Handgun_HiPower |  |
+| Trained Sniper | Подготовленный снайпер | `Character_UK_1983_Regulars_Sniper.et` | `{FB8600CB9B527FCB}` | OK | Rifle_L42A1, Handgun_HiPower |  |
 | Spotter | Корректировщик огня | `Character_UK_1983_Regulars_Spotter.et` | `{33A1A49E7ABEEF78}` | OK | Rifle_L1A1_SLR_Plastic_SUIT | m_bEnabled 0 in catalog |
 
 ### 1983/Reservists (4)
 
 | Name | RU | Prefab | GUID | Status | Weapons | Notes |
 |---|---|---|---|---|---|---|
-| Reservist (LAW 66) |  | `Character_UK_1983_Reservist_LAT.et` | `{3812CCED7C78916B}` | OK | Rifle_L1A1_SLR_Laminate, Launcher_LAW66_L1A1 |  |
-| Reservist (LMG) |  | `Character_UK_1983_Reservist_LMG.et` | `{B2AD7B366BBE9BD4}` | OK | MG_L4_LMG |  |
-| Reservist |  | `Character_UK_1983_Reservist_Rifleman.et` | `{57F707723CD960C7}` | OK | Rifle_L1A1_SLR_Wood |  |
-| Reservist Section Commander |  | `Character_UK_1983_Reservist_SectionCommander.et` | `{F035759076B5818A}` | OK | Rifle_L2A3_Sterling |  |
+| Reservist (LAW 66) | Резервист (LAW 66) | `Character_UK_1983_Reservist_LAT.et` | `{3812CCED7C78916B}` | OK | Rifle_L1A1_SLR_Laminate, Launcher_LAW66_L1A1 |  |
+| Reservist (LMG) | Резервист (ручной пулемет) | `Character_UK_1983_Reservist_LMG.et` | `{B2AD7B366BBE9BD4}` | OK | MG_L4_LMG |  |
+| Reservist | Резервист | `Character_UK_1983_Reservist_Rifleman.et` | `{57F707723CD960C7}` | OK | Rifle_L1A1_SLR_Wood |  |
+| Reservist Section Commander | Командир отделения резервистов | `Character_UK_1983_Reservist_SectionCommander.et` | `{F035759076B5818A}` | OK | Rifle_L2A3_Sterling |  |
 
 ### 1983/SpecialForces (12)
 
 | Name | RU | Prefab | GUID | Status | Weapons | Notes |
 |---|---|---|---|---|---|---|
-| Counter Revolutionary Warfare Trooper |  | `Character_UK_1983_SpecialForces_CRW.et` | `{7778AEFBB5CE20AB}` | OK_CATALOG | Rifle_MP5_SL20, Handgun_HiPower_20 |  |
-| Special Forces Anti-Tank |  | `Character_UK_1983_SpecialForces_CharlieG.et` | `{E62ADEF04A5A630C}` | OK_CATALOG | Rifle_L1A1_SLR_Plastic, Launcher_84mm_MAW_Optic |  |
+| Counter Revolutionary Warfare Trooper | Боец контрреволюционной борьбы | `Character_UK_1983_SpecialForces_CRW.et` | `{7778AEFBB5CE20AB}` | OK_CATALOG | Rifle_MP5_SL20, Handgun_HiPower_20 |  |
+| Special Forces Anti-Tank | Гранатометчик спецназа | `Character_UK_1983_SpecialForces_CharlieG.et` | `{E62ADEF04A5A630C}` | OK_CATALOG | Rifle_L1A1_SLR_Plastic, Launcher_84mm_MAW_Optic |  |
 | Special Forces Grenadier | Гранатометчик спецназа | `Character_UK_1983_SpecialForces_GL.et` | `{34480F9B2A83A8F3}` | OK | Rifle_CAR15_653_OliveGreen_SandStripes, Launcher_M79 |  |
 | Special Forces Machine-Gunner | Пулеметчик спецназа | `Character_UK_1983_SpecialForces_LMG.et` | `{6B8AAFA0B37BD53A}` | OK | MG_L4_LMG |  |
 | Special Forces Medic | Врач спецназа | `Character_UK_1983_SpecialForces_Medic.et` | `{DF457B105509006C}` | OK | Rifle_CAR15_653 |  |
 | Special Forces Officer | Офицер спецназа | `Character_UK_1983_SpecialForces_Officer.et` | `{4838874AA8CE9855}` | OK_CATALOG | Rifle_AR15_604_OliveGreen_Solid, Launcher_LAW66_L1A1, Handgun_HiPower |  |
 | Special Forces Radio Operator | Радист спецназа | `Character_UK_1983_SpecialForces_RTO.et` | `{205F4DC054E25828}` | OK | Rifle_CAR15_653_OliveGreen_SandStripes |  |
 | Special Forces Squad Leader | Командир спецназа | `Character_UK_1983_SpecialForces_SL.et` | `{541580A5EFB063CA}` | OK | Rifle_CAR15_653_OliveGreen_Solid, Welrod |  |
-| Special Forces Saboteur |  | `Character_UK_1983_SpecialForces_Saboteur.et` | `{5CF7B3F937BA66ED}` | OK_CATALOG | Rifle_L34A1_Sterling, Welrod |  |
+| Special Forces Saboteur | Диверсант спецназа | `Character_UK_1983_SpecialForces_Saboteur.et` | `{5CF7B3F937BA66ED}` | OK_CATALOG | Rifle_L34A1_Sterling, Welrod |  |
 | Special Forces Sapper | Сапер спецназа | `Character_UK_1983_SpecialForces_Sapper.et` | `{A97BEB8FF3472C18}` | OK | Rifle_AR15_604_OliveGreen_Solid, Launcher_LAW66_L1A1 |  |
 | Special Forces Sharpshooter | Снайпер спецназа | `Character_UK_1983_SpecialForces_Sharpshooter.et` | `{C7F673EEC46863F2}` | OK | Rifle_L42A1, Handgun_HiPower |  |
-| Special Forces Trooper |  | `Character_UK_1983_SpecialForces_Trooper.et` | `{0E74C9F36755655C}` | OK | Rifle_L1A1_SLR_Plastic, Launcher_LAW66_L1A1 |  |
+| Special Forces Trooper | Боец спецназа | `Character_UK_1983_SpecialForces_Trooper.et` | `{0E74C9F36755655C}` | OK | Rifle_L1A1_SLR_Plastic, Launcher_LAW66_L1A1 |  |
 
 ### 1989/Regulars (31)
 
@@ -1113,15 +1114,15 @@ Sources: `British Forces/Configs/EntityCatalog/UK/UK_Characters.conf`; sweep of 
 |---|---|---|---|---|---|---|
 | Crew Commander | Командир экипажа | `Character_UK_1989_CC.et` | `{E38BE58BD3DF365E}` | OK_CATALOG | Rifle_L85A1_Attachments_Irons | stale parent path relinked: BLUFOR/US_Army/Character_UK_1989_Crew.et → BLUFOR/UK_Army/1989/Regulars/Character_UK_1989_Crew.et |
 | Crewman | Член экипажа | `Character_UK_1989_Crew.et` | `{21B95ED97AE24289}` | OK | Rifle_L85A1_Attachments_Irons |  |
-| Aircraft Commander |  | `Character_UK_1989_HeliCrew.et` | `{FD03E0583287AC1B}` | OK | Rifle_L2A3_Sterling, Schermuly_Rocket_Flare_White (inv), Schermuly_Rocket_Flare_Orange (inv) |  |
-| Aircraft Commander |  | `Character_UK_1989_HeliPilot.et` | `{8329B91DB26C922D}` | OK | Handgun_HiPower, Schermuly_Rocket_Flare_White (inv), Schermuly_Rocket_Flare_Orange (inv) |  |
-| Ground Crew |  | `Character_UK_1989_Heli_GroundCrew.et` | `{5A4943AF88A0FBE8}` | UNCATALOGED_PREFAB | Rifle_L2A3_Sterling |  |
+| Aircraft Commander | Командир воздушного судна | `Character_UK_1989_HeliCrew.et` | `{FD03E0583287AC1B}` | OK | Rifle_L2A3_Sterling, Schermuly_Rocket_Flare_White (inv), Schermuly_Rocket_Flare_Orange (inv) |  |
+| Aircraft Commander | Командир воздушного судна | `Character_UK_1989_HeliPilot.et` | `{8329B91DB26C922D}` | OK | Handgun_HiPower, Schermuly_Rocket_Flare_White (inv), Schermuly_Rocket_Flare_Orange (inv) |  |
+| Ground Crew | Наземный персонал | `Character_UK_1989_Heli_GroundCrew.et` | `{5A4943AF88A0FBE8}` | UNCATALOGED_PREFAB | Rifle_L2A3_Sterling |  |
 | Machine-Gunner Assistant | Помощник пулеметчика | `Character_UK_1989_Regulars_AMG.et` | `{146D4295E1E1DFF2}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
-| Convoy Commander |  | `Character_UK_1989_Regulars_ConvoyCommander.et` | `{3FBF6AC8C621AF32}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_Irons |  |
-| Detachment Commander |  | `Character_UK_1989_Regulars_DetachmentCommander.et` | `{564622CD8C4FA227}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
+| Convoy Commander | Командир колонны | `Character_UK_1989_Regulars_ConvoyCommander.et` | `{3FBF6AC8C621AF32}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_Irons |  |
+| Detachment Commander | Командир группы | `Character_UK_1989_Regulars_DetachmentCommander.et` | `{564622CD8C4FA227}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
 | Driver | Водитель | `Character_UK_1989_Regulars_Driver.et` | `{8105DD9A6CB40F8D}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_Irons |  |
 | Machine-Gunner | Пулеметчик | `Character_UK_1989_Regulars_GPMG_No1.et` | `{111A85E9DD0EB2B6}` | OK | MG_GPMG_L7A2 |  |
-| LSW Gunner |  | `Character_UK_1989_Regulars_LSW.et` | `{D0F124C1610D3232}` | OK | Rifle_L85_LSW_A1_Attachments_SUSAT |  |
+| LSW Gunner | Стрелок LSW | `Character_UK_1989_Regulars_LSW.et` | `{D0F124C1610D3232}` | OK | Rifle_L85_LSW_A1_Attachments_SUSAT |  |
 | Anti-Tank Specialist | Бронебойщик | `Character_UK_1989_Regulars_MAW_No1.et` | `{02E60251E009D3BD}` | OK | Rifle_L85A1_Attachments_SUSAT, Launcher_84mm_MAW_Optic | carries VariantData |
 | Anti-Tank Specialist Assistant | Помощник бронебойщика | `Character_UK_1989_Regulars_Maw_No2.et` | `{B317C07044D4B06F}` | OK | Rifle_L85A1_Attachments_SUSAT | carries VariantData |
 | Medic | Врач | `Character_UK_1989_Regulars_Medic.et` | `{59DC74EF0ECF7E49}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
@@ -1129,38 +1130,38 @@ Sources: `British Forces/Configs/EntityCatalog/UK/UK_Characters.conf`; sweep of 
 | Platoon Leader | Командир взвода | `Character_UK_1989_Regulars_PlatoonLeader.et` | `{F487760AB6777BF3}` | OK | Rifle_L85A1_Attachments_SUSAT, Handgun_HiPower |  |
 | Combat Signaler | Связист | `Character_UK_1989_Regulars_RTO.et` | `{323D2A366A8DAEED}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
 | Rifleman | Стрелок | `Character_UK_1989_Regulars_Rifleman.et` | `{4AF2023E868540E7}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
-| Rifleman (LAW 66) |  | `Character_UK_1989_Regulars_Rifleman_LAT_LAW66.et` | `{B3B68543494C3B8E}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT, Launcher_LAW66_L1A1 |  |
-| Rifleman (LAW 80) |  | `Character_UK_1989_Regulars_Rifleman_LAT_LAW80.et` | `{B10659FFD99279DC}` | OK | Rifle_L85A1_Attachments_SUSAT, Launcher_LAW80_base |  |
-| Mortarman |  | `Character_UK_1989_Regulars_Rifleman_Mortar.et` | `{96C9CA768A4D36DF}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_Irons |  |
-| Rifleman (Recce) |  | `Character_UK_1989_Regulars_Rifleman_Recce.et` | `{9C92456D731A6DAA}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
-| Combat Engineer |  | `Character_UK_1989_Regulars_Sapper.et` | `{08E104521DE26461}` | OK | Rifle_L85A1_Attachments_Irons, Mine_L9A1_Barmine |  |
-| Assault Engineer |  | `Character_UK_1989_Regulars_Sapper_Assault.et` | `{91CA00A021FC8834}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
-| Section 2IC |  | `Character_UK_1989_Regulars_Section2IC.et` | `{F9E2E97FA21AA133}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
-| Section Commander |  | `Character_UK_1989_Regulars_SectionCommander.et` | `{7D7C6FBCBA40F45D}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
-| Section Commander (Recce) |  | `Character_UK_1989_Regulars_SectionCommander_Recce.et` | `{7865DE528AEF1FF0}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
+| Rifleman (LAW 66) | Стрелок (LAW 66) | `Character_UK_1989_Regulars_Rifleman_LAT_LAW66.et` | `{B3B68543494C3B8E}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT, Launcher_LAW66_L1A1 |  |
+| Rifleman (LAW 80) | Стрелок (LAW 80) | `Character_UK_1989_Regulars_Rifleman_LAT_LAW80.et` | `{B10659FFD99279DC}` | OK | Rifle_L85A1_Attachments_SUSAT, Launcher_LAW80_base |  |
+| Mortarman | Минометчик | `Character_UK_1989_Regulars_Rifleman_Mortar.et` | `{96C9CA768A4D36DF}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_Irons |  |
+| Rifleman (Recce) | Стрелок (разведка) | `Character_UK_1989_Regulars_Rifleman_Recce.et` | `{9C92456D731A6DAA}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
+| Combat Engineer | Боевой сапер | `Character_UK_1989_Regulars_Sapper.et` | `{08E104521DE26461}` | OK | Rifle_L85A1_Attachments_Irons, Mine_L9A1_Barmine |  |
+| Assault Engineer | Штурмовой сапер | `Character_UK_1989_Regulars_Sapper_Assault.et` | `{91CA00A021FC8834}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
+| Section 2IC | Заместитель командира отделения | `Character_UK_1989_Regulars_Section2IC.et` | `{F9E2E97FA21AA133}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
+| Section Commander | Командир отделения | `Character_UK_1989_Regulars_SectionCommander.et` | `{7D7C6FBCBA40F45D}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
+| Section Commander (Recce) | Командир отделения (разведка) | `Character_UK_1989_Regulars_SectionCommander_Recce.et` | `{7865DE528AEF1FF0}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
 | Platoon Sergeant | Взводный сержант | `Character_UK_1989_Regulars_Sergeant.et` | `{B9CFB916A26682D6}` | OK | Rifle_L85A1_Attachments_SUSAT |  |
-| Trained Sniper |  | `Character_UK_1989_Regulars_Sniper.et` | `{68463C017BA8C3EB}` | OK | Rifle_AI_L96A1_PM6x42, Handgun_HiPower |  |
-| Trained Sniper |  | `Character_UK_1989_Regulars_Sniper_Recce.et` | `{62B41F5648E706F0}` | UNCATALOGED_PREFAB | Rifle_AI_L96A1_PM6x42, Handgun_HiPower |  |
+| Trained Sniper | Подготовленный снайпер | `Character_UK_1989_Regulars_Sniper.et` | `{68463C017BA8C3EB}` | OK | Rifle_AI_L96A1_PM6x42, Handgun_HiPower |  |
+| Trained Sniper | Подготовленный снайпер | `Character_UK_1989_Regulars_Sniper_Recce.et` | `{62B41F5648E706F0}` | UNCATALOGED_PREFAB | Rifle_AI_L96A1_PM6x42, Handgun_HiPower |  |
 | Spotter | Корректировщик огня | `Character_UK_1989_Regulars_Spotter.et` | `{4E9A3CAA773252F0}` | UNCATALOGED_PREFAB | Rifle_L85A1_Attachments_SUSAT |  |
 
 ### 1989/Reservists (8)
 
 | Name | RU | Prefab | GUID | Status | Weapons | Notes |
 |---|---|---|---|---|---|---|
-| Reservist (LAW 66) |  | `Character_UK_1989_Reservist_LAT.et` | `{32C3AC2DE395CB05}` | OK | Rifle_L1A1_SLR_Plastic, Launcher_LAW66_L1A1 |  |
-| Officer Cadet |  | `Character_UK_1989_Reservist_Officer.et` | `{2B867D53E25C485C}` | UNCATALOGED_PREFAB | Rifle_L2A3_Sterling |  |
-| Reservist Section Commander |  | `Character_UK_1989_Reservist_SectionCommander.et` | `{130A2E98EF961445}` | OK | Rifle_L2A3_Sterling |  |
-| Driver (Reservist) |  | `Character_UK_1989_Reservists_Driver.et` | `{18803AC6D0C311D7}` | UNCATALOGED_PREFAB | Rifle_L2A3_Sterling |  |
-| Reservist Engineer |  | `Character_UK_1989_Reservists_Engineer.et` | `{4FAB226017A82F43}` | OK | Rifle_L2A3_Sterling, Mine_Mk7 |  |
-| Reservist (LMG) |  | `Character_UK_1989_Reservists_LMG.et` | `{F22E993715463973}` | OK_CATALOG | MG_L4_LMG |  |
-| Reservist |  | `Character_UK_1989_Reservists_Rifleman.et` | `{B286CF6178DEEBE3}` | OK | Rifle_L1A1_SLR_Plastic |  |
-| Reservist (Recce) |  | `Character_UK_1989_Reservists_Rifleman_Recce.et` | `{134FFEADD353AA31}` | OK | Rifle_L1A1_SLR_Plastic |  |
+| Reservist (LAW 66) | Резервист (LAW 66) | `Character_UK_1989_Reservist_LAT.et` | `{32C3AC2DE395CB05}` | OK | Rifle_L1A1_SLR_Plastic, Launcher_LAW66_L1A1 |  |
+| Officer Cadet | Курсант | `Character_UK_1989_Reservist_Officer.et` | `{2B867D53E25C485C}` | UNCATALOGED_PREFAB | Rifle_L2A3_Sterling |  |
+| Reservist Section Commander | Командир отделения резервистов | `Character_UK_1989_Reservist_SectionCommander.et` | `{130A2E98EF961445}` | OK | Rifle_L2A3_Sterling |  |
+| Driver (Reservist) | Водитель (резервист) | `Character_UK_1989_Reservists_Driver.et` | `{18803AC6D0C311D7}` | UNCATALOGED_PREFAB | Rifle_L2A3_Sterling |  |
+| Reservist Engineer | Сапер-резервист | `Character_UK_1989_Reservists_Engineer.et` | `{4FAB226017A82F43}` | OK | Rifle_L2A3_Sterling, Mine_Mk7 |  |
+| Reservist (LMG) | Резервист (ручной пулемет) | `Character_UK_1989_Reservists_LMG.et` | `{F22E993715463973}` | OK | MG_L4_LMG |  |
+| Reservist | Резервист | `Character_UK_1989_Reservists_Rifleman.et` | `{B286CF6178DEEBE3}` | OK | Rifle_L1A1_SLR_Plastic |  |
+| Reservist (Recce) | Резервист (разведка) | `Character_UK_1989_Reservists_Rifleman_Recce.et` | `{134FFEADD353AA31}` | OK | Rifle_L1A1_SLR_Plastic |  |
 
 ### 1989/SpecialForces (13)
 
 | Name | RU | Prefab | GUID | Status | Weapons | Notes |
 |---|---|---|---|---|---|---|
-| Special Forces Anti-Tank |  | `Character_UK_1989_SpecialForces_CharlieG.et` | `{B801B6E50A01209F}` | OK_CATALOG | Rifle_AR15_715_OliveGreen_Solid, Launcher_84mm_MAW_Optic, Handgun_HiPower |  |
+| Special Forces Anti-Tank | Гранатометчик спецназа | `Character_UK_1989_SpecialForces_CharlieG.et` | `{B801B6E50A01209F}` | OK_CATALOG | Rifle_AR15_715_OliveGreen_Solid, Launcher_84mm_MAW_Optic, Handgun_HiPower |  |
 | Special Forces Grenadier | Гранатометчик спецназа | `Character_UK_1989_SpecialForces_GL.et` | `{101531EFC9E0E85B}` | OK | Rifle_AR15_M203_715_OliveGreen_Solid, Handgun_HiPower |  |
 | Special Forces Machine-Gunner | Пулеметчик спецназа | `Character_UK_1989_SpecialForces_GPMG.et` | `{62D02E1AA4A4B305}` | OK | MG_GPMG_L7A2, Handgun_HiPower |  |
 | Special Forces Machine-Gunner | Пулеметчик спецназа | `Character_UK_1989_SpecialForces_LMG.et` | `{CF564BD6D0DA773A}` | OK | MG_Minimi, Handgun_HiPower |  |
@@ -1168,11 +1169,11 @@ Sources: `British Forces/Configs/EntityCatalog/UK/UK_Characters.conf`; sweep of 
 | Special Forces Officer | Офицер спецназа | `Character_UK_1989_SpecialForces_Officer.et` | `{9050187791D8C55D}` | OK_CATALOG | Rifle_CAR15_733_OliveGreen_SandStripes, Launcher_LAW66_L1A1, Handgun_HiPower |  |
 | Special Forces Radio Operator | Радист спецназа | `Character_UK_1989_SpecialForces_RTO.et` | `{6471B09A37F58FD4}` | OK | Rifle_CAR15_733_OliveGreen_SandStripes, Launcher_LAW66_L1A1, Handgun_HiPower |  |
 | Special Forces Squad Leader | Командир спецназа | `Character_UK_1989_SpecialForces_SL.et` | `{6FAAF2B4A124BA7F}` | OK | Rifle_AR15_M203_715_OliveGreen_SandStripes, Welrod |  |
-| Special Forces Saboteur |  | `Character_UK_1989_SpecialForces_Saboteur.et` | `{02DCDBEC77E1257E}` | OK | Rifle_MP5SD3, Welrod |  |
+| Special Forces Saboteur | Диверсант спецназа | `Character_UK_1989_SpecialForces_Saboteur.et` | `{02DCDBEC77E1257E}` | OK | Rifle_MP5SD3, Welrod |  |
 | Special Forces Sapper | Сапер спецназа | `Character_UK_1989_SpecialForces_Sapper.et` | `{2B1775204D8A02F2}` | OK | Rifle_CAR15_733_OliveGreen_Solid, Launcher_LAW66_L1A1, Handgun_HiPower |  |
-| Special Forces PM Sniper |  | `Character_UK_1989_SpecialForces_Sniper.et` | `{98DC13CEC2967722}` | OK | Rifle_AI_PM_SF_PM6x42, Handgun_HiPower |  |
-| Special Forces PM Sniper (Covert) |  | `Character_UK_1989_SpecialForces_SniperCovert.et` | `{94F4290723AD153B}` | OK | Rifle_AI_PMSD_PM6x42, Welrod |  |
-| Special Forces Trooper |  | `Character_UK_1989_SpecialForces_Trooper.et` | `{A2F125ECA3AD0305}` | OK | Rifle_AR15_715_OliveGreen_Solid, Launcher_LAW66_L1A1, Handgun_HiPower |  |
+| Special Forces PM Sniper | Снайпер с PM спецназа | `Character_UK_1989_SpecialForces_Sniper.et` | `{98DC13CEC2967722}` | OK | Rifle_AI_PM_SF_PM6x42, Handgun_HiPower |  |
+| Special Forces PM Sniper (Covert) | Снайпер с PM (скрытный) спецназа | `Character_UK_1989_SpecialForces_SniperCovert.et` | `{94F4290723AD153B}` | OK | Rifle_AI_PMSD_PM6x42, Welrod |  |
+| Special Forces Trooper | Боец спецназа | `Character_UK_1989_SpecialForces_Trooper.et` | `{A2F125ECA3AD0305}` | OK | Rifle_AR15_715_OliveGreen_Solid, Launcher_LAW66_L1A1, Handgun_HiPower |  |
 
 ### (root) (7)
 
@@ -1181,7 +1182,7 @@ Sources: `British Forces/Configs/EntityCatalog/UK/UK_Characters.conf`; sweep of 
 | Sniper | Снайпер | `Character_UK_1983_SF_Sniper.et` | — | UNCATALOGED_NO_GUID | Rifle_L42A1, Handgun_HiPower |  |
 | Spotter | Корректировщик огня | `Character_UK_1983_SF_Spotter.et` | — | UNCATALOGED_NO_GUID | Rifle_L1A1_SLR_Laminate |  |
 | Machine-Gunner | Пулеметчик | `Character_UK_Patrol_Gunner.et` | — | UNCATALOGED_NO_GUID | MG_GPMG_L7A2 |  |
-| Section Commander |  | `Character_UK_Patrol_Leader.et` | — | UNCATALOGED_NO_GUID | Rifle_AR15_604, Launcher_LAW66_L1A1 |  |
+| Section Commander | Командир отделения | `Character_UK_Patrol_Leader.et` | — | UNCATALOGED_NO_GUID | Rifle_AR15_604, Launcher_LAW66_L1A1 |  |
 | Combat Signaler | Связист | `Character_UK_Patrol_Signals.et` | — | UNCATALOGED_NO_GUID | Rifle_AR15_604, Launcher_LAW66_L1A1 |  |
 | Rifleman | Стрелок | `Character_UK_Patrol_Trooper.et` | — | UNCATALOGED_NO_GUID | Rifle_L1A1_SLR_Plastic, Launcher_LAW66_L1A1 |  |
 | Unarmed | Невооруженный | `Character_UK_Unarmed.et` | `{B528DED2712C9982}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
@@ -1689,3 +1690,271 @@ Sources: `Bundeswehr Mod/Configs/EntityCatalog/BWAR/BWAR_Characters_EntityCatalo
 Skipped random/randomized wrappers (2): BWAR_Character_Randomized, BWAR_Character_Randomized_3FT
 
 Skipped abstract parents (4): BWAR_Character_Base, BWAR_Character_BaseLoadout, BWAR_Character_BaseLoadout_3FT, BWAR_Character_Base_3FT
+
+## KONNI — Konni Group (alias of USSR) — enemy-only
+
+Sources: `Konni Group/Configs/EntityCatalog/USSR/Characters_EntityCatalog_USSR.conf`; sweep of `reference/Konni Group` under `Prefabs/Characters/KON/`. Paths below are relative to that prefix.
+
+### Barkov (45)
+
+| Name | RU | Prefab | GUID | Status | Weapons | Notes |
+|---|---|---|---|---|---|---|
+| Barkov's Forces Assistant Gunner |  | `Character_KON_BAR_AsstGunner.et` | `{AA7F137CCE92F2B3}` | UNCATALOGED_PREFAB | Rifle_AK74M |  |
+| Barkov's Forces Assistant Gunner A |  | `Character_KON_BAR_AsstGunner_A.et` | `{512FF4BDD028FE4E}` | OK_CATALOG | Rifle_AK74M |  |
+| Barkov's Forces Assistant Gunner B |  | `Character_KON_BAR_AsstGunner_B.et` | `{3D7BC05D6CEC7160}` | OK | Rifle_AK74_RHSMag |  |
+| Barkov's Forces Rifleman (Gas Mask) |  | `Character_KON_BAR_BarGasMask.et` | `{E3F4AA3367F842DC}` | UNCATALOGED_PREFAB | Rifle_AK74M |  |
+| Barkov's Forces Rifleman (Gas Mask) A |  | `Character_KON_BAR_BarGasMask_A.et` | `{CF452DA3B751BE10}` | OK | Rifle_AK74M |  |
+| Barkov's Forces Rifleman (Gas Mask) B |  | `Character_KON_BAR_BarGasMask_B.et` | `{A31119430B95313E}` | OK | Rifle_AK74M_PlumMag |  |
+| Barkov's Forces Squad Leader |  | `Character_KON_BAR_Commander.et` | `{23628BDBDB8D6DAB}` | UNCATALOGED_PREFAB | Rifle_AK74M_1P63, Handgun_PM |  |
+| Barkov's Forces Squad Leader A |  | `Character_KON_BAR_Commander_A.et` | `{5A7027DC45321274}` | OK | Rifle_AK74M_1P63, Handgun_PM |  |
+| Barkov's Forces Squad Leader B |  | `Character_KON_BAR_Commander_B.et` | `{3624133CF9F69D5A}` | OK | Rifle_AK74M_1P78, Handgun_PM |  |
+| Barkov's Forces Vehicle Crewman |  | `Character_KON_BAR_Crew.et` | `{07CC4C26333E80C2}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Barkov's Forces Vehicle Crewman A |  | `Character_KON_BAR_Crew_A.et` | `{4D176A09EEC49AA1}` | OK | Rifle_AKS74U |  |
+| Barkov's Forces Vehicle Crewman B |  | `Character_KON_BAR_Crew_B.et` | `{21435EE95200158F}` | OK | Rifle_AKS74UN_folded |  |
+| Barkov's Forces Grenadier |  | `Character_KON_BAR_Grenadier.et` | `{1A1EB286635F4EC2}` | UNCATALOGED_PREFAB | Rifle_AK74M_GP25 |  |
+| Barkov's Forces Grenadier A |  | `Character_KON_BAR_Grenadier_A.et` | `{7E5B5B9876AC8F8D}` | OK | Rifle_AK74M_GP25 |  |
+| Barkov's Forces Grenadier B |  | `Character_KON_BAR_Grenadier_B.et` | `{120F6F78CA6800A3}` | OK | Rifle_AK74M_1P78_GP25 |  |
+| Barkov's Forces Officer |  | `Character_KON_BAR_HVT.et` | `{CA4AB3D1104D4CAE}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Barkov's Forces Officer A |  | `Character_KON_BAR_HVT_A.et` | `{851A136A1AE25F25}` | OK_CATALOG | Rifle_AKS74U, Handgun_MP443 |  |
+| Barkov's Forces Officer B |  | `Character_KON_BAR_HVT_B.et` | `{E94E278AA626D00B}` | OK_CATALOG | Rifle_AK74M_npz_rail_1p87, Handgun_MP443 |  |
+| Barkov's Forces Machine Gunner |  | `Character_KON_BAR_MG.et` | `{75A783C89CBAFB7B}` | UNCATALOGED_PREFAB | MG_PKM, Handgun_PM |  |
+| Barkov's Forces Machine Gunner A |  | `Character_KON_BAR_MG_A.et` | `{EFC2F3A2A37F0BC4}` | OK | MG_PKM, Handgun_PM |  |
+| Barkov's Forces Machine Gunner B |  | `Character_KON_BAR_MG_B.et` | `{8396C7421FBB84EA}` | OK | MG_PKMN, Handgun_PM |  |
+| Barkov's Forces Medic |  | `Character_KON_BAR_Medic.et` | `{E6EB11A40B252F30}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Barkov's Forces Medic A |  | `Character_KON_BAR_Medic_A.et` | `{985BF163ECC49B20}` | OK_CATALOG | Rifle_AKS74U |  |
+| Barkov's Forces Medic B |  | `Character_KON_BAR_Medic_B.et` | `{F40FC5835000140E}` | OK | Rifle_AKS74UN |  |
+| Barkov's Forces RPG Gunner |  | `Character_KON_BAR_RPG.et` | `{09E35471AC0F43E1}` | UNCATALOGED_PREFAB | Rifle_AKS74U, Launcher_RPG7 |  |
+| Barkov's Forces RPG Gunner A |  | `Character_KON_BAR_RPG_A.et` | `{D39B8787CC1B442C}` | OK | Rifle_AKS74U, Launcher_RPG7_pgo7_rhs |  |
+| Barkov's Forces RPG Gunner B |  | `Character_KON_BAR_RPG_B.et` | `{BFCFB36770DFCB02}` | OK_CATALOG | Rifle_AKS74UN, Launcher_RPG7 |  |
+| Barkov's Forces Assault Rifleman |  | `Character_KON_BAR_Rifleman.et` | `{AA3B4DA986E909F3}` | UNCATALOGED_PREFAB | Rifle_AK74M |  |
+| Barkov's Forces Assault Rifleman A |  | `Character_KON_BAR_Rifleman_A.et` | `{9CCCD896CF4633BE}` | OK | Rifle_AK74M |  |
+| Barkov's Forces Assault Rifleman B |  | `Character_KON_BAR_Rifleman_B.et` | `{F098EC767382BC90}` | OK | Rifle_AK74M_PlumMag |  |
+| Barkov's Forces Marksman |  | `Character_KON_BAR_Sniper.et` | `{134D63D1EC0A5EEE}` | UNCATALOGED_PREFAB | Rifle_SVD_PSO, Handgun_PM |  |
+| Barkov's Forces Marksman A |  | `Character_KON_BAR_Sniper_A.et` | `{08CA72848E638DF5}` | OK | Rifle_SVD_PSO, Handgun_PM |  |
+| Barkov's Forces Marksman B |  | `Character_KON_BAR_Sniper_B.et` | `{649E466432A702DB}` | OK_CATALOG | Rifle_SVD_1P21, Handgun_PM |  |
+| Barkov's Forces Spetsnaz Group Leader |  | `Character_KON_BAR_SpzLeader.et` | `{7FE68AF1FA25D4DF}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_rail_1p87, Handgun_PM |  |
+| Barkov's Forces Spetsnaz Group Leader A |  | `Character_KON_BAR_SpzLeader_A.et` | `{111E170AFA74B6FD}` | OK_CATALOG | Rifle_AK74M_npz_rail_1p87, Handgun_PM |  |
+| Barkov's Forces Spetsnaz Group Leader B |  | `Character_KON_BAR_SpzLeader_B.et` | `{7D4A23EA46B039D3}` | OK | Rifle_AK74M_npz_rail_1p87_1p90, Handgun_PM |  |
+| Barkov's Forces Spetsnaz Machine Gunner |  | `Character_KON_BAR_SpzMG.et` | `{E4763FF6B8CAA53D}` | UNCATALOGED_PREFAB | MG_RPK74M_NPZ_1p86 |  |
+| Barkov's Forces Spetsnaz Machine Gunner A |  | `Character_KON_BAR_SpzMG_A.et` | `{A39121AA3EC0E171}` | OK | MG_RPK74M_NPZ_1p86 |  |
+| Barkov's Forces Spetsnaz Machine Gunner B |  | `Character_KON_BAR_SpzMG_B.et` | `{CFC5154A82046E5F}` | OK_CATALOG | MG_RPK74M_1P78 |  |
+| Barkov's Forces Spetsnaz Operator |  | `Character_KON_BAR_SpzOperator.et` | `{EEB1981A06AD8425}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_rail_1p87 |  |
+| Barkov's Forces Spetsnaz Operator A |  | `Character_KON_BAR_SpzOperator_A.et` | `{C9B05DA849D3A97C}` | OK | Rifle_AK74M_npz_b10m_1p87 |  |
+| Barkov's Forces Spetsnaz Operator B |  | `Character_KON_BAR_SpzOperator_B.et` | `{A5E46948F5172652}` | OK | Rifle_AKS74UN_pbs4 |  |
+| Barkov's Forces Soldier (Unarmed) |  | `Character_KON_BAR_Unarmed.et` | `{B913999B0FF0F4C9}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Barkov's Forces Soldier (Unarmed) A |  | `Character_KON_BAR_Unarmed_A.et` | `{42C85A4425FFF25E}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+| Barkov's Forces Soldier (Unarmed) B |  | `Character_KON_BAR_Unarmed_B.et` | `{2E9C6EA4993B7D70}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+
+### Elite (45)
+
+| Name | RU | Prefab | GUID | Status | Weapons | Notes |
+|---|---|---|---|---|---|---|
+| Elite Group Assistant Gunner |  | `Character_KON_ELT_AsstGunner.et` | `{FE8E4EADCBC36FE9}` | UNCATALOGED_PREFAB | Rifle_AK74 |  |
+| Elite Group Assistant Gunner A |  | `Character_KON_ELT_AsstGunner_A.et` | `{4ED138DD8C780D91}` | OK_CATALOG | Rifle_AK74M_npz_b10m_t1 |  |
+| Elite Group Assistant Gunner B |  | `Character_KON_ELT_AsstGunner_B.et` | `{22850C3D30BC82BF}` | OK | Rifle_AK74M_1P63 |  |
+| Elite Group Assault Group Commander |  | `Character_KON_ELT_Commander.et` | `{309756DCC9E2E3E8}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_b10m_t1, Handgun_PM |  |
+| Elite Group Assault Group Commander A |  | `Character_KON_ELT_Commander_A.et` | `{5E26EA766060006B}` | OK_CATALOG | Rifle_AK105_npz_rail_T1, Handgun_MP443 |  |
+| Elite Group Assault Group Commander B |  | `Character_KON_ELT_Commander_B.et` | `{3272DE96DCA48F45}` | OK | Rifle_AK74M_b10m_b19n_npz_rail_perst_Eot, Handgun_Glock17 |  |
+| Elite Group Grenadier |  | `Character_KON_ELT_Grenadier.et` | `{09EB6F817130C081}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_rail_gp25_1p87 |  |
+| Elite Group Grenadier A |  | `Character_KON_ELT_Grenadier_A.et` | `{7A0D963253FE9D92}` | OK | Rifle_AK74M_npz_rail_gp25_1p87 |  |
+| Elite Group Grenadier B |  | `Character_KON_ELT_Grenadier_B.et` | `{1659A2D2EF3A12BC}` | OK | Rifle_AK74M_1P78_GP25 |  |
+| Elite Group Officer |  | `Character_KON_ELT_HVT.et` | `{096C2615DC3B3F0A}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Elite Group Officer A |  | `Character_KON_ELT_HVT_A.et` | `{4B419A80253B5E35}` | OK_CATALOG | Rifle_AK105_b10m_b19_b33_XPS, Handgun_MP443 |  |
+| Elite Group Officer B |  | `Character_KON_ELT_HVT_B.et` | `{2715AE6099FFD11B}` | OK_CATALOG | Rifle_AK74M_b10m_b19n_npz_rail_perst_aimpoint_high, Handgun_Glock17 |  |
+| Elite Group Machine Gunner |  | `Character_KON_ELT_MG.et` | `{9F93A7442F8F41E2}` | UNCATALOGED_PREFAB | MG_PKM, Handgun_PM |  |
+| Elite Group Machine Gunner A |  | `Character_KON_ELT_MG_A.et` | `{22B9F287B86CA193}` | OK | MG_PKM_B51_1p87, Handgun_PM |  |
+| Elite Group Machine Gunner B |  | `Character_KON_ELT_MG_B.et` | `{4EEDC66704A82EBD}` | OK | MG_PKM_B51_1p86, Handgun_PM |  |
+| Elite Group Medic |  | `Character_KON_ELT_Medic.et` | `{28B0984E34FC2E20}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Elite Group Medic A |  | `Character_KON_ELT_Medic_A.et` | `{46D3DFF23475DAD3}` | OK_CATALOG | Rifle_AKS74UN_b18_t1 |  |
+| Elite Group Medic B |  | `Character_KON_ELT_Medic_B.et` | `{2A87EB1288B155FD}` | OK | Rifle_AKS74UN |  |
+| Elite Group RPG Gunner |  | `Character_KON_ELT_RPG.et` | `{CAC5C1B560793045}` | UNCATALOGED_PREFAB | Rifle_AKS74U, Launcher_RPG7 |  |
+| Elite Group RPG Gunner A |  | `Character_KON_ELT_RPG_A.et` | `{1DC00E6DF3C2453C}` | OK | Rifle_AKS74UN_b18_t1, Launcher_RPG7_PGO7 |  |
+| Elite Group RPG Gunner B |  | `Character_KON_ELT_RPG_B.et` | `{71943A8D4F06CA12}` | OK_CATALOG | Rifle_AKS74UN, Launcher_RPG7 |  |
+| Elite Group Assault Rifleman |  | `Character_KON_ELT_Rifleman.et` | `{36632A43710472B9}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_b10m_t1 |  |
+| Elite Group Assault Rifleman A |  | `Character_KON_ELT_Rifleman_A.et` | `{C83D8547CA17AEE4}` | OK | Rifle_AK74M_npz_b10m_t1 |  |
+| Elite Group Assault Rifleman B |  | `Character_KON_ELT_Rifleman_B.et` | `{A469B1A776D321CA}` | OK | Rifle_AK74M_npz_b10m_eot |  |
+| Elite Group Sapper |  | `Character_KON_ELT_Sapper.et` | `{54029F42D4690CA1}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Elite Group Sapper A |  | `Character_KON_ELT_Sapper_A.et` | `{E055B0B0BAE0CF11}` | OK_CATALOG | Rifle_AKS74UN_b18_t1 |  |
+| Elite Group Sapper B |  | `Character_KON_ELT_Sapper_B.et` | `{8C0184500624403F}` | OK_CATALOG | Rifle_AKS74UN_1P29 |  |
+| Elite Group Scout |  | `Character_KON_ELT_Scout.et` | `{D20EF71351ECE808}` | UNCATALOGED_PREFAB | Rifle_AK74N_1P29 |  |
+| Elite Group Scout A |  | `Character_KON_ELT_Scout_A.et` | `{C6D14B871608F4D9}` | OK | Rifle_AK74M_npz_b10m_t1_high |  |
+| Elite Group Scout B |  | `Character_KON_ELT_Scout_B.et` | `{AA857F67AACC7BF7}` | OK | Rifle_AK74N_PBS4_1P29 |  |
+| Elite Group Sniper |  | `Character_KON_ELT_Sniper.et` | `{3A8F0723E346434B}` | UNCATALOGED_PREFAB | Rifle_SVD_PSO, Handgun_PM |  |
+| Elite Group Sniper A |  | `Character_KON_ELT_Sniper_A.et` | `{9492156E798EF6BF}` | OK | Rifle_SVD_1P21, Handgun_PM |  |
+| Elite Group Sniper B |  | `Character_KON_ELT_Sniper_B.et` | `{F8C6218EC54A7991}` | OK | Rifle_SVD_B13N, Handgun_PM |  |
+| Elite Group Spotter |  | `Character_KON_ELT_Spotter.et` | `{54A94AD850360C09}` | UNCATALOGED_PREFAB | Rifle_AK74N_1P29 |  |
+| Elite Group Spotter A |  | `Character_KON_ELT_Spotter_A.et` | `{5A38CE6600023209}` | OK | Rifle_AK74N_1P29 |  |
+| Elite Group Spotter B |  | `Character_KON_ELT_Spotter_B.et` | `{366CFA86BCC6BD27}` | OK | Rifle_AK74M_1P78 |  |
+| Elite Group Thermobaric Gunner |  | `Character_KON_ELT_Thermobaric.et` | `{E02358FC9C7561B0}` | UNCATALOGED_PREFAB | Rifle_AKS74U, Launcher_RPOA |  |
+| Elite Group Thermobaric Gunner A |  | `Character_KON_ELT_Thermobaric_A.et` | `{4A95922B3A878EFF}` | OK_CATALOG | Rifle_AKS74UN_b18_t1, Launcher_RPOA |  |
+| Elite Group Thermobaric Gunner B |  | `Character_KON_ELT_Thermobaric_B.et` | `{26C1A6CB864301D1}` | OK_CATALOG | Rifle_AKS74UN, Launcher_RPOA |  |
+| Elite Group Contractor (Unarmed) |  | `Character_KON_ELT_Unarmed.et` | `{679BB70AD741B53A}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Elite Group Contractor (Unarmed) A |  | `Character_KON_ELT_Unarmed_A.et` | `{513D874337907C1D}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+| Elite Group Contractor (Unarmed) B |  | `Character_KON_ELT_Unarmed_B.et` | `{3D69B3A38B54F333}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+| Elite Group Contract Rifleman |  | `Character_KON_ELT_Veteran.et` | `{40E0BD2C1F03B1E6}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_rail_1p87 |  |
+| Elite Group Contract Rifleman A |  | `Character_KON_ELT_Veteran_A.et` | `{797F6DB588BDA901}` | OK | Rifle_AK74M_npz_b10m_b19n_tgpa_Thermal |  |
+| Elite Group Contract Rifleman B |  | `Character_KON_ELT_Veteran_B.et` | `{152B59553479262F}` | OK | Rifle_AK74M_npz_rail_1p87 |  |
+
+### K00 (30)
+
+| Name | RU | Prefab | GUID | Status | Weapons | Notes |
+|---|---|---|---|---|---|---|
+| Komanda 00 Officer |  | `Character_KON_K00_HVT.et` | `{8BA0C7FFD718A88E}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Komanda 00 Officer A |  | `Character_KON_K00_HVT_A.et` | `{F17462BE704F211D}` | OK_CATALOG | Handgun_G19_RU |  |
+| Komanda 00 Officer B |  | `Character_KON_K00_HVT_B.et` | `{9D20565ECC8BAE33}` | OK_CATALOG | Rifle_AK105_b10m_b19n_b33_b9m_pt1_rk3_dtk2_XPS, Handgun_Glock17 |  |
+| Komanda 00 Breacher |  | `Character_KON_K00_K00Breacher.et` | `{4DE693BA0DEFFD8A}` | UNCATALOGED_PREFAB | Rifle_AKMN_MOD2_Suppressed_SF_SQUAD, Handgun_MP443 |  |
+| Komanda 00 Breacher A |  | `Character_KON_K00_K00Breacher_A.et` | `{7E214E2EECF8C4F7}` | OK | Rifle_AK104_b10m_b19_b33_b9m_pt1_rk3_dtk2_b9m_T1, Handgun_Glock17 |  |
+| Komanda 00 Breacher B |  | `Character_KON_K00_K00Breacher_B.et` | `{12757ACE503C4BD9}` | OK | Rifle_AK205_XPS_perst_klesh, Handgun_APS |  |
+| Komanda 00 Breacher C |  | `Character_KON_K00_K00Breacher_C.et` | `{F7E936375CD9DCB2}` | OK_CATALOG | Rifle_PP19_OKP_SQUAD, Handgun_G19_RU |  |
+| Komanda 00 Machine Gunner |  | `Character_KON_K00_K00Gunner.et` | `{D896043EADDFEA2E}` | UNCATALOGED_PREFAB | MG_PKP_B51_B50, Handgun_MP443 |  |
+| Komanda 00 Machine Gunner A |  | `Character_KON_K00_K00Gunner_A.et` | `{584D87C8D05176C0}` | OK | MG_PKP_NPZ_SQUAD, Handgun_MP443 |  |
+| Komanda 00 Machine Gunner B |  | `Character_KON_K00_K00Gunner_B.et` | `{3419B3286C95F9EE}` | OK_CATALOG | MG_PKPB_PK06_SF_SQUAD, Handgun_Glock17 |  |
+| Komanda 00 Machine Gunner C |  | `Character_KON_K00_K00Gunner_C.et` | `{D185FFD160706E85}` | OK_CATALOG | MG_KON_PKP_B25U_1P87, Handgun_G19_RU |  |
+| Komanda 00 Team Leader |  | `Character_KON_K00_K00Leader.et` | `{7597195187A37617}` | UNCATALOGED_PREFAB | Rifle_AK103_MOD3_Suppressed, Handgun_MP443 |  |
+| Komanda 00 Team Leader A |  | `Character_KON_K00_K00Leader_A.et` | `{DF1C61BB9F3185F5}` | OK | Rifle_AK105_b10m_b19_b33_b9m_rk3_pt1_tgpa, Handgun_Glock17 |  |
+| Komanda 00 Team Leader B |  | `Character_KON_K00_K00Leader_B.et` | `{B348555B23F50ADB}` | OK | Rifle_AK103_b10m_b19n_b33_pt1_rk3_dtk2_T1_Perst, Handgun_MP443 |  |
+| Komanda 00 Team Leader C |  | `Character_KON_K00_K00Leader_C.et` | `{56D419A22F109DB0}` | OK_CATALOG | Rifle_ASVAL_MOD_B13, Handgun_G19_MOD1_RU |  |
+| Komanda 00 Marksman |  | `Character_KON_K00_K00Marksman.et` | `{7238538C1CFCAFF2}` | UNCATALOGED_PREFAB | Rifle_SVD_B13N_Suppressed, Handgun_MP443 |  |
+| Komanda 00 Marksman A |  | `Character_KON_K00_K00Marksman_A.et` | `{390F9304B24AD2B8}` | OK | Rifle_SVCH_MOD1_Suppressed, Handgun_Glock17 |  |
+| Komanda 00 Marksman B |  | `Character_KON_K00_K00Marksman_B.et` | `{555BA7E40E8E5D96}` | OK_CATALOG | Rifle_VSS_B13, Handgun_MP443 |  |
+| Komanda 00 Marksman C |  | `Character_KON_K00_K00Marksman_C.et` | `{B0C7EB1D026BCAFD}` | OK_CATALOG | Rifle_SVD_B13N_Suppressed, Handgun_G19_RU |  |
+| Komanda 00 Medic |  | `Character_KON_K00_K00Medic.et` | `{8205555C7EF5BCD3}` | UNCATALOGED_PREFAB | Rifle_AKS74UN_pbs4, Handgun_MP443 |  |
+| Komanda 00 Medic A |  | `Character_KON_K00_K00Medic_A.et` | `{8E7BA65DF71B794F}` | OK_CATALOG | Rifle_SR3M_supr_1P63, Handgun_Glock17 |  |
+| Komanda 00 Medic B |  | `Character_KON_K00_K00Medic_B.et` | `{E22F92BD4BDFF661}` | OK | Rifle_9A91_Rail_Suppressed, Handgun_MP443 |  |
+| Komanda 00 Medic C |  | `Character_KON_K00_K00Medic_C.et` | `{07B3DE44473A610A}` | OK_CATALOG | Rifle_AEK971_RIS_EOTECH_Suppressed_SF_SQUAD, Handgun_APS |  |
+| Komanda 00 Operator |  | `Character_KON_K00_K00Operator.et` | `{20B3EEAB63E8B72D}` | UNCATALOGED_PREFAB | Rifle_AK103_MOD3_Suppressed, Handgun_MP443 |  |
+| Komanda 00 Operator A |  | `Character_KON_K00_K00Operator_A.et` | `{84CD7E2E6C98A362}` | OK_CATALOG | Rifle_AK74M_b10m_b19n_npz_rail_perst_Eot, Handgun_G19_RU |  |
+| Komanda 00 Operator B |  | `Character_KON_K00_K00Operator_B.et` | `{E8994ACED05C2C4C}` | OK | Rifle_AK105_b10m_b19n_b33_b9m_tgpa, Handgun_Glock17 |  |
+| Komanda 00 Operator C |  | `Character_KON_K00_K00Operator_C.et` | `{0D050637DCB9BB27}` | OK | Rifle_AK200_T1_perst_klesh, Handgun_MP443 |  |
+| Komanda 00 Operator (Unarmed) |  | `Character_KON_K00_Unarmed.et` | `{8B309DF0F37A2663}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Komanda 00 Operator (Unarmed) A |  | `Character_KON_K00_Unarmed_A.et` | `{3BBCDBE31371D03F}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+| Komanda 00 Operator (Unarmed) B |  | `Character_KON_K00_Unarmed_B.et` | `{57E8EF03AFB55F11}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+
+### K07 (24)
+
+| Name | RU | Prefab | GUID | Status | Weapons | Notes |
+|---|---|---|---|---|---|---|
+| Komanda 07 Detail Leader |  | `Character_KON_K07_Commander.et` | `{CE446BF78A40C232}` | UNCATALOGED_PREFAB | Rifle_AK12, Handgun_PM |  |
+| Komanda 07 Detail Leader A |  | `Character_KON_K07_Commander_A.et` | `{3A7D8A05C8821660}` | OK_CATALOG | Rifle_AK12_EOTECH_SQUAD, Handgun_MP443 |  |
+| Komanda 07 Detail Leader B |  | `Character_KON_K07_Commander_B.et` | `{5629BEE57446994E}` | OK | Rifle_AK105_npz_rail_T1, Handgun_MP443 |  |
+| Komanda 07 Vehicle Crewman |  | `Character_KON_K07_Crew.et` | `{736C0B9631D9D783}` | UNCATALOGED_PREFAB | Rifle_AKS74UN_b18_t1 |  |
+| Komanda 07 Vehicle Crewman A |  | `Character_KON_K07_Crew_A.et` | `{3B1B88E5ED7A45AE}` | OK | Rifle_AKS74UN_b18_t1 |  |
+| Komanda 07 Vehicle Crewman B |  | `Character_KON_K07_Crew_B.et` | `{574FBC0551BECA80}` | OK | Rifle_AKS74UN_folded |  |
+| Komanda 07 Grenadier |  | `Character_KON_K07_Grenadier.et` | `{F73852AA3292E15B}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_rail_gp25_1p87 |  |
+| Komanda 07 Grenadier A |  | `Character_KON_K07_Grenadier_A.et` | `{1E56F641FB1C8B99}` | OK | Rifle_AK74M_npz_rail_gp25_1p87 |  |
+| Komanda 07 Grenadier B |  | `Character_KON_K07_Grenadier_B.et` | `{7202C2A147D804B7}` | OK_CATALOG | Rifle_AK74M_npz_rail_gp25_1p87_1p90 |  |
+| Komanda 07 Officer |  | `Character_KON_K07_HVT.et` | `{1F7F128E24EFBCF3}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Komanda 07 Officer A |  | `Character_KON_K07_HVT_A.et` | `{1C2C4E38A8B95DE4}` | OK_CATALOG | Rifle_AK105_npz_b30u_b31n_T1Perst, Handgun_MP443 |  |
+| Komanda 07 Officer B |  | `Character_KON_K07_HVT_B.et` | `{70787AD8147DD2CA}` | OK_CATALOG | Rifle_AKS74UN_b18_t1, Handgun_MP443 |  |
+| Komanda 07 Machine Gunner |  | `Character_KON_K07_MG.et` | `{994966D5262A03E0}` | UNCATALOGED_PREFAB | MG_PKM_B51_Eot, Handgun_PM |  |
+| Komanda 07 Machine Gunner A |  | `Character_KON_K07_MG_A.et` | `{9B62B412A1985C85}` | OK_CATALOG | MG_PKM_B51_Eot, Handgun_PM |  |
+| Komanda 07 Machine Gunner B |  | `Character_KON_K07_MG_B.et` | `{F73680F21D5CD3AB}` | OK | MG_PKM_B51_1p87, Handgun_PM |  |
+| Komanda 07 Medic |  | `Character_KON_K07_Medic.et` | `{7FDD4CF6B97E2DF1}` | UNCATALOGED_PREFAB | Rifle_AKS74UN_b18_t1 |  |
+| Komanda 07 Medic A |  | `Character_KON_K07_Medic_A.et` | `{282933E754C3BAC7}` | OK_CATALOG | Rifle_AKS74UN_b18_t1 |  |
+| Komanda 07 Medic B |  | `Character_KON_K07_Medic_B.et` | `{447D0707E80735E9}` | OK | Rifle_AKS74UN_1P29 |  |
+| Komanda 07 Rifleman |  | `Character_KON_K07_Rifleman.et` | `{8444A5D14DD8140F}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_b10m_t1 |  |
+| Komanda 07 Rifleman A |  | `Character_KON_K07_Rifleman_A.et` | `{C30CA9C90F59F770}` | OK | Rifle_AK74M_npz_b10m_t1 |  |
+| Komanda 07 Rifleman B |  | `Character_KON_K07_Rifleman_B.et` | `{AF589D29B39D785E}` | OK | Rifle_AK74M_npz_b10m_eot |  |
+| Komanda 07 Guard (Unarmed) |  | `Character_KON_K07_Unarmed.et` | `{09615B1FB7F7D52E}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Komanda 07 Guard (Unarmed) A |  | `Character_KON_K07_Unarmed_A.et` | `{AFEEBA6874325DC7}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+| Komanda 07 Guard (Unarmed) B |  | `Character_KON_K07_Unarmed_B.et` | `{C3BA8E88C8F6D2E9}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+
+### Konni (95)
+
+| Name | RU | Prefab | GUID | Status | Weapons | Notes |
+|---|---|---|---|---|---|---|
+| Grenade Launcher Crew |  | `Character_KON_KON_AGLCrew.et` | `{AF6C75270B260021}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Grenade Launcher Crew A |  | `Character_KON_KON_AGLCrew_A.et` | `{00A82BDB0604EE1F}` | OK | Rifle_AKS74U |  |
+| Grenade Launcher Crew B |  | `Character_KON_KON_AGLCrew_B.et` | `{6CFC1F3BBAC06131}` | OK | Rifle_AKS74UN |  |
+| Grenade Launcher Crew C |  | `Character_KON_KON_AGLCrew_C.et` | `{896053C2B625F65A}` | OK | Rifle_AKS74U_Bandit |  |
+| Assistant Gunner |  | `Character_KON_KON_AsstGunner.et` | `{9908EB65B76B905B}` | UNCATALOGED_PREFAB | Rifle_AK74 |  |
+| Assistant Gunner A |  | `Character_KON_KON_AsstGunner_A.et` | `{8E27C6AD71A54B39}` | OK | Rifle_AK74 |  |
+| Assistant Gunner B |  | `Character_KON_KON_AsstGunner_B.et` | `{E273F24DCD61C417}` | OK | Rifle_AK74_RHSMag |  |
+| Assistant Gunner C |  | `Character_KON_KON_AsstGunner_C.et` | `{07EFBEB4C184537C}` | OK | Rifle_AKMN |  |
+| Casualty Bearer |  | `Character_KON_KON_Bearer.et` | `{76E4B776C33840C5}` | UNCATALOGED_PREFAB | Rifle_AK74 |  |
+| Casualty Bearer A |  | `Character_KON_KON_Bearer_A.et` | `{7597135F55EA26D6}` | OK | Rifle_AK74 |  |
+| Casualty Bearer B |  | `Character_KON_KON_Bearer_B.et` | `{19C327BFE92EA9F8}` | OK | Rifle_AKMN |  |
+| Casualty Bearer C |  | `Character_KON_KON_Bearer_C.et` | `{FC5F6B46E5CB3E93}` | OK | Rifle_AK74N |  |
+| Assault Group Commander |  | `Character_KON_KON_Commander.et` | `{CCAD3DBD1BAAF0F9}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_b10m_t1, Handgun_PM |  |
+| Assault Group Commander A |  | `Character_KON_KON_Commander_A.et` | `{40DE9599F74C2FF0}` | OK | Rifle_AK74M_npz_b10m_t1, Handgun_PM |  |
+| Assault Group Commander B |  | `Character_KON_KON_Commander_B.et` | `{2C8AA1794B88A0DE}` | OK | Rifle_AK74M_1P63, Handgun_PM |  |
+| Assault Group Commander C |  | `Character_KON_KON_Commander_C.et` | `{C916ED80476D37B5}` | OK | Rifle_AK74M_npz_b10m_eot, Handgun_MP443 |  |
+| Vehicle Crewman |  | `Character_KON_KON_Crew.et` | `{F421644692B4B6DC}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Vehicle Crewman A |  | `Character_KON_KON_Crew_A.et` | `{2DEE9CAFD46CB6D3}` | OK | Rifle_AKS74U |  |
+| Vehicle Crewman B |  | `Character_KON_KON_Crew_B.et` | `{41BAA84F68A839FD}` | OK | Rifle_AKS74UN |  |
+| Vehicle Crewman C |  | `Character_KON_KON_Crew_C.et` | `{A426E4B6644DAE96}` | OK | Rifle_AKS74UN_folded |  |
+| Flight Crewman |  | `Character_KON_KON_FlightCrew.et` | `{4790388A3534C53E}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Flight Crewman A |  | `Character_KON_KON_FlightCrew_A.et` | `{069139BBE7BD4095}` | OK_CATALOG | Rifle_AKS74U |  |
+| Flight Crewman B |  | `Character_KON_KON_FlightCrew_B.et` | `{6AC50D5B5B79CFBB}` | OK | Rifle_AKS74UN |  |
+| Flight Crewman C |  | `Character_KON_KON_FlightCrew_C.et` | `{8F5941A2579C58D0}` | OK | Rifle_AKS74UN_folded |  |
+| Grenadier |  | `Character_KON_KON_Grenadier.et` | `{F5D104E0A378D390}` | UNCATALOGED_PREFAB | Rifle_AK74_GP25 |  |
+| Grenadier A |  | `Character_KON_KON_Grenadier_A.et` | `{64F5E9DDC4D2B209}` | OK | Rifle_AK74_GP25 |  |
+| Grenadier B |  | `Character_KON_KON_Grenadier_B.et` | `{08A1DD3D78163D27}` | OK | Rifle_AK74N_GP25 |  |
+| Grenadier C |  | `Character_KON_KON_Grenadier_C.et` | `{ED3D91C474F3AA4C}` | OK | Rifle_AK74M_GP25 |  |
+| Heavy MG Crew |  | `Character_KON_KON_HMGCrew.et` | `{0CA6789A223A85D6}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Heavy MG Crew A |  | `Character_KON_KON_HMGCrew_A.et` | `{B846CC1809897144}` | OK | Rifle_AKS74U |  |
+| Heavy MG Crew B |  | `Character_KON_KON_HMGCrew_B.et` | `{D412F8F8B54DFE6A}` | OK | Rifle_AKS74UN_PlasticMag |  |
+| Heavy MG Crew C |  | `Character_KON_KON_HMGCrew_C.et` | `{318EB401B9A86901}` | OK | Rifle_AKS74UN |  |
+| Machine Gunner |  | `Character_KON_KON_MG.et` | `{5B45CEFFD8AFD1EC}` | UNCATALOGED_PREFAB | MG_PKM, Handgun_PM |  |
+| Machine Gunner A |  | `Character_KON_KON_MG_A.et` | `{1C2FDBC202F53DDA}` | OK | MG_PKM, Handgun_PM |  |
+| Machine Gunner B |  | `Character_KON_KON_MG_B.et` | `{707BEF22BE31B2F4}` | OK | MG_PKM_B51_1p86, Handgun_PM |  |
+| Machine Gunner C |  | `Character_KON_KON_MG_C.et` | `{95E7A3DBB2D4259F}` | OK | MG_PKMN, Handgun_PM |  |
+| Medic |  | `Character_KON_KON_Medic.et` | `{4A6A3DEC5D51B156}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Medic A |  | `Character_KON_KON_Medic_A.et` | `{77D2A4B38F47C3D1}` | OK | Rifle_AKS74U |  |
+| Medic B |  | `Character_KON_KON_Medic_B.et` | `{1B86905333834CFF}` | OK | Rifle_AKS74UN |  |
+| Medic C |  | `Character_KON_KON_Medic_C.et` | `{FE1ADCAA3F66DB94}` | OK | Rifle_AKS74U_Bandit |  |
+| Detachment Commander |  | `Character_KON_KON_Officer.et` | `{1F5014DDA08DE076}` | UNCATALOGED_PREFAB | Rifle_AK12, Handgun_MP443 |  |
+| Detachment Commander A |  | `Character_KON_KON_Officer_A.et` | `{CA41B3563D0638EE}` | OK | Rifle_AK12_EOTECH_SQUAD, Handgun_MP443 |  |
+| Detachment Commander B |  | `Character_KON_KON_Officer_B.et` | `{A61587B681C2B7C0}` | OK | Rifle_AK105_npz_rail_1P87, Handgun_Glock17 |  |
+| Detachment Commander C |  | `Character_KON_KON_Officer_C.et` | `{4389CB4F8D2720AB}` | OK | Rifle_AK74M_b10m_b19n_npz_rail_perst_aimpoint_high, Handgun_MP443 |  |
+| Helicopter Pilot |  | `Character_KON_KON_Pilot.et` | `{0CE6A32864325D44}` | UNCATALOGED_PREFAB | Rifle_AKS74U, Handgun_PM |  |
+| Helicopter Pilot A |  | `Character_KON_KON_Pilot_A.et` | `{B9F188053B77506B}` | OK | Rifle_AKS74U, Handgun_PM |  |
+| Helicopter Pilot B |  | `Character_KON_KON_Pilot_B.et` | `{D5A5BCE587B3DF45}` | OK | Rifle_AKS74UN, Handgun_PM |  |
+| Helicopter Pilot C |  | `Character_KON_KON_Pilot_C.et` | `{3039F01C8B56482E}` | OK | Rifle_AKS74UN_folded, Handgun_PM |  |
+| Disposable Probe |  | `Character_KON_KON_Probe.et` | `{79FCFF018E6D417E}` | UNCATALOGED_PREFAB | Rifle_AKMN |  |
+| Disposable Probe A |  | `Character_KON_KON_Probe_A.et` | `{305BCBA7A37D1E09}` | OK | Rifle_AKMN |  |
+| Disposable Probe B |  | `Character_KON_KON_Probe_B.et` | `{5C0FFF471FB99127}` | OK | Rifle_AK74 |  |
+| Disposable Probe C |  | `Character_KON_KON_Probe_C.et` | `{B993B3BE135C064C}` | OK | Rifle_AK74 |  |
+| RPG Gunner |  | `Character_KON_KON_RPG.et` | `{7960FBD2D9F58778}` | UNCATALOGED_PREFAB | Rifle_AKS74U, Launcher_RPG7 |  |
+| RPG Gunner A |  | `Character_KON_KON_RPG_A.et` | `{7F1AABCF9A6FDA4A}` | OK | Rifle_AKS74U, Launcher_RPG7 |  |
+| RPG Gunner B |  | `Character_KON_KON_RPG_B.et` | `{134E9F2F26AB5564}` | OK | Rifle_AKS74UN, Launcher_RPG7_PGO7 |  |
+| RPG Gunner C |  | `Character_KON_KON_RPG_C.et` | `{F6D2D3D62A4EC20F}` | OK | Rifle_AKS74U_Bandit, Launcher_RPG7 |  |
+| Assault Rifleman |  | `Character_KON_KON_Rifleman.et` | `{DFAF03135BD5C81B}` | UNCATALOGED_PREFAB | Rifle_AK74 |  |
+| Assault Rifleman A |  | `Character_KON_KON_Rifleman_A.et` | `{AFBB208FB6BF5156}` | OK | Rifle_AK74 |  |
+| Assault Rifleman B |  | `Character_KON_KON_Rifleman_B.et` | `{C3EF146F0A7BDE78}` | OK | Rifle_AKMN |  |
+| Assault Rifleman C |  | `Character_KON_KON_Rifleman_C.et` | `{26735896069E4913}` | OK | Rifle_AK74M |  |
+| Sapper |  | `Character_KON_KON_Sapper.et` | `{1D390D16E18D3D76}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| Sapper A |  | `Character_KON_KON_Sapper_A.et` | `{099999E0903175B3}` | OK | Rifle_AKS74U |  |
+| Sapper B |  | `Character_KON_KON_Sapper_B.et` | `{65CDAD002CF5FA9D}` | OK | Rifle_AKS74UN |  |
+| Sapper C |  | `Character_KON_KON_Sapper_C.et` | `{8051E1F920106DF6}` | OK | Rifle_AKS74UN_b18_t1 |  |
+| Scout |  | `Character_KON_KON_Scout.et` | `{B0D452B13841777E}` | UNCATALOGED_PREFAB | Rifle_AK74N_1P29 |  |
+| Scout A |  | `Character_KON_KON_Scout_A.et` | `{F7D030C6AD3AEDDB}` | OK | Rifle_AK74N_1P29 |  |
+| Scout B |  | `Character_KON_KON_Scout_B.et` | `{9B84042611FE62F5}` | OK | Rifle_AK74N_PBS4_1P29 |  |
+| Scout C |  | `Character_KON_KON_Scout_C.et` | `{7E1848DF1D1BF59E}` | OK | Rifle_AK74M_npz_rail_1p87 |  |
+| Sniper |  | `Character_KON_KON_Sniper.et` | `{73B49577D6A2729C}` | UNCATALOGED_PREFAB | Rifle_SVD_PSO, Handgun_PM |  |
+| Sniper A |  | `Character_KON_KON_Sniper_A.et` | `{7D5E3C3E535F4C1D}` | OK | Rifle_SVD_PSO, Handgun_PM |  |
+| Sniper B |  | `Character_KON_KON_Sniper_B.et` | `{110A08DEEF9BC333}` | OK | Rifle_SVD_PSO_7N14, Handgun_PM |  |
+| Sniper C |  | `Character_KON_KON_Sniper_C.et` | `{F4964427E37E5458}` | OK | Rifle_SVD_1P21, Handgun_PM |  |
+| Spotter |  | `Character_KON_KON_Spotter.et` | `{65A83199EB04150B}` | UNCATALOGED_PREFAB | Rifle_AK74N_1P29 |  |
+| Spotter A |  | `Character_KON_KON_Spotter_A.et` | `{A602A507D24A2118}` | OK | Rifle_AK74N_1P29 |  |
+| Spotter B |  | `Character_KON_KON_Spotter_B.et` | `{CA5691E76E8EAE36}` | OK_CATALOG | Rifle_AK74M_1P78 |  |
+| Spotter C |  | `Character_KON_KON_Spotter_C.et` | `{2FCADD1E626B395D}` | OK | Rifle_AK74M_1P63 |  |
+| Thermobaric Gunner |  | `Character_KON_KON_Thermobaric.et` | `{FEDB27130B594E2B}` | UNCATALOGED_PREFAB | Rifle_AKS74U, Launcher_RPOA |  |
+| Thermobaric Gunner A |  | `Character_KON_KON_Thermobaric_A.et` | `{90940503709F731D}` | OK | Rifle_AKS74U, Launcher_RPOA |  |
+| Thermobaric Gunner B |  | `Character_KON_KON_Thermobaric_B.et` | `{FCC031E3CC5BFC33}` | OK | Rifle_AKS74UN, Launcher_RPOA |  |
+| Thermobaric Gunner C |  | `Character_KON_KON_Thermobaric_C.et` | `{195C7D1AC0BE6B58}` | OK | Rifle_AKS74U_Bandit, Launcher_RPOA |  |
+| UAV Assistant |  | `Character_KON_KON_UAVAssistant.et` | `{B3B92E0551C79608}` | UNCATALOGED_PREFAB | Rifle_AK74N |  |
+| UAV Assistant A |  | `Character_KON_KON_UAVAssistant_A.et` | `{B7417ED861B79350}` | OK_CATALOG | Rifle_AK74N |  |
+| UAV Assistant B |  | `Character_KON_KON_UAVAssistant_B.et` | `{DB154A38DD731C7E}` | OK_CATALOG | Rifle_AK74M |  |
+| UAV Assistant C |  | `Character_KON_KON_UAVAssistant_C.et` | `{3E8906C1D1968B15}` | OK | Rifle_AK74 |  |
+| UAV Operator |  | `Character_KON_KON_UAVOperator.et` | `{3A709F113EF9F5CA}` | UNCATALOGED_PREFAB | Rifle_AKS74U |  |
+| UAV Operator A |  | `Character_KON_KON_UAVOperator_A.et` | `{965C2EF7018A43B8}` | OK_CATALOG | Rifle_AKS74U |  |
+| UAV Operator B |  | `Character_KON_KON_UAVOperator_B.et` | `{FA081A17BD4ECC96}` | OK | Rifle_AKS74UN |  |
+| UAV Operator C |  | `Character_KON_KON_UAVOperator_C.et` | `{1F9456EEB1AB5BFD}` | OK_CATALOG | Rifle_AKS74UN_b18_t1 |  |
+| Convict (Unarmed) |  | `Character_KON_KON_Unarmed.et` | `{569ACC4B6C73AC38}` | UNCATALOGED_PREFAB | — | UNARMED (no weapon in slots or inventory) |
+| Convict (Unarmed) A |  | `Character_KON_KON_Unarmed_A.et` | `{AD07EC22E5D86F0C}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+| Convict (Unarmed) B |  | `Character_KON_KON_Unarmed_B.et` | `{C153D8C2591CE022}` | OK_CATALOG | — | UNARMED (no weapon in slots or inventory) |
+| Contract Rifleman |  | `Character_KON_KON_Veteran.et` | `{71E1C66DA431A8E4}` | UNCATALOGED_PREFAB | Rifle_AK74M_npz_rail_1p87 |  |
+| Contract Rifleman A |  | `Character_KON_KON_Veteran_A.et` | `{854506D45AF5BA10}` | OK | Rifle_AK74M_npz_rail_1p87 |  |
+| Contract Rifleman B |  | `Character_KON_KON_Veteran_B.et` | `{E9113234E631353E}` | OK | Rifle_AK74M_npz_b10m_b19n_tgpa_Thermal |  |
+| Contract Rifleman C |  | `Character_KON_KON_Veteran_C.et` | `{0C8D7ECDEAD4A255}` | OK | Rifle_AK74M_npz_b10m_t1 |  |

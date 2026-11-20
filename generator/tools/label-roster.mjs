@@ -39,6 +39,8 @@ const SUBFACTIONS = {
   SFS_US: { "": ["SFS", "Special Force Squad"] }, SFS_USSR: { "": ["SFS", "Special Force Squad"] }, SFS_FIA: { "": ["SFS", "Special Force Squad"] },
   Ses_CDF: { "": ["CDF_Army", "CDF"] }, Ses_ChDKZ: { "": ["ChDKZ", "ChDKZ"] }, Ses_NAPA: { "": ["NAPA", "NAPA"] },
   BWAR: { "": ["Flecktarn", "Flecktarn"], Tropen: ["Tropentarn", "Tropentarn"] },
+  // Konni: folders are relative to Prefabs/Characters/KON/ (the mod skips Factions/<side>/)
+  KONNI: { Konni: ["KON", "Konni (assault detachments)"], K07: ["K07", "Komanda 07 (contract security)"], K00: ["K00", "Komanda 00 (special forces)"], Elite: ["ELT", "PMC Elite Group"], Barkov: ["BAR", "Barkov's Forces (rogue army)"] },
 };
 
 // --- role stem tokens → label ---------------------------------------------------
@@ -101,15 +103,28 @@ const ROLE_OVERRIDES = {
   Ses_ChDKZ: { Insurgent: ["Insurgent", "Повстанец"], Insurgent_PM: ["Insurgent", "Повстанец"], Rifleman_Armor: ["Rifleman", "Стрелок"] },
   Ses_NAPA: { AMG_PKM: ["Assistant Machine Gunner", "Помощник пулеметчика"], MG_UK: ["Machine Gunner", "Пулеметчик"], Rifleman_AK74: ["Rifleman", "Стрелок"], Rifleman_AKSU: ["Rifleman", "Стрелок"], Rifleman_VZ: ["Rifleman", "Стрелок"] },
   MEI: { Leader: ["Leader", "Главарь"] },
+  KONNI: {
+    Commander: ["Commander", "Командир"], Veteran: ["Veteran", "Ветеран"], AsstGunner: ["Assistant Machine Gunner", "Помощник пулеметчика"],
+    Thermobaric: ["Thermobaric Gunner", "Огнеметчик (РПО)"], Probe: ["Disposable Probe", "Расходный боец"], Bearer: ["Stretcher Bearer", "Санитар-носильщик"],
+    AGLCrew: ["AGL Crewman", "Номер расчета АГС"], HMGCrew: ["HMG Crewman", "Номер расчета крупнокалиберного пулемета"], FlightCrew: ["Flight Crew", "Бортовой техник"],
+    UAVOperator: ["UAV Operator", "Оператор БПЛА"], UAVAssistant: ["UAV Assistant", "Помощник оператора БПЛА"], HVT: ["Officer", "Офицер"],
+    BarGasMask: ["Rifleman (gas mask)", "Стрелок (противогаз)"], SpzLeader: ["Spetsnaz Leader", "Командир группы СпН"], SpzOperator: ["Spetsnaz Operator", "Боец СпН"], SpzMG: ["Spetsnaz Machine Gunner", "Пулеметчик СпН"],
+    K00Leader: ["Team Leader", "Командир группы"], K00Operator: ["Operator", "Оператор"], K00Breacher: ["Breacher", "Штурмовик"], K00Gunner: ["Machine Gunner", "Пулеметчик"], K00Marksman: ["Marksman", "Марксман"], K00Medic: ["Medic", "Санитар"],
+  },
 };
+// Factions whose OWN catalog is authoritative for soldiers: uncataloged prefabs are author role bases (Konni's
+// Character_KON_<SUB>_<Role>.et carry only the bare rifle; the cataloged _A/_B/_C kits add mags/grenades) → excluded.
+const CATALOG_ONLY = new Set(["KONNI"]);
 
-const FACTION_PREFIX = /^(Character_)?(RHS_USAF_(USMC_MEF_D|USMC_D|USMC|FORECON|Army)_|RHS_USMC_MARSOC_MC_|RHS_USMC_MARSOC_|RHS_USA_|RHS_RF_MSV_VKPO_3\.0_|RHS_RF_MSV_VKPO_DS_|RHS_RF_MSV_VKPO_S_|RHS_RF_MSV_Flora_|RHS_RF_MSV_VSR_|RHS_RF_SSO_|RHS_RF_SOF_|RHS_RF_SOBR_|RHS_RF_SOBROlive_|RHS_ION_Urban_D_|RHS_ION_Urban_|RHS_ION_Coy_|RHS_ION_|RHS_AFRF_MSV_Flora_|UK_(1983|1989)_(Regulars|Reservists|Reservist|SF|SpecialForces)_|UK_(1983|1989)_|UK_Patrol_|UK_|USSR_NI_|USSR_SF_|USSR_|US_SF_|US_|FIA_|MEI_|PLASTICBANDIT_(Scav|Stalker)_|CDF_|ChDKZ_|NAPA_|RF_|BWAR_Character_|BWAR_)/i;
+const FACTION_PREFIX = /^(Character_)?(KON_(KON|K07|K00|ELT|BAR)_|RHS_USAF_(USMC_MEF_D|USMC_D|USMC|FORECON|Army)_|RHS_USMC_MARSOC_MC_|RHS_USMC_MARSOC_|RHS_USA_|RHS_RF_MSV_VKPO_3\.0_|RHS_RF_MSV_VKPO_DS_|RHS_RF_MSV_VKPO_S_|RHS_RF_MSV_Flora_|RHS_RF_MSV_VSR_|RHS_RF_SSO_|RHS_RF_SOF_|RHS_RF_SOBR_|RHS_RF_SOBROlive_|RHS_ION_Urban_D_|RHS_ION_Urban_|RHS_ION_Coy_|RHS_ION_|RHS_AFRF_MSV_Flora_|UK_(1983|1989)_(Regulars|Reservists|Reservist|SF|SpecialForces)_|UK_(1983|1989)_|UK_Patrol_|UK_|USSR_NI_|USSR_SF_|USSR_|US_SF_|US_|FIA_|MEI_|PLASTICBANDIT_(Scav|Stalker)_|CDF_|ChDKZ_|NAPA_|RF_|BWAR_Character_|BWAR_)/i;
 const SUFFIXES = /(_KLMK|_Guard|_Tigerstripe|_3FT|_S)$/i;
 
 function roleStem(file) {
   let s = basename(file, ".et");
   s = s.replace(FACTION_PREFIX, "");
   s = s.replace(SUFFIXES, "");
+  // Konni kits are letter variants of one role ("Rifleman_A/_B/_C")
+  if (/^Character_KON_/i.test(basename(file))) s = s.replace(/_[A-C]$/, "");
   // Variant digits: "_2", "_Variant_1", or a single digit glued to letters ("Rifleman2", "Chad2") —
   // model numbers keep theirs ("AK74", "GM94") and "_No1"/"_No2" are DIFFERENT roles (gunner / assistant).
   if (!/_No\d$/i.test(s)) s = s.replace(/(?:_Variant)?_\d+$|(?<=[A-Za-z])\d$/i, "");
@@ -134,14 +149,14 @@ for (const f of harvest) {
   const rows = f.rows;
   // Faction root = Prefabs/Characters/Factions/<side>/<faction>/, or /<faction>/ when the mod skips the side folder (Bandits)
   const first = rows[0]?.path ?? "";
-  const facRoot = first.match(/^(Prefabs\/Characters\/Factions\/(?:BLUFOR|OPFOR|INDFOR|IND|CIV)\/[^/]+\/)/i)?.[1] ?? first.match(/^(Prefabs\/Characters\/Factions\/[^/]+\/)/)?.[1] ?? null;
+  const facRoot = first.match(/^(Prefabs\/Characters\/Factions\/(?:BLUFOR|OPFOR|INDFOR|IND|CIV)\/[^/]+\/)/i)?.[1] ?? first.match(/^(Prefabs\/Characters\/Factions\/[^/]+\/)/)?.[1] ?? first.match(/^(Prefabs\/Characters\/KON\/)/)?.[1] ?? null;
   const byRole = new Map(); // faction|subfaction|label → role
   for (const r of rows) {
     const rel = facRoot && r.path.startsWith(facRoot) ? r.path.slice(facRoot.length) : r.path.replace(/^Prefabs\/Characters\/Factions\//, "");
     const folder = rel.includes("/") ? dirname(rel) : "";
     const sub = subs[folder] ?? [null, folder || "(root)"];
     const armed = r.weapons.length || r.invWeapons.length;
-    const reason = !r.ships ? "does not ship" : !r.guid ? "no GUID source" : !armed ? "unarmed" : /DONT USE/i.test(r.name ?? "") ? `author-flagged "${r.name}"` : null;
+    const reason = !r.ships ? "does not ship" : !r.guid ? "no GUID source" : !armed ? "unarmed" : /DONT USE/i.test(r.name ?? "") ? `author-flagged "${r.name}"` : CATALOG_ONLY.has(f.key) && !r.cataloged ? "uncataloged role base (the catalog lists the kits)" : null;
     if (reason) { excludedRows.push({ faction: f.key, file: basename(r.path), reason }); continue; }
     const stem = roleStem(r.path);
     const lab = roleLabel(f.key, stem, r.name, r.nameRu);
@@ -199,8 +214,16 @@ const GROUP_LABELS = [
 const GROUP_OVERRIDES = {
   PLASTICBANDIT: { Patrol: ["Duo", "Двойка"], FireTeam: ["Crew", "Бригада"], FireTeam_Heavy: ["Heavy Crew", "Тяжелая бригада"], Squad: ["Gang", "Банда"], MGTeam: ["MG Trio", "Пулеметная тройка"], RPGTeam: ["RPG Duo", "Двойка с РПГ"], Sharpshooter: ["Sharpshooter Duo", "Двойка марксманов"] },
   UK: { MachineGunTeam: ["GPMG Team", "Расчет GPMG"], Team_AT: ["Charlie G Team", "Расчет Carl Gustav"], SniperTeam: ["Sniper Pair", "Снайперская пара"], RecceTeam: ["Recce Team", "Разведгруппа"], MedicalSection: ["Medical Team", "Медицинская группа"], AmmoTeam: ["Resupply Team", "Группа снабжения"], Brick: ["Patrol Brick", "Патруль «Brick»"], Patrol: ["SF Patrol", "Патруль СпН"] },
+  KONNI: {
+    AssaultGroup: ["Assault Group", "Штурмовая группа"], AssaultGroup_Night: ["Assault Group (night)", "Штурмовая группа (ночная)"], FixingPlatoon: ["Fixing Element", "Группа закрепления"],
+    MobileRPG: ["Mobile RPG Group", "Мобильная группа РПГ"], ReconGroup: ["Recon Group", "Разведгруппа"], SapperGroup: ["Sapper Group", "Саперная группа"], ProbeTeam: ["Probe Team", "Группа расходников"],
+    LightTroika: ["Light Troika", "Легкая тройка"], HeavyTroika_MG: ["MG Troika", "Пулеметная тройка"], HeavyTroika_AT: ["AT Troika", "Противотанковая тройка"], SniperPair: ["Sniper Pair", "Снайперская пара"],
+    Checkpoint: ["Checkpoint Pair", "Пост КПП"], Detail: ["Security Detail", "Охранная группа"], Team: ["Fire Team", "Огневая группа"],
+    Pair: ["SF Pair", "Пара СпН"], Element: ["SF Element", "Группа СпН"], MarksmanPair: ["Marksman Pair", "Пара марксманов"],
+    Spetsnaz: ["Spetsnaz Team", "Группа спецназа"], GasMaskSquad: ["Gas Mask Squad", "Отделение в противогазах"],
+  },
 };
-const GROUP_PREFIX = /^(BWAR_Group_|Group_(USAF_USMC_MEF_D_|USAF_USMC_MEF_|USAF_USMC_MARSOC_|RHS_RF_MSV_VKPO_DS_|RHS_RF_MSV_VKPO_S_|RHS_RF_MSV_Flora_|RHS_RF_MSV_VSR_|RHS_ION_COY_|UK_(1983|1989)_(Regulars|SpecialForces)_|US_GreenBeret_|USSR_Spetsnaz_|Ses_CDF_|ChDKZ_|NAPA_|MEI_|PLASTICBANDIT_|USSR_|US_|FIA_))/i;
+const GROUP_PREFIX = /^(BWAR_Group_|Group_(KON_(KON|K07|K00|ELT|BAR)_|USAF_USMC_MEF_D_|USAF_USMC_MEF_|USAF_USMC_MARSOC_|RHS_RF_MSV_VKPO_DS_|RHS_RF_MSV_VKPO_S_|RHS_RF_MSV_Flora_|RHS_RF_MSV_VSR_|RHS_ION_COY_|UK_(1983|1989)_(Regulars|SpecialForces)_|US_GreenBeret_|USSR_Spetsnaz_|Ses_CDF_|ChDKZ_|NAPA_|MEI_|PLASTICBANDIT_|USSR_|US_|FIA_))/i;
 const GROUP_SUFFIX = /(_KLMK|_NI|_3FT)$/i;
 function groupStem(ref) { return basename(ref.replace(/^\{[0-9A-F]{16}\}/, ""), ".et").replace(GROUP_PREFIX, "").replace(GROUP_SUFFIX, "").replace(/\d+$/, ""); }
 
@@ -237,6 +260,7 @@ const ROOTS = {
   US: [], USSR: [], FIA: [], RHS_USAF: [`${REF}/RHS Status Quo`], RHS_AFRF: [`${REF}/RHS Status Quo`], RHS_ION: [`${REF}/RHS Status Quo`], UK: [`${REF}/British Forces`], MEI: [`${REF}/MiddleEastInsurgents`],
   PLASTICBANDIT: [`${REF}/Bandit Faction`], SFS_US: [`${REF}/SFS US Loadout`], SFS_USSR: [`${REF}/SFS RF Loadout`], SFS_FIA: [`${REF}/SFS FIA Loadout`],
   Ses_CDF: [`${REF}/Arma II Factions`], Ses_ChDKZ: [`${REF}/Arma II Factions`], Ses_NAPA: [`${REF}/Arma II Factions`], BWAR: [`${REF}/Bundeswehr Mod`],
+  KONNI: [`${REF}/Konni Group`],
 };
 const LANGS = { RHS_USAF: "rhs", RHS_AFRF: "rhs", RHS_ION: "rhs", UK: "uk", MEI: "mei", Ses_CDF: "a2", Ses_ChDKZ: "a2", Ses_NAPA: "a2", BWAR: "bw", SFS_US: "rhs", SFS_USSR: "rhs", SFS_FIA: "rhs" };
 function resolveKey(key, faction, locale) {

@@ -1,6 +1,6 @@
 # Roster labels — roles and groups per enemy-capable faction
 
-Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/characters-harvest.json` + the registry's `groupSets` (regenerate, don't hand-edit; tweak the label dictionaries in the script). JSON twin: `input/roster-labels.json`.
+Generated 2026-11-20 by `node generator/tools/label-roster.mjs` from `input/characters-harvest.json` + the registry's `groupSets` (regenerate, don't hand-edit; tweak the label dictionaries in the script). JSON twin: `input/roster-labels.json`.
 
 **Roles** = character prefabs collapsed per subfaction on their role STEM (basename minus the faction prefix and the `_2`/`3`/`_Variant_1` suffix); the emission script picks one variant at random. Labels come from a stem dictionary shared by all factions (so RHS "Rifleman"-named M249 gunners still read Automatic Rifleman); stems the dictionary doesn't know keep the game's own name ("game name" in the Source column). Unarmed shells, non-shipping prefabs and GUID-less prefabs are excluded (listed at the end). `Guard/` and FIA `Special Units/` prefabs fold into the parent subfaction's role of the same stem. Subfactions with no registry group set are marked — roles there are placeable, but no groups exist for them yet.
 
@@ -558,8 +558,8 @@ Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/char
 | **Radio Operator** | Радист | `RTO` | Combat Signaler | 1: `Character_UK_1983_Regulars_RTO` | Rifle_L2A3_Sterling | stem |
 | **Rifleman** | Стрелок | `Rifleman`, `Rifleman_Sterling` | Rifleman | 2: `Character_UK_1983_Regulars_Rifleman`, `Character_UK_1983_Regulars_Rifleman_Sterling` | Rifle_L1A1_SLR_Plastic<br>Rifle_L2A3_Sterling | stem |
 | **Sapper** | Сапер | `Sapper` | Sapper | 1: `Character_UK_1983_Regulars_Sapper` | Rifle_L2A3_Sterling | stem |
-| **Section 2IC** | Зам. командира секции | `Section2IC` | Section 2IC | 1: `Character_UK_1983_Regulars_Section2IC` | Rifle_L1A1_SLR_Plastic_SUIT | override |
-| **Section Commander** | Командир секции | `SectionCommander` | Section Commander | 1: `Character_UK_1983_Regulars_SectionCommander` | Rifle_L1A1_SLR_Plastic | override |
+| **Section 2IC** | Заместитель командира отделения | `Section2IC` | Section 2IC | 1: `Character_UK_1983_Regulars_Section2IC` | Rifle_L1A1_SLR_Plastic_SUIT | override |
+| **Section Commander** | Командир отделения | `SectionCommander` | Section Commander | 1: `Character_UK_1983_Regulars_SectionCommander` | Rifle_L1A1_SLR_Plastic | override |
 | **Sniper** | Снайпер | `Sniper` | Trained Sniper | 1: `Character_UK_1983_Regulars_Sniper` | Rifle_L42A1 + Handgun_HiPower | stem |
 | **Spotter** | Корректировщик огня | `Spotter` | Spotter | 1: `Character_UK_1983_Regulars_Spotter` | Rifle_L1A1_SLR_Plastic_SUIT | stem |
 
@@ -598,14 +598,14 @@ Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/char
 | **Convoy Commander** | Командир колонны | `ConvoyCommander` | Convoy Commander | 1: `Character_UK_1989_Regulars_ConvoyCommander` | Rifle_L85A1_Attachments_Irons | override |
 | **Crew Commander** | Командир экипажа | `CC` | Crew Commander | 1: `Character_UK_1989_CC` | Rifle_L85A1_Attachments_Irons | stem |
 | **Crewman** | Член экипажа | `Crew` | Crewman | 1: `Character_UK_1989_Crew` | Rifle_L85A1_Attachments_Irons | stem |
-| **Detachment Commander** | Командир отряда | `DetachmentCommander` | Detachment Commander | 1: `Character_UK_1989_Regulars_DetachmentCommander` | Rifle_L85A1_Attachments_SUSAT | override |
+| **Detachment Commander** | Командир группы | `DetachmentCommander` | Detachment Commander | 1: `Character_UK_1989_Regulars_DetachmentCommander` | Rifle_L85A1_Attachments_SUSAT | override |
 | **Driver** | Водитель | `Driver` | Driver | 1: `Character_UK_1989_Regulars_Driver` | Rifle_L85A1_Attachments_Irons | override |
 | **GPMG Gunner** | Пулеметчик (GPMG) | `GPMG_No1` | Machine-Gunner | 1: `Character_UK_1989_Regulars_GPMG_No1` | MG_GPMG_L7A2 | override |
 | **Ground Crew** | Наземный персонал | `Heli_GroundCrew` | Ground Crew | 1: `Character_UK_1989_Heli_GroundCrew` | Rifle_L2A3_Sterling | override |
 | **Helicopter Crew** | Экипаж вертолета | `HeliCrew` | Aircraft Commander | 1: `Character_UK_1989_HeliCrew` | Rifle_L2A3_Sterling + Schermuly_Rocket_Flare_White (inv) + Schermuly_Rocket_Flare_Orange (inv) | stem |
 | **Helicopter Pilot** | Пилот вертолета | `HeliPilot` | Aircraft Commander | 1: `Character_UK_1989_HeliPilot` | Handgun_HiPower + Schermuly_Rocket_Flare_White (inv) + Schermuly_Rocket_Flare_Orange (inv) | stem |
 | **Light Anti-Tank (LAW)** | ПТ стрелок (LAW) | `Rifleman_LAT_LAW66`, `Rifleman_LAT_LAW80` | Rifleman (LAW 66) / Rifleman (LAW 80) | 2: `Character_UK_1989_Regulars_Rifleman_LAT_LAW66`, `Character_UK_1989_Regulars_Rifleman_LAT_LAW80` | Rifle_L85A1_Attachments_SUSAT + Launcher_LAW66_L1A1<br>Rifle_L85A1_Attachments_SUSAT + Launcher_LAW80_base | override |
-| **LSW Gunner** | Пулеметчик (LSW) | `LSW` | LSW Gunner | 1: `Character_UK_1989_Regulars_LSW` | Rifle_L85_LSW_A1_Attachments_SUSAT | override |
+| **LSW Gunner** | Стрелок LSW | `LSW` | LSW Gunner | 1: `Character_UK_1989_Regulars_LSW` | Rifle_L85_LSW_A1_Attachments_SUSAT | override |
 | **MAW Assistant** | Помощник гранатометчика | `Maw_No2` | Anti-Tank Specialist Assistant | 1: `Character_UK_1989_Regulars_Maw_No2` | Rifle_L85A1_Attachments_SUSAT | override |
 | **MAW Gunner** | Гранатометчик (Carl Gustav) | `MAW_No1` | Anti-Tank Specialist | 1: `Character_UK_1989_Regulars_MAW_No1` | Rifle_L85A1_Attachments_SUSAT + Launcher_84mm_MAW_Optic | override |
 | **Medic** | Врач | `Medic` | Medic | 1: `Character_UK_1989_Regulars_Medic` | Rifle_L85A1_Attachments_SUSAT | stem |
@@ -617,8 +617,8 @@ Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/char
 | **Rifleman** | Стрелок | `Rifleman` | Rifleman | 1: `Character_UK_1989_Regulars_Rifleman` | Rifle_L85A1_Attachments_SUSAT | stem |
 | **Rifleman (recce)** | Стрелок (разведка) | `Rifleman_Recce` | Rifleman (Recce) | 1: `Character_UK_1989_Regulars_Rifleman_Recce` | Rifle_L85A1_Attachments_SUSAT | override |
 | **Sapper** | Сапер | `Sapper` | Combat Engineer | 1: `Character_UK_1989_Regulars_Sapper` | Rifle_L85A1_Attachments_Irons + Mine_L9A1_Barmine | stem |
-| **Section 2IC** | Зам. командира секции | `Section2IC` | Section 2IC | 1: `Character_UK_1989_Regulars_Section2IC` | Rifle_L85A1_Attachments_SUSAT | override |
-| **Section Commander** | Командир секции | `SectionCommander` | Section Commander | 1: `Character_UK_1989_Regulars_SectionCommander` | Rifle_L85A1_Attachments_SUSAT | override |
+| **Section 2IC** | Заместитель командира отделения | `Section2IC` | Section 2IC | 1: `Character_UK_1989_Regulars_Section2IC` | Rifle_L85A1_Attachments_SUSAT | override |
+| **Section Commander** | Командир отделения | `SectionCommander` | Section Commander | 1: `Character_UK_1989_Regulars_SectionCommander` | Rifle_L85A1_Attachments_SUSAT | override |
 | **Section Commander (recce)** | Командир секции (разведка) | `SectionCommander_Recce` | Section Commander (Recce) | 1: `Character_UK_1989_Regulars_SectionCommander_Recce` | Rifle_L85A1_Attachments_SUSAT | override |
 | **Sniper** | Снайпер | `Sniper` | Trained Sniper | 1: `Character_UK_1989_Regulars_Sniper` | Rifle_AI_L96A1_PM6x42 + Handgun_HiPower | stem |
 | **Sniper (recce)** | Снайпер (разведка) | `Sniper_Recce` | Trained Sniper | 1: `Character_UK_1989_Regulars_Sniper_Recce` | Rifle_AI_L96A1_PM6x42 + Handgun_HiPower | override |
@@ -887,7 +887,99 @@ Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/char
 | **Squad Leader** | Командир отделения | `SL` | Squad Leader | 1: `BWAR_Character_SL_3FT` | BWAR_Rifle_G36A3_AG40_ZO4x30 | stem |
 | **Team Leader** | Командир группы | `TL` | Team Leader | 1: `BWAR_Character_TL_3FT` | BWAR_Rifle_G36A3_ZO4x30 | stem |
 
-### Excluded prefabs (43)
+### KONNI — Konni Group (Russian PMC) (65 roles, 159 prefabs)
+
+#### Barkov's Forces (rogue army) (registry set `BAR`, 14 roles)
+
+| Label | RU | Stems | Game name(s) | Variants | Weapons (distinct kits) | Source |
+|---|---|---|---|---|---|---|
+| **Anti-Tank** | Гранатометчик (РПГ) | `RPG` | Barkov's Forces RPG Gunner A / Barkov's Forces RPG Gunner B | 2: `Character_KON_BAR_RPG_A`, `Character_KON_BAR_RPG_B` | Rifle_AKS74U + Launcher_RPG7_pgo7_rhs<br>Rifle_AKS74UN + Launcher_RPG7 | stem |
+| **Assistant Machine Gunner** | Помощник пулеметчика | `AsstGunner` | Barkov's Forces Assistant Gunner A / Barkov's Forces Assistant Gunner B | 2: `Character_KON_BAR_AsstGunner_A`, `Character_KON_BAR_AsstGunner_B` | Rifle_AK74M<br>Rifle_AK74_RHSMag | override |
+| **Commander** | Командир | `Commander` | Barkov's Forces Squad Leader A / Barkov's Forces Squad Leader B | 2: `Character_KON_BAR_Commander_A`, `Character_KON_BAR_Commander_B` | Rifle_AK74M_1P63 + Handgun_PM<br>Rifle_AK74M_1P78 + Handgun_PM | override |
+| **Crewman** | Член экипажа | `Crew` | Barkov's Forces Vehicle Crewman A / Barkov's Forces Vehicle Crewman B | 2: `Character_KON_BAR_Crew_A`, `Character_KON_BAR_Crew_B` | Rifle_AKS74U<br>Rifle_AKS74UN_folded | stem |
+| **Grenadier** | Гранатометчик (ГП) | `Grenadier` | Barkov's Forces Grenadier A / Barkov's Forces Grenadier B | 2: `Character_KON_BAR_Grenadier_A`, `Character_KON_BAR_Grenadier_B` | Rifle_AK74M_GP25<br>Rifle_AK74M_1P78_GP25 | stem |
+| **Machine Gunner** | Пулеметчик | `MG` | Barkov's Forces Machine Gunner A / Barkov's Forces Machine Gunner B | 2: `Character_KON_BAR_MG_A`, `Character_KON_BAR_MG_B` | MG_PKM + Handgun_PM<br>MG_PKMN + Handgun_PM | stem |
+| **Medic** | Санитар | `Medic` | Barkov's Forces Medic A / Barkov's Forces Medic B | 2: `Character_KON_BAR_Medic_A`, `Character_KON_BAR_Medic_B` | Rifle_AKS74U<br>Rifle_AKS74UN | stem |
+| **Officer** | Офицер | `HVT` | Barkov's Forces Officer A / Barkov's Forces Officer B | 2: `Character_KON_BAR_HVT_A`, `Character_KON_BAR_HVT_B` | Rifle_AKS74U + Handgun_MP443<br>Rifle_AK74M_npz_rail_1p87 + Handgun_MP443 | override |
+| **Rifleman** | Стрелок | `Rifleman` | Barkov's Forces Assault Rifleman A / Barkov's Forces Assault Rifleman B | 2: `Character_KON_BAR_Rifleman_A`, `Character_KON_BAR_Rifleman_B` | Rifle_AK74M<br>Rifle_AK74M_PlumMag | stem |
+| **Rifleman (gas mask)** | Стрелок (противогаз) | `BarGasMask` | Barkov's Forces Rifleman (Gas Mask) A / Barkov's Forces Rifleman (Gas Mask) B | 2: `Character_KON_BAR_BarGasMask_A`, `Character_KON_BAR_BarGasMask_B` | Rifle_AK74M<br>Rifle_AK74M_PlumMag | override |
+| **Sniper** | Снайпер | `Sniper` | Barkov's Forces Marksman A / Barkov's Forces Marksman B | 2: `Character_KON_BAR_Sniper_A`, `Character_KON_BAR_Sniper_B` | Rifle_SVD_PSO + Handgun_PM<br>Rifle_SVD_1P21 + Handgun_PM | stem |
+| **Spetsnaz Leader** | Командир группы СпН | `SpzLeader` | Barkov's Forces Spetsnaz Group Leader A / Barkov's Forces Spetsnaz Group Leader B | 2: `Character_KON_BAR_SpzLeader_A`, `Character_KON_BAR_SpzLeader_B` | Rifle_AK74M_npz_rail_1p87 + Handgun_PM<br>Rifle_AK74M_npz_rail_1p87_1p90 + Handgun_PM | override |
+| **Spetsnaz Machine Gunner** | Пулеметчик СпН | `SpzMG` | Barkov's Forces Spetsnaz Machine Gunner A / Barkov's Forces Spetsnaz Machine Gunner B | 2: `Character_KON_BAR_SpzMG_A`, `Character_KON_BAR_SpzMG_B` | MG_RPK74M_NPZ_1p86<br>MG_RPK74M_1P78 | override |
+| **Spetsnaz Operator** | Боец СпН | `SpzOperator` | Barkov's Forces Spetsnaz Operator A / Barkov's Forces Spetsnaz Operator B | 2: `Character_KON_BAR_SpzOperator_A`, `Character_KON_BAR_SpzOperator_B` | Rifle_AK74M_npz_b10m_1p87<br>Rifle_AKS74UN_pbs4 | override |
+
+#### PMC Elite Group (registry set `ELT`, 14 roles)
+
+| Label | RU | Stems | Game name(s) | Variants | Weapons (distinct kits) | Source |
+|---|---|---|---|---|---|---|
+| **Anti-Tank** | Гранатометчик (РПГ) | `RPG` | Elite Group RPG Gunner A / Elite Group RPG Gunner B | 2: `Character_KON_ELT_RPG_A`, `Character_KON_ELT_RPG_B` | Rifle_AKS74UN_b18_t1 + Launcher_RPG7_PGO7<br>Rifle_AKS74UN + Launcher_RPG7 | stem |
+| **Assistant Machine Gunner** | Помощник пулеметчика | `AsstGunner` | Elite Group Assistant Gunner A / Elite Group Assistant Gunner B | 2: `Character_KON_ELT_AsstGunner_A`, `Character_KON_ELT_AsstGunner_B` | Rifle_AK74M_npz_b10m_t1<br>Rifle_AK74M_1P63 | override |
+| **Commander** | Командир | `Commander` | Elite Group Assault Group Commander A / Elite Group Assault Group Commander B | 2: `Character_KON_ELT_Commander_A`, `Character_KON_ELT_Commander_B` | Rifle_AK105_npz_rail_T1 + Handgun_MP443<br>Rifle_AK74M_b10m_b19n_npz_rail_perst_Eot + Handgun_Glock17 | override |
+| **Grenadier** | Гранатометчик (ГП) | `Grenadier` | Elite Group Grenadier A / Elite Group Grenadier B | 2: `Character_KON_ELT_Grenadier_A`, `Character_KON_ELT_Grenadier_B` | Rifle_AK74M_npz_rail_gp25_1p87<br>Rifle_AK74M_1P78_GP25 | stem |
+| **Machine Gunner** | Пулеметчик | `MG` | Elite Group Machine Gunner A / Elite Group Machine Gunner B | 2: `Character_KON_ELT_MG_A`, `Character_KON_ELT_MG_B` | MG_PKM_B51_1p87 + Handgun_PM<br>MG_PKM_B51_1p86 + Handgun_PM | stem |
+| **Medic** | Санитар | `Medic` | Elite Group Medic A / Elite Group Medic B | 2: `Character_KON_ELT_Medic_A`, `Character_KON_ELT_Medic_B` | Rifle_AKS74UN_b18_t1<br>Rifle_AKS74UN | stem |
+| **Officer** | Офицер | `HVT` | Elite Group Officer A / Elite Group Officer B | 2: `Character_KON_ELT_HVT_A`, `Character_KON_ELT_HVT_B` | Rifle_AK105_b10m_b19_b33_XPS + Handgun_MP443<br>Rifle_AK74M_b10m_b19n_npz_rail_perst_aimpoint_high + Handgun_Glock17 | override |
+| **Rifleman** | Стрелок | `Rifleman` | Elite Group Assault Rifleman A / Elite Group Assault Rifleman B | 2: `Character_KON_ELT_Rifleman_A`, `Character_KON_ELT_Rifleman_B` | Rifle_AK74M_npz_b10m_t1<br>Rifle_AK74M_npz_b10m_eot | stem |
+| **Sapper** | Сапер | `Sapper` | Elite Group Sapper A / Elite Group Sapper B | 2: `Character_KON_ELT_Sapper_A`, `Character_KON_ELT_Sapper_B` | Rifle_AKS74UN_b18_t1<br>Rifle_AKS74UN_1P29 | stem |
+| **Scout** | Разведчик | `Scout` | Elite Group Scout A / Elite Group Scout B | 2: `Character_KON_ELT_Scout_A`, `Character_KON_ELT_Scout_B` | Rifle_AK74M_npz_b10m_t1_high<br>Rifle_AK74N_PBS4_1P29 | stem |
+| **Sniper** | Снайпер | `Sniper` | Elite Group Sniper A / Elite Group Sniper B | 2: `Character_KON_ELT_Sniper_A`, `Character_KON_ELT_Sniper_B` | Rifle_SVD_1P21 + Handgun_PM<br>Rifle_SVD_B13N + Handgun_PM | stem |
+| **Spotter** | Наблюдатель | `Spotter` | Elite Group Spotter A / Elite Group Spotter B | 2: `Character_KON_ELT_Spotter_A`, `Character_KON_ELT_Spotter_B` | Rifle_AK74N_1P29<br>Rifle_AK74M_1P78 | stem |
+| **Thermobaric Gunner** | Огнеметчик (РПО) | `Thermobaric` | Elite Group Thermobaric Gunner A / Elite Group Thermobaric Gunner B | 2: `Character_KON_ELT_Thermobaric_A`, `Character_KON_ELT_Thermobaric_B` | Rifle_AKS74UN_b18_t1 + Launcher_RPOA<br>Rifle_AKS74UN + Launcher_RPOA | override |
+| **Veteran** | Ветеран | `Veteran` | Elite Group Contract Rifleman A / Elite Group Contract Rifleman B | 2: `Character_KON_ELT_Veteran_A`, `Character_KON_ELT_Veteran_B` | Rifle_AK74M_npz_b10m_b19n_tgpa_Thermal<br>Rifle_AK74M_npz_rail_1p87 | override |
+
+#### Komanda 00 (special forces) (registry set `K00`, 7 roles)
+
+| Label | RU | Stems | Game name(s) | Variants | Weapons (distinct kits) | Source |
+|---|---|---|---|---|---|---|
+| **Breacher** | Штурмовик | `K00Breacher` | Komanda 00 Breacher A / Komanda 00 Breacher B / Komanda 00 Breacher C | 3: `Character_KON_K00_K00Breacher_A`, `Character_KON_K00_K00Breacher_B`, `Character_KON_K00_K00Breacher_C` | Rifle_AK104_b10m_b19_b33_b9m_pt1_rk3_dtk2_b9m_T1 + Handgun_Glock17<br>Rifle_AK205_XPS_perst_klesh + Handgun_APS<br>Rifle_PP19_OKP_SQUAD + Handgun_G19_RU | override |
+| **Machine Gunner** | Пулеметчик | `K00Gunner` | Komanda 00 Machine Gunner A / Komanda 00 Machine Gunner B / Komanda 00 Machine Gunner C | 3: `Character_KON_K00_K00Gunner_A`, `Character_KON_K00_K00Gunner_B`, `Character_KON_K00_K00Gunner_C` | MG_PKP_NPZ_SQUAD + Handgun_MP443<br>MG_PKPB_PK06_SF_SQUAD + Handgun_Glock17<br>MG_KON_PKP_B25U_1P87 + Handgun_G19_RU | override |
+| **Marksman** | Марксман | `K00Marksman` | Komanda 00 Marksman A / Komanda 00 Marksman B / Komanda 00 Marksman C | 3: `Character_KON_K00_K00Marksman_A`, `Character_KON_K00_K00Marksman_B`, `Character_KON_K00_K00Marksman_C` | Rifle_SVCH_MOD1_Suppressed + Handgun_Glock17<br>Rifle_VSS_B13 + Handgun_MP443<br>Rifle_SVD_B13N_Suppressed + Handgun_G19_RU | override |
+| **Medic** | Санитар | `K00Medic` | Komanda 00 Medic A / Komanda 00 Medic B / Komanda 00 Medic C | 3: `Character_KON_K00_K00Medic_A`, `Character_KON_K00_K00Medic_B`, `Character_KON_K00_K00Medic_C` | Rifle_SR3M_supr_1P63 + Handgun_Glock17<br>Rifle_9A91_Rail_Suppressed + Handgun_MP443<br>Rifle_AEK971_RIS_EOTECH_Suppressed_SF_SQUAD + Handgun_APS | override |
+| **Officer** | Офицер | `HVT` | Komanda 00 Officer A / Komanda 00 Officer B | 2: `Character_KON_K00_HVT_A`, `Character_KON_K00_HVT_B` | Handgun_G19_RU<br>Rifle_AK105_b10m_b19n_b33_b9m_pt1_rk3_dtk2_XPS + Handgun_Glock17 | override |
+| **Operator** | Оператор | `K00Operator` | Komanda 00 Operator A / Komanda 00 Operator B / Komanda 00 Operator C | 3: `Character_KON_K00_K00Operator_A`, `Character_KON_K00_K00Operator_B`, `Character_KON_K00_K00Operator_C` | Rifle_AK74M_b10m_b19n_npz_rail_perst_Eot + Handgun_G19_RU<br>Rifle_AK105_b10m_b19n_b33_b9m_tgpa + Handgun_Glock17<br>Rifle_AK200_T1_perst_klesh + Handgun_MP443 | override |
+| **Team Leader** | Командир группы | `K00Leader` | Komanda 00 Team Leader A / Komanda 00 Team Leader B / Komanda 00 Team Leader C | 3: `Character_KON_K00_K00Leader_A`, `Character_KON_K00_K00Leader_B`, `Character_KON_K00_K00Leader_C` | Rifle_AK105_b10m_b19_b33_b9m_rk3_pt1_tgpa + Handgun_Glock17<br>Rifle_AK103_b10m_b19n_b33_pt1_rk3_dtk2_T1_Perst + Handgun_MP443<br>Rifle_ASVAL_MOD_B13 + Handgun_G19_MOD1_RU | override |
+
+#### Komanda 07 (contract security) (registry set `K07`, 7 roles)
+
+| Label | RU | Stems | Game name(s) | Variants | Weapons (distinct kits) | Source |
+|---|---|---|---|---|---|---|
+| **Commander** | Командир | `Commander` | Komanda 07 Detail Leader A / Komanda 07 Detail Leader B | 2: `Character_KON_K07_Commander_A`, `Character_KON_K07_Commander_B` | Rifle_AK12_EOTECH_SQUAD + Handgun_MP443<br>Rifle_AK105_npz_rail_T1 + Handgun_MP443 | override |
+| **Crewman** | Член экипажа | `Crew` | Komanda 07 Vehicle Crewman A / Komanda 07 Vehicle Crewman B | 2: `Character_KON_K07_Crew_A`, `Character_KON_K07_Crew_B` | Rifle_AKS74UN_b18_t1<br>Rifle_AKS74UN_folded | stem |
+| **Grenadier** | Гранатометчик (ГП) | `Grenadier` | Komanda 07 Grenadier A / Komanda 07 Grenadier B | 2: `Character_KON_K07_Grenadier_A`, `Character_KON_K07_Grenadier_B` | Rifle_AK74M_npz_rail_gp25_1p87<br>Rifle_AK74M_npz_rail_gp25_1p87_1p90 | stem |
+| **Machine Gunner** | Пулеметчик | `MG` | Komanda 07 Machine Gunner A / Komanda 07 Machine Gunner B | 2: `Character_KON_K07_MG_A`, `Character_KON_K07_MG_B` | MG_PKM_B51_Eot + Handgun_PM<br>MG_PKM_B51_1p87 + Handgun_PM | stem |
+| **Medic** | Санитар | `Medic` | Komanda 07 Medic A / Komanda 07 Medic B | 2: `Character_KON_K07_Medic_A`, `Character_KON_K07_Medic_B` | Rifle_AKS74UN_b18_t1<br>Rifle_AKS74UN_1P29 | stem |
+| **Officer** | Офицер | `HVT` | Komanda 07 Officer A / Komanda 07 Officer B | 2: `Character_KON_K07_HVT_A`, `Character_KON_K07_HVT_B` | Rifle_AK105_npz_b30u_b31n_T1Perst + Handgun_MP443<br>Rifle_AKS74UN_b18_t1 + Handgun_MP443 | override |
+| **Rifleman** | Стрелок | `Rifleman` | Komanda 07 Rifleman A / Komanda 07 Rifleman B | 2: `Character_KON_K07_Rifleman_A`, `Character_KON_K07_Rifleman_B` | Rifle_AK74M_npz_b10m_t1<br>Rifle_AK74M_npz_b10m_eot | stem |
+
+#### Konni (assault detachments) (registry set `KON`, 23 roles)
+
+| Label | RU | Stems | Game name(s) | Variants | Weapons (distinct kits) | Source |
+|---|---|---|---|---|---|---|
+| **AGL Crewman** | Номер расчета АГС | `AGLCrew` | Grenade Launcher Crew A / Grenade Launcher Crew B / Grenade Launcher Crew C | 3: `Character_KON_KON_AGLCrew_A`, `Character_KON_KON_AGLCrew_B`, `Character_KON_KON_AGLCrew_C` | Rifle_AKS74U<br>Rifle_AKS74UN<br>Rifle_AKS74U_Bandit | override |
+| **Anti-Tank** | Гранатометчик (РПГ) | `RPG` | RPG Gunner A / RPG Gunner B / RPG Gunner C | 3: `Character_KON_KON_RPG_A`, `Character_KON_KON_RPG_B`, `Character_KON_KON_RPG_C` | Rifle_AKS74U + Launcher_RPG7<br>Rifle_AKS74UN + Launcher_RPG7_PGO7<br>Rifle_AKS74U_Bandit + Launcher_RPG7 | stem |
+| **Assistant Machine Gunner** | Помощник пулеметчика | `AsstGunner` | Assistant Gunner A / Assistant Gunner B / Assistant Gunner C | 3: `Character_KON_KON_AsstGunner_A`, `Character_KON_KON_AsstGunner_B`, `Character_KON_KON_AsstGunner_C` | Rifle_AK74<br>Rifle_AK74_RHSMag<br>Rifle_AKMN | override |
+| **Commander** | Командир | `Commander` | Assault Group Commander A / Assault Group Commander B / Assault Group Commander C | 3: `Character_KON_KON_Commander_A`, `Character_KON_KON_Commander_B`, `Character_KON_KON_Commander_C` | Rifle_AK74M_npz_b10m_t1 + Handgun_PM<br>Rifle_AK74M_1P63 + Handgun_PM<br>Rifle_AK74M_npz_b10m_eot + Handgun_MP443 | override |
+| **Crewman** | Член экипажа | `Crew` | Vehicle Crewman A / Vehicle Crewman B / Vehicle Crewman C | 3: `Character_KON_KON_Crew_A`, `Character_KON_KON_Crew_B`, `Character_KON_KON_Crew_C` | Rifle_AKS74U<br>Rifle_AKS74UN<br>Rifle_AKS74UN_folded | stem |
+| **Disposable Probe** | Расходный боец | `Probe` | Disposable Probe A / Disposable Probe B / Disposable Probe C | 3: `Character_KON_KON_Probe_A`, `Character_KON_KON_Probe_B`, `Character_KON_KON_Probe_C` | Rifle_AKMN<br>Rifle_AK74 | override |
+| **Flight Crew** | Бортовой техник | `FlightCrew` | Flight Crewman A / Flight Crewman B / Flight Crewman C | 3: `Character_KON_KON_FlightCrew_A`, `Character_KON_KON_FlightCrew_B`, `Character_KON_KON_FlightCrew_C` | Rifle_AKS74U<br>Rifle_AKS74UN<br>Rifle_AKS74UN_folded | override |
+| **Grenadier** | Гранатометчик (ГП) | `Grenadier` | Grenadier A / Grenadier B / Grenadier C | 3: `Character_KON_KON_Grenadier_A`, `Character_KON_KON_Grenadier_B`, `Character_KON_KON_Grenadier_C` | Rifle_AK74_GP25<br>Rifle_AK74N_GP25<br>Rifle_AK74M_GP25 | stem |
+| **Helicopter Pilot** | Пилот вертолета | `Pilot` | Helicopter Pilot A / Helicopter Pilot B / Helicopter Pilot C | 3: `Character_KON_KON_Pilot_A`, `Character_KON_KON_Pilot_B`, `Character_KON_KON_Pilot_C` | Rifle_AKS74U + Handgun_PM<br>Rifle_AKS74UN + Handgun_PM<br>Rifle_AKS74UN_folded + Handgun_PM | stem |
+| **HMG Crewman** | Номер расчета крупнокалиберного пулемета | `HMGCrew` | Heavy MG Crew A / Heavy MG Crew B / Heavy MG Crew C | 3: `Character_KON_KON_HMGCrew_A`, `Character_KON_KON_HMGCrew_B`, `Character_KON_KON_HMGCrew_C` | Rifle_AKS74U<br>Rifle_AKS74UN_PlasticMag<br>Rifle_AKS74UN | override |
+| **Machine Gunner** | Пулеметчик | `MG` | Machine Gunner A / Machine Gunner B / Machine Gunner C | 3: `Character_KON_KON_MG_A`, `Character_KON_KON_MG_B`, `Character_KON_KON_MG_C` | MG_PKM + Handgun_PM<br>MG_PKM_B51_1p86 + Handgun_PM<br>MG_PKMN + Handgun_PM | stem |
+| **Medic** | Санитар | `Medic` | Medic A / Medic B / Medic C | 3: `Character_KON_KON_Medic_A`, `Character_KON_KON_Medic_B`, `Character_KON_KON_Medic_C` | Rifle_AKS74U<br>Rifle_AKS74UN<br>Rifle_AKS74U_Bandit | stem |
+| **Officer** | Офицер | `Officer` | Detachment Commander A / Detachment Commander B / Detachment Commander C | 3: `Character_KON_KON_Officer_A`, `Character_KON_KON_Officer_B`, `Character_KON_KON_Officer_C` | Rifle_AK12_EOTECH_SQUAD + Handgun_MP443<br>Rifle_AK105_npz_rail_1P87 + Handgun_Glock17<br>Rifle_AK74M_b10m_b19n_npz_rail_perst_aimpoint_high + Handgun_MP443 | stem |
+| **Rifleman** | Стрелок | `Rifleman` | Assault Rifleman A / Assault Rifleman B / Assault Rifleman C | 3: `Character_KON_KON_Rifleman_A`, `Character_KON_KON_Rifleman_B`, `Character_KON_KON_Rifleman_C` | Rifle_AK74<br>Rifle_AKMN<br>Rifle_AK74M | stem |
+| **Sapper** | Сапер | `Sapper` | Sapper A / Sapper B / Sapper C | 3: `Character_KON_KON_Sapper_A`, `Character_KON_KON_Sapper_B`, `Character_KON_KON_Sapper_C` | Rifle_AKS74U<br>Rifle_AKS74UN<br>Rifle_AKS74UN_b18_t1 | stem |
+| **Scout** | Разведчик | `Scout` | Scout A / Scout B / Scout C | 3: `Character_KON_KON_Scout_A`, `Character_KON_KON_Scout_B`, `Character_KON_KON_Scout_C` | Rifle_AK74N_1P29<br>Rifle_AK74N_PBS4_1P29<br>Rifle_AK74M_npz_rail_1p87 | stem |
+| **Sniper** | Снайпер | `Sniper` | Sniper A / Sniper B / Sniper C | 3: `Character_KON_KON_Sniper_A`, `Character_KON_KON_Sniper_B`, `Character_KON_KON_Sniper_C` | Rifle_SVD_PSO + Handgun_PM<br>Rifle_SVD_PSO_7N14 + Handgun_PM<br>Rifle_SVD_1P21 + Handgun_PM | stem |
+| **Spotter** | Наблюдатель | `Spotter` | Spotter A / Spotter B / Spotter C | 3: `Character_KON_KON_Spotter_A`, `Character_KON_KON_Spotter_B`, `Character_KON_KON_Spotter_C` | Rifle_AK74N_1P29<br>Rifle_AK74M_1P78<br>Rifle_AK74M_1P63 | stem |
+| **Stretcher Bearer** | Санитар-носильщик | `Bearer` | Casualty Bearer A / Casualty Bearer B / Casualty Bearer C | 3: `Character_KON_KON_Bearer_A`, `Character_KON_KON_Bearer_B`, `Character_KON_KON_Bearer_C` | Rifle_AK74<br>Rifle_AKMN<br>Rifle_AK74N | override |
+| **Thermobaric Gunner** | Огнеметчик (РПО) | `Thermobaric` | Thermobaric Gunner A / Thermobaric Gunner B / Thermobaric Gunner C | 3: `Character_KON_KON_Thermobaric_A`, `Character_KON_KON_Thermobaric_B`, `Character_KON_KON_Thermobaric_C` | Rifle_AKS74U + Launcher_RPOA<br>Rifle_AKS74UN + Launcher_RPOA<br>Rifle_AKS74U_Bandit + Launcher_RPOA | override |
+| **UAV Assistant** | Помощник оператора БПЛА | `UAVAssistant` | UAV Assistant A / UAV Assistant B / UAV Assistant C | 3: `Character_KON_KON_UAVAssistant_A`, `Character_KON_KON_UAVAssistant_B`, `Character_KON_KON_UAVAssistant_C` | Rifle_AK74N<br>Rifle_AK74M<br>Rifle_AK74 | override |
+| **UAV Operator** | Оператор БПЛА | `UAVOperator` | UAV Operator A / UAV Operator B / UAV Operator C | 3: `Character_KON_KON_UAVOperator_A`, `Character_KON_KON_UAVOperator_B`, `Character_KON_KON_UAVOperator_C` | Rifle_AKS74U<br>Rifle_AKS74UN<br>Rifle_AKS74UN_b18_t1 | override |
+| **Veteran** | Ветеран | `Veteran` | Contract Rifleman A / Contract Rifleman B / Contract Rifleman C | 3: `Character_KON_KON_Veteran_A`, `Character_KON_KON_Veteran_B`, `Character_KON_KON_Veteran_C` | Rifle_AK74M_npz_rail_1p87<br>Rifle_AK74M_npz_b10m_b19n_tgpa_Thermal<br>Rifle_AK74M_npz_b10m_t1 | override |
+
+### Excluded prefabs (123)
 
 | Faction | Prefab | Reason |
 |---|---|---|
@@ -934,6 +1026,86 @@ Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/char
 | Ses_ChDKZ | `Character_ChDKZ_Unarmed_5.et` | unarmed |
 | BWAR | `BWAR_Character_Officer.et` | unarmed |
 | BWAR | `BWAR_Character_Officer_3FT.et` | unarmed |
+| KONNI | `Character_KON_BAR_AsstGunner.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_BarGasMask.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_Commander.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_Crew.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_Grenadier.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_HVT.et` | unarmed |
+| KONNI | `Character_KON_BAR_MG.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_Medic.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_RPG.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_Rifleman.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_Sniper.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_SpzLeader.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_SpzMG.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_SpzOperator.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_BAR_Unarmed.et` | unarmed |
+| KONNI | `Character_KON_BAR_Unarmed_A.et` | unarmed |
+| KONNI | `Character_KON_BAR_Unarmed_B.et` | unarmed |
+| KONNI | `Character_KON_ELT_AsstGunner.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Commander.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Grenadier.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_HVT.et` | unarmed |
+| KONNI | `Character_KON_ELT_MG.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Medic.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_RPG.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Rifleman.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Sapper.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Scout.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Sniper.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Spotter.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Thermobaric.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_ELT_Unarmed.et` | unarmed |
+| KONNI | `Character_KON_ELT_Unarmed_A.et` | unarmed |
+| KONNI | `Character_KON_ELT_Unarmed_B.et` | unarmed |
+| KONNI | `Character_KON_ELT_Veteran.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K00_HVT.et` | unarmed |
+| KONNI | `Character_KON_K00_K00Breacher.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K00_K00Gunner.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K00_K00Leader.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K00_K00Marksman.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K00_K00Medic.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K00_K00Operator.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K00_Unarmed.et` | unarmed |
+| KONNI | `Character_KON_K00_Unarmed_A.et` | unarmed |
+| KONNI | `Character_KON_K00_Unarmed_B.et` | unarmed |
+| KONNI | `Character_KON_K07_Commander.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K07_Crew.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K07_Grenadier.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K07_HVT.et` | unarmed |
+| KONNI | `Character_KON_K07_MG.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K07_Medic.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K07_Rifleman.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_K07_Unarmed.et` | unarmed |
+| KONNI | `Character_KON_K07_Unarmed_A.et` | unarmed |
+| KONNI | `Character_KON_K07_Unarmed_B.et` | unarmed |
+| KONNI | `Character_KON_KON_AGLCrew.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_AsstGunner.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Bearer.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Commander.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Crew.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_FlightCrew.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Grenadier.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_HMGCrew.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_MG.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Medic.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Officer.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Pilot.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Probe.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_RPG.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Rifleman.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Sapper.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Scout.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Sniper.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Spotter.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Thermobaric.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_UAVAssistant.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_UAVOperator.et` | uncataloged role base (the catalog lists the kits) |
+| KONNI | `Character_KON_KON_Unarmed.et` | unarmed |
+| KONNI | `Character_KON_KON_Unarmed_A.et` | unarmed |
+| KONNI | `Character_KON_KON_Unarmed_B.et` | unarmed |
+| KONNI | `Character_KON_KON_Veteran.et` | uncataloged role base (the catalog lists the kits) |
 
 ## Groups
 
@@ -1215,7 +1387,7 @@ Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/char
 
 | Label | RU | Size | Classes | Game name | Prefab(s) | Source |
 |---|---|---|---|---|---|---|
-| **Infantry Section** | Пехотная секция | 8 | large, defense | Infantry Section | `Group_UK_1989_Regulars_InfantrySection` | stem |
+| **Infantry Section** | Пехотное отделение | 8 | large, defense | Infantry Section | `Group_UK_1989_Regulars_InfantrySection` | stem |
 | **Platoon HQ** | Штаб взвода | 5 | medium | Platoon HQ | `Group_UK_1989_Regulars_PlatoonHQ` | stem |
 | **Rifle Group** | Стрелковая группа | 5 | medium | Rifle Group | `Group_UK_1989_Regulars_RifleGroup` | stem |
 | **Fire Team** | Огневая группа | 4 | medium | Fire Team | `Group_UK_1989_Regulars_FireTeam` | stem |
@@ -1240,7 +1412,7 @@ Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/char
 
 | Label | RU | Size | Classes | Game name | Prefab(s) | Source |
 |---|---|---|---|---|---|---|
-| **Infantry Section** | Пехотная секция | 8 | large, defense | Infantry Section | `Group_UK_1983_Regulars_InfantrySection` | stem |
+| **Infantry Section** | Пехотное отделение | 8 | large, defense | Infantry Section | `Group_UK_1983_Regulars_InfantrySection` | stem |
 | **Platoon HQ** | Штаб взвода | 5 | medium | Platoon HQ | `Group_UK_1983_Regulars_PlatoonHQ` | stem |
 | **Rifle Group** | Стрелковая группа | 5 | medium | Rifle Group | `Group_UK_1983_Regulars_RifleGroup` | stem |
 | **Patrol Brick** | Патруль «Brick» | 4 | medium | Patrol Brick | `Group_UK_1983_Regulars_Brick` | override |
@@ -1434,3 +1606,56 @@ Generated 2026-10-04 by `node generator/tools/label-roster.mjs` from `input/char
 | **Recon Team** | Разведгруппа | 2 | small | Recon Team | `BWAR_Group_ReconTeam_3FT` | stem |
 | **Sapper Team** | Саперная группа | 2 | small | Sapper Team | `BWAR_Group_SapperTeam_3FT` | stem |
 | **Sentry Team** | Парный пост | 2 | small, sentry | Patrol Team | `BWAR_Group_SentryTeam_3FT` | stem |
+
+### KONNI — Konni Group (Russian PMC) (26 groups)
+
+#### Konni (assault detachments) (`KON`, 11 groups)
+
+| Label | RU | Size | Classes | Game name | Prefab(s) | Source |
+|---|---|---|---|---|---|---|
+| **Assault Group** | Штурмовая группа | 8 | large, defense | Assault Group | `Group_KON_KON_AssaultGroup` | override |
+| **Fixing Element** | Группа закрепления | 8 | large | Fixing Element | `Group_KON_KON_FixingPlatoon` | override |
+| **Mobile RPG Group** | Мобильная группа РПГ | 7 | large | Mobile RPG Group | `Group_KON_KON_MobileRPG` | override |
+| **Assault Group (night)** | Штурмовая группа (ночная) | 6 | large | Assault Group (Night) | `Group_KON_KON_AssaultGroup_Night` | override |
+| **Recon Group** | Разведгруппа | 6 | large | Reconnaissance Group | `Group_KON_KON_ReconGroup` | override |
+| **Sapper Group** | Саперная группа | 5 | medium | Sapper Group | `Group_KON_KON_SapperGroup` | override |
+| **Probe Team** | Группа расходников | 4 | medium | Disposable Probe Team | `Group_KON_KON_ProbeTeam` | override |
+| **AT Troika** | Противотанковая тройка | 3 | medium | Heavy Troika (RPG) | `Group_KON_KON_HeavyTroika_AT` | override |
+| **Light Troika** | Легкая тройка | 3 | medium, sentry | Light Troika | `Group_KON_KON_LightTroika` | override |
+| **MG Troika** | Пулеметная тройка | 3 | medium | Heavy Troika (MG) | `Group_KON_KON_HeavyTroika_MG` | override |
+| **Sniper Pair** | Снайперская пара | 2 | small | Sniper Pair | `Group_KON_KON_SniperPair` | override |
+
+#### Komanda 07 (contract security) (`K07`, 3 groups)
+
+| Label | RU | Size | Classes | Game name | Prefab(s) | Source |
+|---|---|---|---|---|---|---|
+| **Security Detail** | Охранная группа | 6 | large, defense | Komanda 07 Security Detail | `Group_KON_K07_Detail` | override |
+| **Fire Team** | Огневая группа | 4 | medium | Komanda 07 Team | `Group_KON_K07_Team` | override |
+| **Checkpoint Pair** | Пост КПП | 2 | small, sentry | Komanda 07 Checkpoint | `Group_KON_K07_Checkpoint` | override |
+
+#### Komanda 00 (special forces) (`K00`, 3 groups)
+
+| Label | RU | Size | Classes | Game name | Prefab(s) | Source |
+|---|---|---|---|---|---|---|
+| **SF Element** | Группа СпН | 6 | large, defense | Komanda 00 Element | `Group_KON_K00_Element` | override |
+| **Fire Team** | Огневая группа | 4 | medium | Komanda 00 Team | `Group_KON_K00_Team` | override |
+| **SF Pair** | Пара СпН | 2 | small, sentry | Komanda 00 Pair | `Group_KON_K00_Pair` | override |
+
+#### PMC Elite Group (`ELT`, 4 groups)
+
+| Label | RU | Size | Classes | Game name | Prefab(s) | Source |
+|---|---|---|---|---|---|---|
+| **Assault Group** | Штурмовая группа | 8 | large, defense | Elite Assault Group | `Group_KON_ELT_AssaultGroup` | override |
+| **Recon Group** | Разведгруппа | 5 | medium | Elite Reconnaissance Group | `Group_KON_ELT_ReconGroup` | override |
+| **Fire Team** | Огневая группа | 4 | medium | Elite Team | `Group_KON_ELT_Team` | override |
+| **Sniper Pair** | Снайперская пара | 2 | small, sentry | Elite Sniper Pair | `Group_KON_ELT_SniperPair` | override |
+
+#### Barkov's Forces (rogue army) (`BAR`, 5 groups)
+
+| Label | RU | Size | Classes | Game name | Prefab(s) | Source |
+|---|---|---|---|---|---|---|
+| **Rifle Squad** | Стрелковое отделение | 8 | large, defense | Barkov Rifle Squad | `Group_KON_BAR_RifleSquad` | stem |
+| **Gas Mask Squad** | Отделение в противогазах | 6 | large | Barkov Gas Mask Squad | `Group_KON_BAR_GasMaskSquad` | override |
+| **Spetsnaz Team** | Группа спецназа | 5 | medium | Barkov Spetsnaz Group | `Group_KON_BAR_Spetsnaz` | override |
+| **Fire Team** | Огневая группа | 4 | medium | Barkov Fire Team | `Group_KON_BAR_FireTeam` | stem |
+| **Marksman Pair** | Пара марксманов | 2 | small, sentry | Barkov Marksman Team | `Group_KON_BAR_MarksmanPair` | override |

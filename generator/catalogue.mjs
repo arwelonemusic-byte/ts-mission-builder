@@ -21,6 +21,7 @@ import { SFSFIA } from "./mods/sfsfia.mjs";
 import { ARMA2 } from "./mods/arma2.mjs";
 import { USDESERT } from "./mods/usdesert.mjs";
 import { BUNDESWEHR } from "./mods/bundeswehr.mjs";
+import { KONNI } from "./mods/konni.mjs";
 import { DAXHUMVEES } from "./mods/daxhumvees.mjs";
 import { WCS_JLTV } from "./mods/wcs-jltv.mjs";
 import { WCS_M1A1 } from "./mods/wcs-m1a1.mjs";
@@ -1092,7 +1093,7 @@ export const FACTIONS = {
 // garage (spawn picker + patrol/transport candidates) after the mod's own, the
 // labels tagged with the donor key ("M923A1 Truck (covered, US)") so they read
 // apart from the mod's own same-chassis reskins. Keys must not collide.
-export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS, [SFS.id]: SFS, [SFSRF.id]: SFSRF, [SFSFIA.id]: SFSFIA, [ARMA2.id]: ARMA2, [USDESERT.id]: USDESERT, [BUNDESWEHR.id]: BUNDESWEHR };
+export const MODS = { [RHS.id]: RHS, [UK.id]: UK, [MEI.id]: MEI, [BANDITS.id]: BANDITS, [SFS.id]: SFS, [SFSRF.id]: SFSRF, [SFSFIA.id]: SFSFIA, [ARMA2.id]: ARMA2, [USDESERT.id]: USDESERT, [BUNDESWEHR.id]: BUNDESWEHR, [KONNI.id]: KONNI };
 const donorLabel = (label, donor) =>
   label.endsWith(")") ? `${label.slice(0, -1)}, ${donor})` : `${label} (${donor})`;
 for (const mod of Object.values(MODS)) {

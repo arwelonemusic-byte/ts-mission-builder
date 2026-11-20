@@ -6,6 +6,8 @@
 //               including EnfusionMCP handler scripts
 //   --advanced  build the Advanced AI placement variant (TS_WebSpikeAdvanced:
 //               manually placed foot/mounted patrols, defense groups, statics)
+//   --konni     build the Konni Group variant (TS_WebSpikeKonni: US vs KONNI —
+//               the Russian PMC alias of USSR, enemy-only; deps = 7DAFEF0126B180E0)
 //   --zone-names build the custom zone-name variant (TS_WebSpikeZoneNames: the
 //               base mission with both Areas renamed, QRF anchor groups follow)
 //   --time      build the start time + date variant (TS_WebSpikeTime: the base
@@ -2088,6 +2090,45 @@ const ADVANCED_MISSION = {
   props: [],
 };
 
+// Konni Group spike (2026-11-20): vanilla US vs KONNI — the Russian PMC that
+// replaces the Soviet faction in place (alias of USSR, enemy-only). Mixes three
+// of its five group sets in the zone modules, exercises advanced elements with
+// Konni roster ids (foot patrol, mounted patrol in a vanilla UAZ the mod
+// restyles, defense group, static soldier), Konni crews in the mounted patrols
+// and the Elite Group Officer as the HVT. addon.gproj must list 7DAFEF0126B180E0.
+const KONNI_MISSION = {
+  ...MISSION,
+  addonId: "TSWebSpikeKonni",
+  dirName: "TS_WebSpikeKonni",
+  addonTitle: "TS Web Spike Konni Mission",
+  name: "TS_WebSpikeKonni",
+  displayName: "TS Web Spike Konni",
+  enemyFaction: "KONNI",
+  enemyGroupSets: ["K07", "ELT", "BAR"],
+  guids: {
+    addon: "577538B43E756A69",
+    world: "EFEEB03319ED6FE4",
+    missionConf: "63F9FC64D0EBA480",
+  },
+  zones: [
+    {
+      ...MISSION.zones[0],
+      elements: [
+        { kind: "foot-patrol", id: "zeKonFoot1", pos: advAt(60, 40), group: "KONNI/K07/Team", waypoints: [advAt(120, 60), advAt(150, -10), advAt(30, -120)] },
+        { kind: "mounted-patrol", id: "zeKonMount1", pos: advAt(-80, 90), vehicle: "UAZ469_PKM", group: "KONNI/K07/Checkpoint", waypoints: [advAt(-160, 20), advAt(-120, -140), advAt(40, -170)] },
+        { kind: "defense-group", id: "zeKonDef1", pos: advAt(-90, -70), group: "KONNI/BAR/GasMaskSquad", radius: 25 },
+        { kind: "static", id: "zeKonStatic1", pos: advAt(141.4, 141.4), role: "KONNI/pmc-elite-group/machine-gunner" },
+      ],
+    },
+    {
+      ...MISSION.zones[1],
+      plugins: [
+        { type: "TS_ScenarioFrameworkPluginMountedPatrol", attrs: { m_iBudget: 2 }, vehicles: ["UAZ469_PKM", "BTR70"] },
+      ],
+    },
+  ],
+};
+
 // Custom zone names (2026-10-21): the base mission with both zones renamed —
 // the Area entities take the names, the QRF anchor groups follow them
 // (North_Checkpoint_Foot / _Mounted), every sub-entity keeps its index name.
@@ -2173,6 +2214,8 @@ const SLOTS_MISSION = {
 
 const BUILT = process.argv.includes("--advanced")
   ? ADVANCED_MISSION
+  : process.argv.includes("--konni")
+  ? KONNI_MISSION
   : process.argv.includes("--zone-names")
   ? ZONE_NAMES_MISSION
   : process.argv.includes("--time")

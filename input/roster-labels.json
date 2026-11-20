@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-04",
+ "generated": "2026-11-20",
  "roles": [
   {
    "faction": "US",
@@ -14714,7 +14714,9 @@
    "gameNames": [
     "Light Machine-Gunner"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Пулеметчик ручного пулемета"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_Regulars_L4LMG_No1.et",
@@ -14997,7 +14999,7 @@
    "setKey": "Regulars_1983",
    "subfaction": "1983 Regulars",
    "label": "Section 2IC",
-   "labelRu": "Зам. командира секции",
+   "labelRu": "Заместитель командира отделения",
    "labelSource": "override",
    "stems": [
     "Section2IC"
@@ -15005,7 +15007,9 @@
    "gameNames": [
     "Section 2IC"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Заместитель командира отделения"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_Regulars_Section2IC.et",
@@ -15023,7 +15027,7 @@
    "setKey": "Regulars_1983",
    "subfaction": "1983 Regulars",
    "label": "Section Commander",
-   "labelRu": "Командир секции",
+   "labelRu": "Командир отделения",
    "labelSource": "override",
    "stems": [
     "SectionCommander"
@@ -15031,7 +15035,9 @@
    "gameNames": [
     "Section Commander"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир отделения"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_Regulars_SectionCommander.et",
@@ -15085,7 +15091,9 @@
    "gameNames": [
     "Trained Sniper"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Подготовленный снайпер"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_Regulars_Sniper.et",
@@ -15140,7 +15148,9 @@
    "gameNames": [
     "Reservist (LAW 66)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Резервист (LAW 66)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_Reservist_LAT.et",
@@ -15167,7 +15177,9 @@
    "gameNames": [
     "Reservist (LMG)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Резервист (ручной пулемет)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_Reservist_LMG.et",
@@ -15193,7 +15205,9 @@
    "gameNames": [
     "Reservist"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Резервист"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_Reservist_Rifleman.et",
@@ -15219,7 +15233,9 @@
    "gameNames": [
     "Reservist Section Commander"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир отделения резервистов"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_Reservist_SectionCommander.et",
@@ -15245,7 +15261,9 @@
    "gameNames": [
     "Counter Revolutionary Warfare Trooper"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Боец контрреволюционной борьбы"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_SpecialForces_CRW.et",
@@ -15272,7 +15290,9 @@
    "gameNames": [
     "Special Forces Anti-Tank"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Гранатометчик спецназа"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_SpecialForces_CharlieG.et",
@@ -15471,7 +15491,9 @@
    "gameNames": [
     "Special Forces Saboteur"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Диверсант спецназа"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_SpecialForces_Saboteur.et",
@@ -15556,7 +15578,9 @@
    "gameNames": [
     "Special Forces Trooper"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Боец спецназа"
+   ],
    "variants": [
     {
      "file": "Character_UK_1983_SpecialForces_Trooper.et",
@@ -15639,7 +15663,9 @@
    "gameNames": [
     "Aircraft Commander"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир воздушного судна"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_HeliCrew.et",
@@ -15667,7 +15693,9 @@
    "gameNames": [
     "Aircraft Commander"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир воздушного судна"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_HeliPilot.et",
@@ -15695,7 +15723,9 @@
    "gameNames": [
     "Ground Crew"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Наземный персонал"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Heli_GroundCrew.et",
@@ -15749,7 +15779,9 @@
    "gameNames": [
     "Convoy Commander"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир колонны"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_ConvoyCommander.et",
@@ -15767,7 +15799,7 @@
    "setKey": "Regulars_1989",
    "subfaction": "1989 Regulars",
    "label": "Detachment Commander",
-   "labelRu": "Командир отряда",
+   "labelRu": "Командир группы",
    "labelSource": "override",
    "stems": [
     "DetachmentCommander"
@@ -15775,7 +15807,9 @@
    "gameNames": [
     "Detachment Commander"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир группы"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_DetachmentCommander.et",
@@ -15849,7 +15883,7 @@
    "setKey": "Regulars_1989",
    "subfaction": "1989 Regulars",
    "label": "LSW Gunner",
-   "labelRu": "Пулеметчик (LSW)",
+   "labelRu": "Стрелок LSW",
    "labelSource": "override",
    "stems": [
     "LSW"
@@ -15857,7 +15891,9 @@
    "gameNames": [
     "LSW Gunner"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Стрелок LSW"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_LSW.et",
@@ -16083,7 +16119,10 @@
     "Rifleman (LAW 66)",
     "Rifleman (LAW 80)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Стрелок (LAW 66)",
+    "Стрелок (LAW 80)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_Rifleman_LAT_LAW66.et",
@@ -16120,7 +16159,9 @@
    "gameNames": [
     "Mortarman"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Минометчик"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_Rifleman_Mortar.et",
@@ -16146,7 +16187,9 @@
    "gameNames": [
     "Rifleman (Recce)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Стрелок (разведка)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_Rifleman_Recce.et",
@@ -16172,7 +16215,9 @@
    "gameNames": [
     "Combat Engineer"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Боевой сапер"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_Sapper.et",
@@ -16199,7 +16244,9 @@
    "gameNames": [
     "Assault Engineer"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Штурмовой сапер"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_Sapper_Assault.et",
@@ -16217,7 +16264,7 @@
    "setKey": "Regulars_1989",
    "subfaction": "1989 Regulars",
    "label": "Section 2IC",
-   "labelRu": "Зам. командира секции",
+   "labelRu": "Заместитель командира отделения",
    "labelSource": "override",
    "stems": [
     "Section2IC"
@@ -16225,7 +16272,9 @@
    "gameNames": [
     "Section 2IC"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Заместитель командира отделения"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_Section2IC.et",
@@ -16243,7 +16292,7 @@
    "setKey": "Regulars_1989",
    "subfaction": "1989 Regulars",
    "label": "Section Commander",
-   "labelRu": "Командир секции",
+   "labelRu": "Командир отделения",
    "labelSource": "override",
    "stems": [
     "SectionCommander"
@@ -16251,7 +16300,9 @@
    "gameNames": [
     "Section Commander"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир отделения"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_SectionCommander.et",
@@ -16277,7 +16328,9 @@
    "gameNames": [
     "Section Commander (Recce)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир отделения (разведка)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_SectionCommander_Recce.et",
@@ -16331,7 +16384,9 @@
    "gameNames": [
     "Trained Sniper"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Подготовленный снайпер"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_Sniper.et",
@@ -16358,7 +16413,9 @@
    "gameNames": [
     "Trained Sniper"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Подготовленный снайпер"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Regulars_Sniper_Recce.et",
@@ -16413,7 +16470,9 @@
    "gameNames": [
     "Reservist (LAW 66)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Резервист (LAW 66)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Reservist_LAT.et",
@@ -16440,7 +16499,9 @@
    "gameNames": [
     "Officer Cadet"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Курсант"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Reservist_Officer.et",
@@ -16466,7 +16527,9 @@
    "gameNames": [
     "Reservist Section Commander"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Командир отделения резервистов"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Reservist_SectionCommander.et",
@@ -16492,7 +16555,9 @@
    "gameNames": [
     "Driver (Reservist)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Водитель (резервист)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Reservists_Driver.et",
@@ -16518,7 +16583,9 @@
    "gameNames": [
     "Reservist Engineer"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Сапер-резервист"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Reservists_Engineer.et",
@@ -16545,7 +16612,9 @@
    "gameNames": [
     "Reservist (LMG)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Резервист (ручной пулемет)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Reservists_LMG.et",
@@ -16553,7 +16622,7 @@
      "weapons": [
       "MG_L4_LMG"
      ],
-     "status": "OK_CATALOG",
+     "status": "OK",
      "cataloged": true
     }
    ]
@@ -16571,7 +16640,9 @@
    "gameNames": [
     "Reservist"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Резервист"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Reservists_Rifleman.et",
@@ -16597,7 +16668,9 @@
    "gameNames": [
     "Reservist (Recce)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Резервист (разведка)"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_Reservists_Rifleman_Recce.et",
@@ -16623,7 +16696,9 @@
    "gameNames": [
     "Special Forces Anti-Tank"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Гранатометчик спецназа"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_SpecialForces_CharlieG.et",
@@ -16856,7 +16931,9 @@
    "gameNames": [
     "Special Forces Saboteur"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Диверсант спецназа"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_SpecialForces_Saboteur.et",
@@ -16913,7 +16990,9 @@
    "gameNames": [
     "Special Forces PM Sniper"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Снайпер с PM спецназа"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_SpecialForces_Sniper.et",
@@ -16940,7 +17019,9 @@
    "gameNames": [
     "Special Forces PM Sniper (Covert)"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Снайпер с PM (скрытный) спецназа"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_SpecialForces_SniperCovert.et",
@@ -16967,7 +17048,9 @@
    "gameNames": [
     "Special Forces Trooper"
    ],
-   "gameNamesRu": [],
+   "gameNamesRu": [
+    "Боец спецназа"
+   ],
    "variants": [
     {
      "file": "Character_UK_1989_SpecialForces_Trooper.et",
@@ -23330,6 +23413,2706 @@
      "cataloged": true
     }
    ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Assistant Machine Gunner",
+   "labelRu": "Помощник пулеметчика",
+   "labelSource": "override",
+   "stems": [
+    "AsstGunner"
+   ],
+   "gameNames": [
+    "Barkov's Forces Assistant Gunner A",
+    "Barkov's Forces Assistant Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_AsstGunner_A.et",
+     "ref": "{512FF4BDD028FE4E}Prefabs/Characters/KON/Barkov/Character_KON_BAR_AsstGunner_A.et",
+     "weapons": [
+      "Rifle_AK74M"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_AsstGunner_B.et",
+     "ref": "{3D7BC05D6CEC7160}Prefabs/Characters/KON/Barkov/Character_KON_BAR_AsstGunner_B.et",
+     "weapons": [
+      "Rifle_AK74_RHSMag"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Rifleman (gas mask)",
+   "labelRu": "Стрелок (противогаз)",
+   "labelSource": "override",
+   "stems": [
+    "BarGasMask"
+   ],
+   "gameNames": [
+    "Barkov's Forces Rifleman (Gas Mask) A",
+    "Barkov's Forces Rifleman (Gas Mask) B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_BarGasMask_A.et",
+     "ref": "{CF452DA3B751BE10}Prefabs/Characters/KON/Barkov/Character_KON_BAR_BarGasMask_A.et",
+     "weapons": [
+      "Rifle_AK74M"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_BarGasMask_B.et",
+     "ref": "{A31119430B95313E}Prefabs/Characters/KON/Barkov/Character_KON_BAR_BarGasMask_B.et",
+     "weapons": [
+      "Rifle_AK74M_PlumMag"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Commander",
+   "labelRu": "Командир",
+   "labelSource": "override",
+   "stems": [
+    "Commander"
+   ],
+   "gameNames": [
+    "Barkov's Forces Squad Leader A",
+    "Barkov's Forces Squad Leader B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_Commander_A.et",
+     "ref": "{5A7027DC45321274}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Commander_A.et",
+     "weapons": [
+      "Rifle_AK74M_1P63",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_Commander_B.et",
+     "ref": "{3624133CF9F69D5A}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Commander_B.et",
+     "weapons": [
+      "Rifle_AK74M_1P78",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Crewman",
+   "labelRu": "Член экипажа",
+   "labelSource": "stem",
+   "stems": [
+    "Crew"
+   ],
+   "gameNames": [
+    "Barkov's Forces Vehicle Crewman A",
+    "Barkov's Forces Vehicle Crewman B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_Crew_A.et",
+     "ref": "{4D176A09EEC49AA1}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Crew_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_Crew_B.et",
+     "ref": "{21435EE95200158F}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Crew_B.et",
+     "weapons": [
+      "Rifle_AKS74UN_folded"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Grenadier",
+   "labelRu": "Гранатометчик (ГП)",
+   "labelSource": "stem",
+   "stems": [
+    "Grenadier"
+   ],
+   "gameNames": [
+    "Barkov's Forces Grenadier A",
+    "Barkov's Forces Grenadier B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_Grenadier_A.et",
+     "ref": "{7E5B5B9876AC8F8D}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Grenadier_A.et",
+     "weapons": [
+      "Rifle_AK74M_GP25"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_Grenadier_B.et",
+     "ref": "{120F6F78CA6800A3}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Grenadier_B.et",
+     "weapons": [
+      "Rifle_AK74M_1P78_GP25"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Officer",
+   "labelRu": "Офицер",
+   "labelSource": "override",
+   "stems": [
+    "HVT"
+   ],
+   "gameNames": [
+    "Barkov's Forces Officer A",
+    "Barkov's Forces Officer B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_HVT_A.et",
+     "ref": "{851A136A1AE25F25}Prefabs/Characters/KON/Barkov/Character_KON_BAR_HVT_A.et",
+     "weapons": [
+      "Rifle_AKS74U",
+      "Handgun_MP443"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_HVT_B.et",
+     "ref": "{E94E278AA626D00B}Prefabs/Characters/KON/Barkov/Character_KON_BAR_HVT_B.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_1p87",
+      "Handgun_MP443"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Machine Gunner",
+   "labelRu": "Пулеметчик",
+   "labelSource": "stem",
+   "stems": [
+    "MG"
+   ],
+   "gameNames": [
+    "Barkov's Forces Machine Gunner A",
+    "Barkov's Forces Machine Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_MG_A.et",
+     "ref": "{EFC2F3A2A37F0BC4}Prefabs/Characters/KON/Barkov/Character_KON_BAR_MG_A.et",
+     "weapons": [
+      "MG_PKM",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_MG_B.et",
+     "ref": "{8396C7421FBB84EA}Prefabs/Characters/KON/Barkov/Character_KON_BAR_MG_B.et",
+     "weapons": [
+      "MG_PKMN",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Medic",
+   "labelRu": "Санитар",
+   "labelSource": "stem",
+   "stems": [
+    "Medic"
+   ],
+   "gameNames": [
+    "Barkov's Forces Medic A",
+    "Barkov's Forces Medic B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_Medic_A.et",
+     "ref": "{985BF163ECC49B20}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Medic_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_Medic_B.et",
+     "ref": "{F40FC5835000140E}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Medic_B.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Anti-Tank",
+   "labelRu": "Гранатометчик (РПГ)",
+   "labelSource": "stem",
+   "stems": [
+    "RPG"
+   ],
+   "gameNames": [
+    "Barkov's Forces RPG Gunner A",
+    "Barkov's Forces RPG Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_RPG_A.et",
+     "ref": "{D39B8787CC1B442C}Prefabs/Characters/KON/Barkov/Character_KON_BAR_RPG_A.et",
+     "weapons": [
+      "Rifle_AKS74U",
+      "Launcher_RPG7_pgo7_rhs"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_RPG_B.et",
+     "ref": "{BFCFB36770DFCB02}Prefabs/Characters/KON/Barkov/Character_KON_BAR_RPG_B.et",
+     "weapons": [
+      "Rifle_AKS74UN",
+      "Launcher_RPG7"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Rifleman",
+   "labelRu": "Стрелок",
+   "labelSource": "stem",
+   "stems": [
+    "Rifleman"
+   ],
+   "gameNames": [
+    "Barkov's Forces Assault Rifleman A",
+    "Barkov's Forces Assault Rifleman B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_Rifleman_A.et",
+     "ref": "{9CCCD896CF4633BE}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Rifleman_A.et",
+     "weapons": [
+      "Rifle_AK74M"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_Rifleman_B.et",
+     "ref": "{F098EC767382BC90}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Rifleman_B.et",
+     "weapons": [
+      "Rifle_AK74M_PlumMag"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Sniper",
+   "labelRu": "Снайпер",
+   "labelSource": "stem",
+   "stems": [
+    "Sniper"
+   ],
+   "gameNames": [
+    "Barkov's Forces Marksman A",
+    "Barkov's Forces Marksman B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_Sniper_A.et",
+     "ref": "{08CA72848E638DF5}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Sniper_A.et",
+     "weapons": [
+      "Rifle_SVD_PSO",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_Sniper_B.et",
+     "ref": "{649E466432A702DB}Prefabs/Characters/KON/Barkov/Character_KON_BAR_Sniper_B.et",
+     "weapons": [
+      "Rifle_SVD_1P21",
+      "Handgun_PM"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Spetsnaz Leader",
+   "labelRu": "Командир группы СпН",
+   "labelSource": "override",
+   "stems": [
+    "SpzLeader"
+   ],
+   "gameNames": [
+    "Barkov's Forces Spetsnaz Group Leader A",
+    "Barkov's Forces Spetsnaz Group Leader B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_SpzLeader_A.et",
+     "ref": "{111E170AFA74B6FD}Prefabs/Characters/KON/Barkov/Character_KON_BAR_SpzLeader_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_1p87",
+      "Handgun_PM"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_SpzLeader_B.et",
+     "ref": "{7D4A23EA46B039D3}Prefabs/Characters/KON/Barkov/Character_KON_BAR_SpzLeader_B.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_1p87_1p90",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Spetsnaz Machine Gunner",
+   "labelRu": "Пулеметчик СпН",
+   "labelSource": "override",
+   "stems": [
+    "SpzMG"
+   ],
+   "gameNames": [
+    "Barkov's Forces Spetsnaz Machine Gunner A",
+    "Barkov's Forces Spetsnaz Machine Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_SpzMG_A.et",
+     "ref": "{A39121AA3EC0E171}Prefabs/Characters/KON/Barkov/Character_KON_BAR_SpzMG_A.et",
+     "weapons": [
+      "MG_RPK74M_NPZ_1p86"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_SpzMG_B.et",
+     "ref": "{CFC5154A82046E5F}Prefabs/Characters/KON/Barkov/Character_KON_BAR_SpzMG_B.et",
+     "weapons": [
+      "MG_RPK74M_1P78"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "subfaction": "Barkov's Forces (rogue army)",
+   "label": "Spetsnaz Operator",
+   "labelRu": "Боец СпН",
+   "labelSource": "override",
+   "stems": [
+    "SpzOperator"
+   ],
+   "gameNames": [
+    "Barkov's Forces Spetsnaz Operator A",
+    "Barkov's Forces Spetsnaz Operator B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_BAR_SpzOperator_A.et",
+     "ref": "{C9B05DA849D3A97C}Prefabs/Characters/KON/Barkov/Character_KON_BAR_SpzOperator_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_1p87"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_BAR_SpzOperator_B.et",
+     "ref": "{A5E46948F5172652}Prefabs/Characters/KON/Barkov/Character_KON_BAR_SpzOperator_B.et",
+     "weapons": [
+      "Rifle_AKS74UN_pbs4"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Assistant Machine Gunner",
+   "labelRu": "Помощник пулеметчика",
+   "labelSource": "override",
+   "stems": [
+    "AsstGunner"
+   ],
+   "gameNames": [
+    "Elite Group Assistant Gunner A",
+    "Elite Group Assistant Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_AsstGunner_A.et",
+     "ref": "{4ED138DD8C780D91}Prefabs/Characters/KON/Elite/Character_KON_ELT_AsstGunner_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_t1"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_AsstGunner_B.et",
+     "ref": "{22850C3D30BC82BF}Prefabs/Characters/KON/Elite/Character_KON_ELT_AsstGunner_B.et",
+     "weapons": [
+      "Rifle_AK74M_1P63"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Commander",
+   "labelRu": "Командир",
+   "labelSource": "override",
+   "stems": [
+    "Commander"
+   ],
+   "gameNames": [
+    "Elite Group Assault Group Commander A",
+    "Elite Group Assault Group Commander B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Commander_A.et",
+     "ref": "{5E26EA766060006B}Prefabs/Characters/KON/Elite/Character_KON_ELT_Commander_A.et",
+     "weapons": [
+      "Rifle_AK105_npz_rail_T1",
+      "Handgun_MP443"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Commander_B.et",
+     "ref": "{3272DE96DCA48F45}Prefabs/Characters/KON/Elite/Character_KON_ELT_Commander_B.et",
+     "weapons": [
+      "Rifle_AK74M_b10m_b19n_npz_rail_perst_Eot",
+      "Handgun_Glock17"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Grenadier",
+   "labelRu": "Гранатометчик (ГП)",
+   "labelSource": "stem",
+   "stems": [
+    "Grenadier"
+   ],
+   "gameNames": [
+    "Elite Group Grenadier A",
+    "Elite Group Grenadier B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Grenadier_A.et",
+     "ref": "{7A0D963253FE9D92}Prefabs/Characters/KON/Elite/Character_KON_ELT_Grenadier_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_gp25_1p87"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Grenadier_B.et",
+     "ref": "{1659A2D2EF3A12BC}Prefabs/Characters/KON/Elite/Character_KON_ELT_Grenadier_B.et",
+     "weapons": [
+      "Rifle_AK74M_1P78_GP25"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Officer",
+   "labelRu": "Офицер",
+   "labelSource": "override",
+   "stems": [
+    "HVT"
+   ],
+   "gameNames": [
+    "Elite Group Officer A",
+    "Elite Group Officer B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_HVT_A.et",
+     "ref": "{4B419A80253B5E35}Prefabs/Characters/KON/Elite/Character_KON_ELT_HVT_A.et",
+     "weapons": [
+      "Rifle_AK105_b10m_b19_b33_XPS",
+      "Handgun_MP443"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_HVT_B.et",
+     "ref": "{2715AE6099FFD11B}Prefabs/Characters/KON/Elite/Character_KON_ELT_HVT_B.et",
+     "weapons": [
+      "Rifle_AK74M_b10m_b19n_npz_rail_perst_aimpoint_high",
+      "Handgun_Glock17"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Machine Gunner",
+   "labelRu": "Пулеметчик",
+   "labelSource": "stem",
+   "stems": [
+    "MG"
+   ],
+   "gameNames": [
+    "Elite Group Machine Gunner A",
+    "Elite Group Machine Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_MG_A.et",
+     "ref": "{22B9F287B86CA193}Prefabs/Characters/KON/Elite/Character_KON_ELT_MG_A.et",
+     "weapons": [
+      "MG_PKM_B51_1p87",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_MG_B.et",
+     "ref": "{4EEDC66704A82EBD}Prefabs/Characters/KON/Elite/Character_KON_ELT_MG_B.et",
+     "weapons": [
+      "MG_PKM_B51_1p86",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Medic",
+   "labelRu": "Санитар",
+   "labelSource": "stem",
+   "stems": [
+    "Medic"
+   ],
+   "gameNames": [
+    "Elite Group Medic A",
+    "Elite Group Medic B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Medic_A.et",
+     "ref": "{46D3DFF23475DAD3}Prefabs/Characters/KON/Elite/Character_KON_ELT_Medic_A.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Medic_B.et",
+     "ref": "{2A87EB1288B155FD}Prefabs/Characters/KON/Elite/Character_KON_ELT_Medic_B.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Anti-Tank",
+   "labelRu": "Гранатометчик (РПГ)",
+   "labelSource": "stem",
+   "stems": [
+    "RPG"
+   ],
+   "gameNames": [
+    "Elite Group RPG Gunner A",
+    "Elite Group RPG Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_RPG_A.et",
+     "ref": "{1DC00E6DF3C2453C}Prefabs/Characters/KON/Elite/Character_KON_ELT_RPG_A.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1",
+      "Launcher_RPG7_PGO7"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_RPG_B.et",
+     "ref": "{71943A8D4F06CA12}Prefabs/Characters/KON/Elite/Character_KON_ELT_RPG_B.et",
+     "weapons": [
+      "Rifle_AKS74UN",
+      "Launcher_RPG7"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Rifleman",
+   "labelRu": "Стрелок",
+   "labelSource": "stem",
+   "stems": [
+    "Rifleman"
+   ],
+   "gameNames": [
+    "Elite Group Assault Rifleman A",
+    "Elite Group Assault Rifleman B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Rifleman_A.et",
+     "ref": "{C83D8547CA17AEE4}Prefabs/Characters/KON/Elite/Character_KON_ELT_Rifleman_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_t1"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Rifleman_B.et",
+     "ref": "{A469B1A776D321CA}Prefabs/Characters/KON/Elite/Character_KON_ELT_Rifleman_B.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_eot"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Sapper",
+   "labelRu": "Сапер",
+   "labelSource": "stem",
+   "stems": [
+    "Sapper"
+   ],
+   "gameNames": [
+    "Elite Group Sapper A",
+    "Elite Group Sapper B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Sapper_A.et",
+     "ref": "{E055B0B0BAE0CF11}Prefabs/Characters/KON/Elite/Character_KON_ELT_Sapper_A.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Sapper_B.et",
+     "ref": "{8C0184500624403F}Prefabs/Characters/KON/Elite/Character_KON_ELT_Sapper_B.et",
+     "weapons": [
+      "Rifle_AKS74UN_1P29"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Scout",
+   "labelRu": "Разведчик",
+   "labelSource": "stem",
+   "stems": [
+    "Scout"
+   ],
+   "gameNames": [
+    "Elite Group Scout A",
+    "Elite Group Scout B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Scout_A.et",
+     "ref": "{C6D14B871608F4D9}Prefabs/Characters/KON/Elite/Character_KON_ELT_Scout_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_t1_high"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Scout_B.et",
+     "ref": "{AA857F67AACC7BF7}Prefabs/Characters/KON/Elite/Character_KON_ELT_Scout_B.et",
+     "weapons": [
+      "Rifle_AK74N_PBS4_1P29"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Sniper",
+   "labelRu": "Снайпер",
+   "labelSource": "stem",
+   "stems": [
+    "Sniper"
+   ],
+   "gameNames": [
+    "Elite Group Sniper A",
+    "Elite Group Sniper B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Sniper_A.et",
+     "ref": "{9492156E798EF6BF}Prefabs/Characters/KON/Elite/Character_KON_ELT_Sniper_A.et",
+     "weapons": [
+      "Rifle_SVD_1P21",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Sniper_B.et",
+     "ref": "{F8C6218EC54A7991}Prefabs/Characters/KON/Elite/Character_KON_ELT_Sniper_B.et",
+     "weapons": [
+      "Rifle_SVD_B13N",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Spotter",
+   "labelRu": "Наблюдатель",
+   "labelSource": "stem",
+   "stems": [
+    "Spotter"
+   ],
+   "gameNames": [
+    "Elite Group Spotter A",
+    "Elite Group Spotter B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Spotter_A.et",
+     "ref": "{5A38CE6600023209}Prefabs/Characters/KON/Elite/Character_KON_ELT_Spotter_A.et",
+     "weapons": [
+      "Rifle_AK74N_1P29"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Spotter_B.et",
+     "ref": "{366CFA86BCC6BD27}Prefabs/Characters/KON/Elite/Character_KON_ELT_Spotter_B.et",
+     "weapons": [
+      "Rifle_AK74M_1P78"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Thermobaric Gunner",
+   "labelRu": "Огнеметчик (РПО)",
+   "labelSource": "override",
+   "stems": [
+    "Thermobaric"
+   ],
+   "gameNames": [
+    "Elite Group Thermobaric Gunner A",
+    "Elite Group Thermobaric Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Thermobaric_A.et",
+     "ref": "{4A95922B3A878EFF}Prefabs/Characters/KON/Elite/Character_KON_ELT_Thermobaric_A.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1",
+      "Launcher_RPOA"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Thermobaric_B.et",
+     "ref": "{26C1A6CB864301D1}Prefabs/Characters/KON/Elite/Character_KON_ELT_Thermobaric_B.et",
+     "weapons": [
+      "Rifle_AKS74UN",
+      "Launcher_RPOA"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "subfaction": "PMC Elite Group",
+   "label": "Veteran",
+   "labelRu": "Ветеран",
+   "labelSource": "override",
+   "stems": [
+    "Veteran"
+   ],
+   "gameNames": [
+    "Elite Group Contract Rifleman A",
+    "Elite Group Contract Rifleman B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_ELT_Veteran_A.et",
+     "ref": "{797F6DB588BDA901}Prefabs/Characters/KON/Elite/Character_KON_ELT_Veteran_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_b19n_tgpa_Thermal"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_ELT_Veteran_B.et",
+     "ref": "{152B59553479262F}Prefabs/Characters/KON/Elite/Character_KON_ELT_Veteran_B.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_1p87"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "subfaction": "Komanda 00 (special forces)",
+   "label": "Officer",
+   "labelRu": "Офицер",
+   "labelSource": "override",
+   "stems": [
+    "HVT"
+   ],
+   "gameNames": [
+    "Komanda 00 Officer A",
+    "Komanda 00 Officer B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K00_HVT_A.et",
+     "ref": "{F17462BE704F211D}Prefabs/Characters/KON/K00/Character_KON_K00_HVT_A.et",
+     "weapons": [
+      "Handgun_G19_RU"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_HVT_B.et",
+     "ref": "{9D20565ECC8BAE33}Prefabs/Characters/KON/K00/Character_KON_K00_HVT_B.et",
+     "weapons": [
+      "Rifle_AK105_b10m_b19n_b33_b9m_pt1_rk3_dtk2_XPS",
+      "Handgun_Glock17"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "subfaction": "Komanda 00 (special forces)",
+   "label": "Breacher",
+   "labelRu": "Штурмовик",
+   "labelSource": "override",
+   "stems": [
+    "K00Breacher"
+   ],
+   "gameNames": [
+    "Komanda 00 Breacher A",
+    "Komanda 00 Breacher B",
+    "Komanda 00 Breacher C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K00_K00Breacher_A.et",
+     "ref": "{7E214E2EECF8C4F7}Prefabs/Characters/KON/K00/Character_KON_K00_K00Breacher_A.et",
+     "weapons": [
+      "Rifle_AK104_b10m_b19_b33_b9m_pt1_rk3_dtk2_b9m_T1",
+      "Handgun_Glock17"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Breacher_B.et",
+     "ref": "{12757ACE503C4BD9}Prefabs/Characters/KON/K00/Character_KON_K00_K00Breacher_B.et",
+     "weapons": [
+      "Rifle_AK205_XPS_perst_klesh",
+      "Handgun_APS"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Breacher_C.et",
+     "ref": "{F7E936375CD9DCB2}Prefabs/Characters/KON/K00/Character_KON_K00_K00Breacher_C.et",
+     "weapons": [
+      "Rifle_PP19_OKP_SQUAD",
+      "Handgun_G19_RU"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "subfaction": "Komanda 00 (special forces)",
+   "label": "Machine Gunner",
+   "labelRu": "Пулеметчик",
+   "labelSource": "override",
+   "stems": [
+    "K00Gunner"
+   ],
+   "gameNames": [
+    "Komanda 00 Machine Gunner A",
+    "Komanda 00 Machine Gunner B",
+    "Komanda 00 Machine Gunner C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K00_K00Gunner_A.et",
+     "ref": "{584D87C8D05176C0}Prefabs/Characters/KON/K00/Character_KON_K00_K00Gunner_A.et",
+     "weapons": [
+      "MG_PKP_NPZ_SQUAD",
+      "Handgun_MP443"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Gunner_B.et",
+     "ref": "{3419B3286C95F9EE}Prefabs/Characters/KON/K00/Character_KON_K00_K00Gunner_B.et",
+     "weapons": [
+      "MG_PKPB_PK06_SF_SQUAD",
+      "Handgun_Glock17"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Gunner_C.et",
+     "ref": "{D185FFD160706E85}Prefabs/Characters/KON/K00/Character_KON_K00_K00Gunner_C.et",
+     "weapons": [
+      "MG_KON_PKP_B25U_1P87",
+      "Handgun_G19_RU"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "subfaction": "Komanda 00 (special forces)",
+   "label": "Team Leader",
+   "labelRu": "Командир группы",
+   "labelSource": "override",
+   "stems": [
+    "K00Leader"
+   ],
+   "gameNames": [
+    "Komanda 00 Team Leader A",
+    "Komanda 00 Team Leader B",
+    "Komanda 00 Team Leader C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K00_K00Leader_A.et",
+     "ref": "{DF1C61BB9F3185F5}Prefabs/Characters/KON/K00/Character_KON_K00_K00Leader_A.et",
+     "weapons": [
+      "Rifle_AK105_b10m_b19_b33_b9m_rk3_pt1_tgpa",
+      "Handgun_Glock17"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Leader_B.et",
+     "ref": "{B348555B23F50ADB}Prefabs/Characters/KON/K00/Character_KON_K00_K00Leader_B.et",
+     "weapons": [
+      "Rifle_AK103_b10m_b19n_b33_pt1_rk3_dtk2_T1_Perst",
+      "Handgun_MP443"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Leader_C.et",
+     "ref": "{56D419A22F109DB0}Prefabs/Characters/KON/K00/Character_KON_K00_K00Leader_C.et",
+     "weapons": [
+      "Rifle_ASVAL_MOD_B13",
+      "Handgun_G19_MOD1_RU"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "subfaction": "Komanda 00 (special forces)",
+   "label": "Marksman",
+   "labelRu": "Марксман",
+   "labelSource": "override",
+   "stems": [
+    "K00Marksman"
+   ],
+   "gameNames": [
+    "Komanda 00 Marksman A",
+    "Komanda 00 Marksman B",
+    "Komanda 00 Marksman C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K00_K00Marksman_A.et",
+     "ref": "{390F9304B24AD2B8}Prefabs/Characters/KON/K00/Character_KON_K00_K00Marksman_A.et",
+     "weapons": [
+      "Rifle_SVCH_MOD1_Suppressed",
+      "Handgun_Glock17"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Marksman_B.et",
+     "ref": "{555BA7E40E8E5D96}Prefabs/Characters/KON/K00/Character_KON_K00_K00Marksman_B.et",
+     "weapons": [
+      "Rifle_VSS_B13",
+      "Handgun_MP443"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Marksman_C.et",
+     "ref": "{B0C7EB1D026BCAFD}Prefabs/Characters/KON/K00/Character_KON_K00_K00Marksman_C.et",
+     "weapons": [
+      "Rifle_SVD_B13N_Suppressed",
+      "Handgun_G19_RU"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "subfaction": "Komanda 00 (special forces)",
+   "label": "Medic",
+   "labelRu": "Санитар",
+   "labelSource": "override",
+   "stems": [
+    "K00Medic"
+   ],
+   "gameNames": [
+    "Komanda 00 Medic A",
+    "Komanda 00 Medic B",
+    "Komanda 00 Medic C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K00_K00Medic_A.et",
+     "ref": "{8E7BA65DF71B794F}Prefabs/Characters/KON/K00/Character_KON_K00_K00Medic_A.et",
+     "weapons": [
+      "Rifle_SR3M_supr_1P63",
+      "Handgun_Glock17"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Medic_B.et",
+     "ref": "{E22F92BD4BDFF661}Prefabs/Characters/KON/K00/Character_KON_K00_K00Medic_B.et",
+     "weapons": [
+      "Rifle_9A91_Rail_Suppressed",
+      "Handgun_MP443"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Medic_C.et",
+     "ref": "{07B3DE44473A610A}Prefabs/Characters/KON/K00/Character_KON_K00_K00Medic_C.et",
+     "weapons": [
+      "Rifle_AEK971_RIS_EOTECH_Suppressed_SF_SQUAD",
+      "Handgun_APS"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "subfaction": "Komanda 00 (special forces)",
+   "label": "Operator",
+   "labelRu": "Оператор",
+   "labelSource": "override",
+   "stems": [
+    "K00Operator"
+   ],
+   "gameNames": [
+    "Komanda 00 Operator A",
+    "Komanda 00 Operator B",
+    "Komanda 00 Operator C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K00_K00Operator_A.et",
+     "ref": "{84CD7E2E6C98A362}Prefabs/Characters/KON/K00/Character_KON_K00_K00Operator_A.et",
+     "weapons": [
+      "Rifle_AK74M_b10m_b19n_npz_rail_perst_Eot",
+      "Handgun_G19_RU"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Operator_B.et",
+     "ref": "{E8994ACED05C2C4C}Prefabs/Characters/KON/K00/Character_KON_K00_K00Operator_B.et",
+     "weapons": [
+      "Rifle_AK105_b10m_b19n_b33_b9m_tgpa",
+      "Handgun_Glock17"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K00_K00Operator_C.et",
+     "ref": "{0D050637DCB9BB27}Prefabs/Characters/KON/K00/Character_KON_K00_K00Operator_C.et",
+     "weapons": [
+      "Rifle_AK200_T1_perst_klesh",
+      "Handgun_MP443"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "subfaction": "Komanda 07 (contract security)",
+   "label": "Commander",
+   "labelRu": "Командир",
+   "labelSource": "override",
+   "stems": [
+    "Commander"
+   ],
+   "gameNames": [
+    "Komanda 07 Detail Leader A",
+    "Komanda 07 Detail Leader B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K07_Commander_A.et",
+     "ref": "{3A7D8A05C8821660}Prefabs/Characters/KON/K07/Character_KON_K07_Commander_A.et",
+     "weapons": [
+      "Rifle_AK12_EOTECH_SQUAD",
+      "Handgun_MP443"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K07_Commander_B.et",
+     "ref": "{5629BEE57446994E}Prefabs/Characters/KON/K07/Character_KON_K07_Commander_B.et",
+     "weapons": [
+      "Rifle_AK105_npz_rail_T1",
+      "Handgun_MP443"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "subfaction": "Komanda 07 (contract security)",
+   "label": "Crewman",
+   "labelRu": "Член экипажа",
+   "labelSource": "stem",
+   "stems": [
+    "Crew"
+   ],
+   "gameNames": [
+    "Komanda 07 Vehicle Crewman A",
+    "Komanda 07 Vehicle Crewman B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K07_Crew_A.et",
+     "ref": "{3B1B88E5ED7A45AE}Prefabs/Characters/KON/K07/Character_KON_K07_Crew_A.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K07_Crew_B.et",
+     "ref": "{574FBC0551BECA80}Prefabs/Characters/KON/K07/Character_KON_K07_Crew_B.et",
+     "weapons": [
+      "Rifle_AKS74UN_folded"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "subfaction": "Komanda 07 (contract security)",
+   "label": "Grenadier",
+   "labelRu": "Гранатометчик (ГП)",
+   "labelSource": "stem",
+   "stems": [
+    "Grenadier"
+   ],
+   "gameNames": [
+    "Komanda 07 Grenadier A",
+    "Komanda 07 Grenadier B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K07_Grenadier_A.et",
+     "ref": "{1E56F641FB1C8B99}Prefabs/Characters/KON/K07/Character_KON_K07_Grenadier_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_gp25_1p87"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K07_Grenadier_B.et",
+     "ref": "{7202C2A147D804B7}Prefabs/Characters/KON/K07/Character_KON_K07_Grenadier_B.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_gp25_1p87_1p90"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "subfaction": "Komanda 07 (contract security)",
+   "label": "Officer",
+   "labelRu": "Офицер",
+   "labelSource": "override",
+   "stems": [
+    "HVT"
+   ],
+   "gameNames": [
+    "Komanda 07 Officer A",
+    "Komanda 07 Officer B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K07_HVT_A.et",
+     "ref": "{1C2C4E38A8B95DE4}Prefabs/Characters/KON/K07/Character_KON_K07_HVT_A.et",
+     "weapons": [
+      "Rifle_AK105_npz_b30u_b31n_T1Perst",
+      "Handgun_MP443"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K07_HVT_B.et",
+     "ref": "{70787AD8147DD2CA}Prefabs/Characters/KON/K07/Character_KON_K07_HVT_B.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1",
+      "Handgun_MP443"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "subfaction": "Komanda 07 (contract security)",
+   "label": "Machine Gunner",
+   "labelRu": "Пулеметчик",
+   "labelSource": "stem",
+   "stems": [
+    "MG"
+   ],
+   "gameNames": [
+    "Komanda 07 Machine Gunner A",
+    "Komanda 07 Machine Gunner B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K07_MG_A.et",
+     "ref": "{9B62B412A1985C85}Prefabs/Characters/KON/K07/Character_KON_K07_MG_A.et",
+     "weapons": [
+      "MG_PKM_B51_Eot",
+      "Handgun_PM"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K07_MG_B.et",
+     "ref": "{F73680F21D5CD3AB}Prefabs/Characters/KON/K07/Character_KON_K07_MG_B.et",
+     "weapons": [
+      "MG_PKM_B51_1p87",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "subfaction": "Komanda 07 (contract security)",
+   "label": "Medic",
+   "labelRu": "Санитар",
+   "labelSource": "stem",
+   "stems": [
+    "Medic"
+   ],
+   "gameNames": [
+    "Komanda 07 Medic A",
+    "Komanda 07 Medic B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K07_Medic_A.et",
+     "ref": "{282933E754C3BAC7}Prefabs/Characters/KON/K07/Character_KON_K07_Medic_A.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K07_Medic_B.et",
+     "ref": "{447D0707E80735E9}Prefabs/Characters/KON/K07/Character_KON_K07_Medic_B.et",
+     "weapons": [
+      "Rifle_AKS74UN_1P29"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "subfaction": "Komanda 07 (contract security)",
+   "label": "Rifleman",
+   "labelRu": "Стрелок",
+   "labelSource": "stem",
+   "stems": [
+    "Rifleman"
+   ],
+   "gameNames": [
+    "Komanda 07 Rifleman A",
+    "Komanda 07 Rifleman B"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_K07_Rifleman_A.et",
+     "ref": "{C30CA9C90F59F770}Prefabs/Characters/KON/K07/Character_KON_K07_Rifleman_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_t1"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_K07_Rifleman_B.et",
+     "ref": "{AF589D29B39D785E}Prefabs/Characters/KON/K07/Character_KON_K07_Rifleman_B.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_eot"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "AGL Crewman",
+   "labelRu": "Номер расчета АГС",
+   "labelSource": "override",
+   "stems": [
+    "AGLCrew"
+   ],
+   "gameNames": [
+    "Grenade Launcher Crew A",
+    "Grenade Launcher Crew B",
+    "Grenade Launcher Crew C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_AGLCrew_A.et",
+     "ref": "{00A82BDB0604EE1F}Prefabs/Characters/KON/Konni/Character_KON_KON_AGLCrew_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_AGLCrew_B.et",
+     "ref": "{6CFC1F3BBAC06131}Prefabs/Characters/KON/Konni/Character_KON_KON_AGLCrew_B.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_AGLCrew_C.et",
+     "ref": "{896053C2B625F65A}Prefabs/Characters/KON/Konni/Character_KON_KON_AGLCrew_C.et",
+     "weapons": [
+      "Rifle_AKS74U_Bandit"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Assistant Machine Gunner",
+   "labelRu": "Помощник пулеметчика",
+   "labelSource": "override",
+   "stems": [
+    "AsstGunner"
+   ],
+   "gameNames": [
+    "Assistant Gunner A",
+    "Assistant Gunner B",
+    "Assistant Gunner C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_AsstGunner_A.et",
+     "ref": "{8E27C6AD71A54B39}Prefabs/Characters/KON/Konni/Character_KON_KON_AsstGunner_A.et",
+     "weapons": [
+      "Rifle_AK74"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_AsstGunner_B.et",
+     "ref": "{E273F24DCD61C417}Prefabs/Characters/KON/Konni/Character_KON_KON_AsstGunner_B.et",
+     "weapons": [
+      "Rifle_AK74_RHSMag"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_AsstGunner_C.et",
+     "ref": "{07EFBEB4C184537C}Prefabs/Characters/KON/Konni/Character_KON_KON_AsstGunner_C.et",
+     "weapons": [
+      "Rifle_AKMN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Stretcher Bearer",
+   "labelRu": "Санитар-носильщик",
+   "labelSource": "override",
+   "stems": [
+    "Bearer"
+   ],
+   "gameNames": [
+    "Casualty Bearer A",
+    "Casualty Bearer B",
+    "Casualty Bearer C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Bearer_A.et",
+     "ref": "{7597135F55EA26D6}Prefabs/Characters/KON/Konni/Character_KON_KON_Bearer_A.et",
+     "weapons": [
+      "Rifle_AK74"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Bearer_B.et",
+     "ref": "{19C327BFE92EA9F8}Prefabs/Characters/KON/Konni/Character_KON_KON_Bearer_B.et",
+     "weapons": [
+      "Rifle_AKMN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Bearer_C.et",
+     "ref": "{FC5F6B46E5CB3E93}Prefabs/Characters/KON/Konni/Character_KON_KON_Bearer_C.et",
+     "weapons": [
+      "Rifle_AK74N"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Commander",
+   "labelRu": "Командир",
+   "labelSource": "override",
+   "stems": [
+    "Commander"
+   ],
+   "gameNames": [
+    "Assault Group Commander A",
+    "Assault Group Commander B",
+    "Assault Group Commander C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Commander_A.et",
+     "ref": "{40DE9599F74C2FF0}Prefabs/Characters/KON/Konni/Character_KON_KON_Commander_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_t1",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Commander_B.et",
+     "ref": "{2C8AA1794B88A0DE}Prefabs/Characters/KON/Konni/Character_KON_KON_Commander_B.et",
+     "weapons": [
+      "Rifle_AK74M_1P63",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Commander_C.et",
+     "ref": "{C916ED80476D37B5}Prefabs/Characters/KON/Konni/Character_KON_KON_Commander_C.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_eot",
+      "Handgun_MP443"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Crewman",
+   "labelRu": "Член экипажа",
+   "labelSource": "stem",
+   "stems": [
+    "Crew"
+   ],
+   "gameNames": [
+    "Vehicle Crewman A",
+    "Vehicle Crewman B",
+    "Vehicle Crewman C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Crew_A.et",
+     "ref": "{2DEE9CAFD46CB6D3}Prefabs/Characters/KON/Konni/Character_KON_KON_Crew_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Crew_B.et",
+     "ref": "{41BAA84F68A839FD}Prefabs/Characters/KON/Konni/Character_KON_KON_Crew_B.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Crew_C.et",
+     "ref": "{A426E4B6644DAE96}Prefabs/Characters/KON/Konni/Character_KON_KON_Crew_C.et",
+     "weapons": [
+      "Rifle_AKS74UN_folded"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Flight Crew",
+   "labelRu": "Бортовой техник",
+   "labelSource": "override",
+   "stems": [
+    "FlightCrew"
+   ],
+   "gameNames": [
+    "Flight Crewman A",
+    "Flight Crewman B",
+    "Flight Crewman C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_FlightCrew_A.et",
+     "ref": "{069139BBE7BD4095}Prefabs/Characters/KON/Konni/Character_KON_KON_FlightCrew_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_FlightCrew_B.et",
+     "ref": "{6AC50D5B5B79CFBB}Prefabs/Characters/KON/Konni/Character_KON_KON_FlightCrew_B.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_FlightCrew_C.et",
+     "ref": "{8F5941A2579C58D0}Prefabs/Characters/KON/Konni/Character_KON_KON_FlightCrew_C.et",
+     "weapons": [
+      "Rifle_AKS74UN_folded"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Grenadier",
+   "labelRu": "Гранатометчик (ГП)",
+   "labelSource": "stem",
+   "stems": [
+    "Grenadier"
+   ],
+   "gameNames": [
+    "Grenadier A",
+    "Grenadier B",
+    "Grenadier C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Grenadier_A.et",
+     "ref": "{64F5E9DDC4D2B209}Prefabs/Characters/KON/Konni/Character_KON_KON_Grenadier_A.et",
+     "weapons": [
+      "Rifle_AK74_GP25"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Grenadier_B.et",
+     "ref": "{08A1DD3D78163D27}Prefabs/Characters/KON/Konni/Character_KON_KON_Grenadier_B.et",
+     "weapons": [
+      "Rifle_AK74N_GP25"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Grenadier_C.et",
+     "ref": "{ED3D91C474F3AA4C}Prefabs/Characters/KON/Konni/Character_KON_KON_Grenadier_C.et",
+     "weapons": [
+      "Rifle_AK74M_GP25"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "HMG Crewman",
+   "labelRu": "Номер расчета крупнокалиберного пулемета",
+   "labelSource": "override",
+   "stems": [
+    "HMGCrew"
+   ],
+   "gameNames": [
+    "Heavy MG Crew A",
+    "Heavy MG Crew B",
+    "Heavy MG Crew C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_HMGCrew_A.et",
+     "ref": "{B846CC1809897144}Prefabs/Characters/KON/Konni/Character_KON_KON_HMGCrew_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_HMGCrew_B.et",
+     "ref": "{D412F8F8B54DFE6A}Prefabs/Characters/KON/Konni/Character_KON_KON_HMGCrew_B.et",
+     "weapons": [
+      "Rifle_AKS74UN_PlasticMag"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_HMGCrew_C.et",
+     "ref": "{318EB401B9A86901}Prefabs/Characters/KON/Konni/Character_KON_KON_HMGCrew_C.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Machine Gunner",
+   "labelRu": "Пулеметчик",
+   "labelSource": "stem",
+   "stems": [
+    "MG"
+   ],
+   "gameNames": [
+    "Machine Gunner A",
+    "Machine Gunner B",
+    "Machine Gunner C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_MG_A.et",
+     "ref": "{1C2FDBC202F53DDA}Prefabs/Characters/KON/Konni/Character_KON_KON_MG_A.et",
+     "weapons": [
+      "MG_PKM",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_MG_B.et",
+     "ref": "{707BEF22BE31B2F4}Prefabs/Characters/KON/Konni/Character_KON_KON_MG_B.et",
+     "weapons": [
+      "MG_PKM_B51_1p86",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_MG_C.et",
+     "ref": "{95E7A3DBB2D4259F}Prefabs/Characters/KON/Konni/Character_KON_KON_MG_C.et",
+     "weapons": [
+      "MG_PKMN",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Medic",
+   "labelRu": "Санитар",
+   "labelSource": "stem",
+   "stems": [
+    "Medic"
+   ],
+   "gameNames": [
+    "Medic A",
+    "Medic B",
+    "Medic C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Medic_A.et",
+     "ref": "{77D2A4B38F47C3D1}Prefabs/Characters/KON/Konni/Character_KON_KON_Medic_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Medic_B.et",
+     "ref": "{1B86905333834CFF}Prefabs/Characters/KON/Konni/Character_KON_KON_Medic_B.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Medic_C.et",
+     "ref": "{FE1ADCAA3F66DB94}Prefabs/Characters/KON/Konni/Character_KON_KON_Medic_C.et",
+     "weapons": [
+      "Rifle_AKS74U_Bandit"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Officer",
+   "labelRu": "Офицер",
+   "labelSource": "stem",
+   "stems": [
+    "Officer"
+   ],
+   "gameNames": [
+    "Detachment Commander A",
+    "Detachment Commander B",
+    "Detachment Commander C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Officer_A.et",
+     "ref": "{CA41B3563D0638EE}Prefabs/Characters/KON/Konni/Character_KON_KON_Officer_A.et",
+     "weapons": [
+      "Rifle_AK12_EOTECH_SQUAD",
+      "Handgun_MP443"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Officer_B.et",
+     "ref": "{A61587B681C2B7C0}Prefabs/Characters/KON/Konni/Character_KON_KON_Officer_B.et",
+     "weapons": [
+      "Rifle_AK105_npz_rail_1P87",
+      "Handgun_Glock17"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Officer_C.et",
+     "ref": "{4389CB4F8D2720AB}Prefabs/Characters/KON/Konni/Character_KON_KON_Officer_C.et",
+     "weapons": [
+      "Rifle_AK74M_b10m_b19n_npz_rail_perst_aimpoint_high",
+      "Handgun_MP443"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Helicopter Pilot",
+   "labelRu": "Пилот вертолета",
+   "labelSource": "stem",
+   "stems": [
+    "Pilot"
+   ],
+   "gameNames": [
+    "Helicopter Pilot A",
+    "Helicopter Pilot B",
+    "Helicopter Pilot C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Pilot_A.et",
+     "ref": "{B9F188053B77506B}Prefabs/Characters/KON/Konni/Character_KON_KON_Pilot_A.et",
+     "weapons": [
+      "Rifle_AKS74U",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Pilot_B.et",
+     "ref": "{D5A5BCE587B3DF45}Prefabs/Characters/KON/Konni/Character_KON_KON_Pilot_B.et",
+     "weapons": [
+      "Rifle_AKS74UN",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Pilot_C.et",
+     "ref": "{3039F01C8B56482E}Prefabs/Characters/KON/Konni/Character_KON_KON_Pilot_C.et",
+     "weapons": [
+      "Rifle_AKS74UN_folded",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Disposable Probe",
+   "labelRu": "Расходный боец",
+   "labelSource": "override",
+   "stems": [
+    "Probe"
+   ],
+   "gameNames": [
+    "Disposable Probe A",
+    "Disposable Probe B",
+    "Disposable Probe C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Probe_A.et",
+     "ref": "{305BCBA7A37D1E09}Prefabs/Characters/KON/Konni/Character_KON_KON_Probe_A.et",
+     "weapons": [
+      "Rifle_AKMN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Probe_B.et",
+     "ref": "{5C0FFF471FB99127}Prefabs/Characters/KON/Konni/Character_KON_KON_Probe_B.et",
+     "weapons": [
+      "Rifle_AK74"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Probe_C.et",
+     "ref": "{B993B3BE135C064C}Prefabs/Characters/KON/Konni/Character_KON_KON_Probe_C.et",
+     "weapons": [
+      "Rifle_AK74"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Anti-Tank",
+   "labelRu": "Гранатометчик (РПГ)",
+   "labelSource": "stem",
+   "stems": [
+    "RPG"
+   ],
+   "gameNames": [
+    "RPG Gunner A",
+    "RPG Gunner B",
+    "RPG Gunner C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_RPG_A.et",
+     "ref": "{7F1AABCF9A6FDA4A}Prefabs/Characters/KON/Konni/Character_KON_KON_RPG_A.et",
+     "weapons": [
+      "Rifle_AKS74U",
+      "Launcher_RPG7"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_RPG_B.et",
+     "ref": "{134E9F2F26AB5564}Prefabs/Characters/KON/Konni/Character_KON_KON_RPG_B.et",
+     "weapons": [
+      "Rifle_AKS74UN",
+      "Launcher_RPG7_PGO7"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_RPG_C.et",
+     "ref": "{F6D2D3D62A4EC20F}Prefabs/Characters/KON/Konni/Character_KON_KON_RPG_C.et",
+     "weapons": [
+      "Rifle_AKS74U_Bandit",
+      "Launcher_RPG7"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Rifleman",
+   "labelRu": "Стрелок",
+   "labelSource": "stem",
+   "stems": [
+    "Rifleman"
+   ],
+   "gameNames": [
+    "Assault Rifleman A",
+    "Assault Rifleman B",
+    "Assault Rifleman C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Rifleman_A.et",
+     "ref": "{AFBB208FB6BF5156}Prefabs/Characters/KON/Konni/Character_KON_KON_Rifleman_A.et",
+     "weapons": [
+      "Rifle_AK74"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Rifleman_B.et",
+     "ref": "{C3EF146F0A7BDE78}Prefabs/Characters/KON/Konni/Character_KON_KON_Rifleman_B.et",
+     "weapons": [
+      "Rifle_AKMN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Rifleman_C.et",
+     "ref": "{26735896069E4913}Prefabs/Characters/KON/Konni/Character_KON_KON_Rifleman_C.et",
+     "weapons": [
+      "Rifle_AK74M"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Sapper",
+   "labelRu": "Сапер",
+   "labelSource": "stem",
+   "stems": [
+    "Sapper"
+   ],
+   "gameNames": [
+    "Sapper A",
+    "Sapper B",
+    "Sapper C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Sapper_A.et",
+     "ref": "{099999E0903175B3}Prefabs/Characters/KON/Konni/Character_KON_KON_Sapper_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Sapper_B.et",
+     "ref": "{65CDAD002CF5FA9D}Prefabs/Characters/KON/Konni/Character_KON_KON_Sapper_B.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Sapper_C.et",
+     "ref": "{8051E1F920106DF6}Prefabs/Characters/KON/Konni/Character_KON_KON_Sapper_C.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Scout",
+   "labelRu": "Разведчик",
+   "labelSource": "stem",
+   "stems": [
+    "Scout"
+   ],
+   "gameNames": [
+    "Scout A",
+    "Scout B",
+    "Scout C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Scout_A.et",
+     "ref": "{F7D030C6AD3AEDDB}Prefabs/Characters/KON/Konni/Character_KON_KON_Scout_A.et",
+     "weapons": [
+      "Rifle_AK74N_1P29"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Scout_B.et",
+     "ref": "{9B84042611FE62F5}Prefabs/Characters/KON/Konni/Character_KON_KON_Scout_B.et",
+     "weapons": [
+      "Rifle_AK74N_PBS4_1P29"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Scout_C.et",
+     "ref": "{7E1848DF1D1BF59E}Prefabs/Characters/KON/Konni/Character_KON_KON_Scout_C.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_1p87"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Sniper",
+   "labelRu": "Снайпер",
+   "labelSource": "stem",
+   "stems": [
+    "Sniper"
+   ],
+   "gameNames": [
+    "Sniper A",
+    "Sniper B",
+    "Sniper C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Sniper_A.et",
+     "ref": "{7D5E3C3E535F4C1D}Prefabs/Characters/KON/Konni/Character_KON_KON_Sniper_A.et",
+     "weapons": [
+      "Rifle_SVD_PSO",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Sniper_B.et",
+     "ref": "{110A08DEEF9BC333}Prefabs/Characters/KON/Konni/Character_KON_KON_Sniper_B.et",
+     "weapons": [
+      "Rifle_SVD_PSO_7N14",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Sniper_C.et",
+     "ref": "{F4964427E37E5458}Prefabs/Characters/KON/Konni/Character_KON_KON_Sniper_C.et",
+     "weapons": [
+      "Rifle_SVD_1P21",
+      "Handgun_PM"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Spotter",
+   "labelRu": "Наблюдатель",
+   "labelSource": "stem",
+   "stems": [
+    "Spotter"
+   ],
+   "gameNames": [
+    "Spotter A",
+    "Spotter B",
+    "Spotter C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Spotter_A.et",
+     "ref": "{A602A507D24A2118}Prefabs/Characters/KON/Konni/Character_KON_KON_Spotter_A.et",
+     "weapons": [
+      "Rifle_AK74N_1P29"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Spotter_B.et",
+     "ref": "{CA5691E76E8EAE36}Prefabs/Characters/KON/Konni/Character_KON_KON_Spotter_B.et",
+     "weapons": [
+      "Rifle_AK74M_1P78"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Spotter_C.et",
+     "ref": "{2FCADD1E626B395D}Prefabs/Characters/KON/Konni/Character_KON_KON_Spotter_C.et",
+     "weapons": [
+      "Rifle_AK74M_1P63"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Thermobaric Gunner",
+   "labelRu": "Огнеметчик (РПО)",
+   "labelSource": "override",
+   "stems": [
+    "Thermobaric"
+   ],
+   "gameNames": [
+    "Thermobaric Gunner A",
+    "Thermobaric Gunner B",
+    "Thermobaric Gunner C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Thermobaric_A.et",
+     "ref": "{90940503709F731D}Prefabs/Characters/KON/Konni/Character_KON_KON_Thermobaric_A.et",
+     "weapons": [
+      "Rifle_AKS74U",
+      "Launcher_RPOA"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Thermobaric_B.et",
+     "ref": "{FCC031E3CC5BFC33}Prefabs/Characters/KON/Konni/Character_KON_KON_Thermobaric_B.et",
+     "weapons": [
+      "Rifle_AKS74UN",
+      "Launcher_RPOA"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Thermobaric_C.et",
+     "ref": "{195C7D1AC0BE6B58}Prefabs/Characters/KON/Konni/Character_KON_KON_Thermobaric_C.et",
+     "weapons": [
+      "Rifle_AKS74U_Bandit",
+      "Launcher_RPOA"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "UAV Assistant",
+   "labelRu": "Помощник оператора БПЛА",
+   "labelSource": "override",
+   "stems": [
+    "UAVAssistant"
+   ],
+   "gameNames": [
+    "UAV Assistant A",
+    "UAV Assistant B",
+    "UAV Assistant C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_UAVAssistant_A.et",
+     "ref": "{B7417ED861B79350}Prefabs/Characters/KON/Konni/Character_KON_KON_UAVAssistant_A.et",
+     "weapons": [
+      "Rifle_AK74N"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_UAVAssistant_B.et",
+     "ref": "{DB154A38DD731C7E}Prefabs/Characters/KON/Konni/Character_KON_KON_UAVAssistant_B.et",
+     "weapons": [
+      "Rifle_AK74M"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_UAVAssistant_C.et",
+     "ref": "{3E8906C1D1968B15}Prefabs/Characters/KON/Konni/Character_KON_KON_UAVAssistant_C.et",
+     "weapons": [
+      "Rifle_AK74"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "UAV Operator",
+   "labelRu": "Оператор БПЛА",
+   "labelSource": "override",
+   "stems": [
+    "UAVOperator"
+   ],
+   "gameNames": [
+    "UAV Operator A",
+    "UAV Operator B",
+    "UAV Operator C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_UAVOperator_A.et",
+     "ref": "{965C2EF7018A43B8}Prefabs/Characters/KON/Konni/Character_KON_KON_UAVOperator_A.et",
+     "weapons": [
+      "Rifle_AKS74U"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_UAVOperator_B.et",
+     "ref": "{FA081A17BD4ECC96}Prefabs/Characters/KON/Konni/Character_KON_KON_UAVOperator_B.et",
+     "weapons": [
+      "Rifle_AKS74UN"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_UAVOperator_C.et",
+     "ref": "{1F9456EEB1AB5BFD}Prefabs/Characters/KON/Konni/Character_KON_KON_UAVOperator_C.et",
+     "weapons": [
+      "Rifle_AKS74UN_b18_t1"
+     ],
+     "status": "OK_CATALOG",
+     "cataloged": true
+    }
+   ]
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "subfaction": "Konni (assault detachments)",
+   "label": "Veteran",
+   "labelRu": "Ветеран",
+   "labelSource": "override",
+   "stems": [
+    "Veteran"
+   ],
+   "gameNames": [
+    "Contract Rifleman A",
+    "Contract Rifleman B",
+    "Contract Rifleman C"
+   ],
+   "gameNamesRu": [],
+   "variants": [
+    {
+     "file": "Character_KON_KON_Veteran_A.et",
+     "ref": "{854506D45AF5BA10}Prefabs/Characters/KON/Konni/Character_KON_KON_Veteran_A.et",
+     "weapons": [
+      "Rifle_AK74M_npz_rail_1p87"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Veteran_B.et",
+     "ref": "{E9113234E631353E}Prefabs/Characters/KON/Konni/Character_KON_KON_Veteran_B.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_b19n_tgpa_Thermal"
+     ],
+     "status": "OK",
+     "cataloged": true
+    },
+    {
+     "file": "Character_KON_KON_Veteran_C.et",
+     "ref": "{0C8D7ECDEAD4A255}Prefabs/Characters/KON/Konni/Character_KON_KON_Veteran_C.et",
+     "weapons": [
+      "Rifle_AK74M_npz_b10m_t1"
+     ],
+     "status": "OK",
+     "cataloged": true
+    }
+   ]
   }
  ],
  "groups": [
@@ -27408,7 +30191,7 @@
       "sentry"
      ],
      "gameName": "GPMG Team",
-     "gameNameRu": null,
+     "gameNameRu": "Расчет GPMG",
      "slots": 2,
      "missing": null
     }
@@ -27431,7 +30214,7 @@
       "small"
      ],
      "gameName": "Charlie G Team",
-     "gameNameRu": null,
+     "gameNameRu": "Расчет Charlie G",
      "slots": 2,
      "missing": null
     }
@@ -27454,7 +30237,7 @@
       "small"
      ],
      "gameName": "Sniper Pair",
-     "gameNameRu": null,
+     "gameNameRu": "Снайперская пара",
      "slots": 2,
      "missing": null
     }
@@ -27477,7 +30260,7 @@
       "small"
      ],
      "gameName": "Recce Team",
-     "gameNameRu": null,
+     "gameNameRu": "Разведгруппа",
      "slots": 2,
      "missing": null
     }
@@ -27500,7 +30283,7 @@
       "small"
      ],
      "gameName": "Medical Team",
-     "gameNameRu": null,
+     "gameNameRu": "Медицинская группа",
      "slots": 2,
      "missing": null
     }
@@ -27523,7 +30306,7 @@
       "small"
      ],
      "gameName": "Gun Group",
-     "gameNameRu": null,
+     "gameNameRu": "Пулеметная группа",
      "slots": 3,
      "missing": null
     }
@@ -27546,7 +30329,7 @@
       "small"
      ],
      "gameName": "Resupply Team",
-     "gameNameRu": null,
+     "gameNameRu": "Группа снабжения",
      "slots": 3,
      "missing": null
     }
@@ -27569,7 +30352,7 @@
       "small"
      ],
      "gameName": "Sapper Team",
-     "gameNameRu": null,
+     "gameNameRu": "Саперная группа",
      "slots": 4,
      "missing": null
     }
@@ -27615,7 +30398,7 @@
       "medium"
      ],
      "gameName": "Patrol Brick",
-     "gameNameRu": null,
+     "gameNameRu": "Патрульная четверка",
      "slots": 4,
      "missing": null
     }
@@ -27638,7 +30421,7 @@
       "medium"
      ],
      "gameName": "Rifle Group",
-     "gameNameRu": null,
+     "gameNameRu": "Стрелковая группа",
      "slots": 5,
      "missing": null
     }
@@ -27685,13 +30468,13 @@
       "defense"
      ],
      "gameName": "Infantry Section",
-     "gameNameRu": null,
+     "gameNameRu": "Пехотное отделение",
      "slots": 8,
      "missing": null
     }
    ],
    "label": "Infantry Section",
-   "labelRu": "Пехотная секция",
+   "labelRu": "Пехотное отделение",
    "labelSource": "stem",
    "size": 8
   },
@@ -27710,7 +30493,7 @@
       "sentry"
      ],
      "gameName": "Special Forces Patrol",
-     "gameNameRu": null,
+     "gameNameRu": "Патруль спецназа",
      "slots": 4,
      "missing": null
     }
@@ -27734,7 +30517,7 @@
       "defense"
      ],
      "gameName": "Special Forces Team",
-     "gameNameRu": null,
+     "gameNameRu": "Группа спецназа",
      "slots": 8,
      "missing": null
     }
@@ -27758,7 +30541,7 @@
       "sentry"
      ],
      "gameName": "GPMG Team",
-     "gameNameRu": null,
+     "gameNameRu": "Расчет GPMG",
      "slots": 2,
      "missing": null
     }
@@ -27781,7 +30564,7 @@
       "small"
      ],
      "gameName": "Charlie G Team",
-     "gameNameRu": null,
+     "gameNameRu": "Расчет Charlie G",
      "slots": 2,
      "missing": null
     }
@@ -27804,7 +30587,7 @@
       "small"
      ],
      "gameName": "Sniper Pair",
-     "gameNameRu": null,
+     "gameNameRu": "Снайперская пара",
      "slots": 2,
      "missing": null
     }
@@ -27827,7 +30610,7 @@
       "small"
      ],
      "gameName": "Recce Team",
-     "gameNameRu": null,
+     "gameNameRu": "Разведгруппа",
      "slots": 2,
      "missing": null
     }
@@ -27850,7 +30633,7 @@
       "small"
      ],
      "gameName": "Medical Team",
-     "gameNameRu": null,
+     "gameNameRu": "Медицинская группа",
      "slots": 2,
      "missing": null
     }
@@ -27873,7 +30656,7 @@
       "small"
      ],
      "gameName": "Gun Group",
-     "gameNameRu": null,
+     "gameNameRu": "Пулеметная группа",
      "slots": 3,
      "missing": null
     }
@@ -27896,7 +30679,7 @@
       "small"
      ],
      "gameName": "Resupply Team",
-     "gameNameRu": null,
+     "gameNameRu": "Группа снабжения",
      "slots": 4,
      "missing": null
     }
@@ -27919,7 +30702,7 @@
       "small"
      ],
      "gameName": "Sapper Team",
-     "gameNameRu": null,
+     "gameNameRu": "Саперная группа",
      "slots": 4,
      "missing": null
     }
@@ -27942,7 +30725,7 @@
       "medium"
      ],
      "gameName": "Patrol Brick",
-     "gameNameRu": null,
+     "gameNameRu": "Патрульная четверка",
      "slots": 4,
      "missing": null
     }
@@ -27965,7 +30748,7 @@
       "medium"
      ],
      "gameName": "Rifle Group",
-     "gameNameRu": null,
+     "gameNameRu": "Стрелковая группа",
      "slots": 5,
      "missing": null
     }
@@ -28012,13 +30795,13 @@
       "defense"
      ],
      "gameName": "Infantry Section",
-     "gameNameRu": null,
+     "gameNameRu": "Пехотное отделение",
      "slots": 8,
      "missing": null
     }
    ],
    "label": "Infantry Section",
-   "labelRu": "Пехотная секция",
+   "labelRu": "Пехотное отделение",
    "labelSource": "stem",
    "size": 8
   },
@@ -28037,7 +30820,7 @@
       "sentry"
      ],
      "gameName": "Special Forces Patrol",
-     "gameNameRu": null,
+     "gameNameRu": "Патруль спецназа",
      "slots": 4,
      "missing": null
     }
@@ -28061,7 +30844,7 @@
       "defense"
      ],
      "gameName": "Special Forces Team",
-     "gameNameRu": null,
+     "gameNameRu": "Группа спецназа",
      "slots": 8,
      "missing": null
     }
@@ -30552,6 +33335,614 @@
    "labelRu": "Стрелковое отделение",
    "labelSource": "stem",
    "size": 8
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "SniperPair",
+   "variants": [
+    {
+     "file": "Group_KON_KON_SniperPair.et",
+     "ref": "{36FA0219F31C9AF8}Prefabs/Groups/KON/Group_KON_KON_SniperPair.et",
+     "classes": [
+      "small"
+     ],
+     "gameName": "Sniper Pair",
+     "gameNameRu": null,
+     "slots": 2,
+     "missing": null
+    }
+   ],
+   "label": "Sniper Pair",
+   "labelRu": "Снайперская пара",
+   "labelSource": "override",
+   "size": 2
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "LightTroika",
+   "variants": [
+    {
+     "file": "Group_KON_KON_LightTroika.et",
+     "ref": "{BAD4832000BCA1C8}Prefabs/Groups/KON/Group_KON_KON_LightTroika.et",
+     "classes": [
+      "medium",
+      "sentry"
+     ],
+     "gameName": "Light Troika",
+     "gameNameRu": null,
+     "slots": 3,
+     "missing": null
+    }
+   ],
+   "label": "Light Troika",
+   "labelRu": "Легкая тройка",
+   "labelSource": "override",
+   "size": 3
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "HeavyTroika_MG",
+   "variants": [
+    {
+     "file": "Group_KON_KON_HeavyTroika_MG.et",
+     "ref": "{B406727974C50A8F}Prefabs/Groups/KON/Group_KON_KON_HeavyTroika_MG.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Heavy Troika (MG)",
+     "gameNameRu": null,
+     "slots": 3,
+     "missing": null
+    }
+   ],
+   "label": "MG Troika",
+   "labelRu": "Пулеметная тройка",
+   "labelSource": "override",
+   "size": 3
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "HeavyTroika_AT",
+   "variants": [
+    {
+     "file": "Group_KON_KON_HeavyTroika_AT.et",
+     "ref": "{3EB9C5A263030030}Prefabs/Groups/KON/Group_KON_KON_HeavyTroika_AT.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Heavy Troika (RPG)",
+     "gameNameRu": null,
+     "slots": 3,
+     "missing": null
+    }
+   ],
+   "label": "AT Troika",
+   "labelRu": "Противотанковая тройка",
+   "labelSource": "override",
+   "size": 3
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "ProbeTeam",
+   "variants": [
+    {
+     "file": "Group_KON_KON_ProbeTeam.et",
+     "ref": "{35C20D6A7A5AF631}Prefabs/Groups/KON/Group_KON_KON_ProbeTeam.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Disposable Probe Team",
+     "gameNameRu": null,
+     "slots": 4,
+     "missing": null
+    }
+   ],
+   "label": "Probe Team",
+   "labelRu": "Группа расходников",
+   "labelSource": "override",
+   "size": 4
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "SapperGroup",
+   "variants": [
+    {
+     "file": "Group_KON_KON_SapperGroup.et",
+     "ref": "{23F49186B55CA9EE}Prefabs/Groups/KON/Group_KON_KON_SapperGroup.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Sapper Group",
+     "gameNameRu": null,
+     "slots": 5,
+     "missing": null
+    }
+   ],
+   "label": "Sapper Group",
+   "labelRu": "Саперная группа",
+   "labelSource": "override",
+   "size": 5
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "AssaultGroup",
+   "variants": [
+    {
+     "file": "Group_KON_KON_AssaultGroup.et",
+     "ref": "{258C70E45EA48741}Prefabs/Groups/KON/Group_KON_KON_AssaultGroup.et",
+     "classes": [
+      "large",
+      "defense"
+     ],
+     "gameName": "Assault Group",
+     "gameNameRu": null,
+     "slots": 8,
+     "missing": null
+    }
+   ],
+   "label": "Assault Group",
+   "labelRu": "Штурмовая группа",
+   "labelSource": "override",
+   "size": 8
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "AssaultGroup_Night",
+   "variants": [
+    {
+     "file": "Group_KON_KON_AssaultGroup_Night.et",
+     "ref": "{C8D29E922C06ACB0}Prefabs/Groups/KON/Group_KON_KON_AssaultGroup_Night.et",
+     "classes": [
+      "large"
+     ],
+     "gameName": "Assault Group (Night)",
+     "gameNameRu": null,
+     "slots": 6,
+     "missing": null
+    }
+   ],
+   "label": "Assault Group (night)",
+   "labelRu": "Штурмовая группа (ночная)",
+   "labelSource": "override",
+   "size": 6
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "FixingPlatoon",
+   "variants": [
+    {
+     "file": "Group_KON_KON_FixingPlatoon.et",
+     "ref": "{306A7307ADBAC0EF}Prefabs/Groups/KON/Group_KON_KON_FixingPlatoon.et",
+     "classes": [
+      "large"
+     ],
+     "gameName": "Fixing Element",
+     "gameNameRu": null,
+     "slots": 8,
+     "missing": null
+    }
+   ],
+   "label": "Fixing Element",
+   "labelRu": "Группа закрепления",
+   "labelSource": "override",
+   "size": 8
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "MobileRPG",
+   "variants": [
+    {
+     "file": "Group_KON_KON_MobileRPG.et",
+     "ref": "{F86AA865BFB9C042}Prefabs/Groups/KON/Group_KON_KON_MobileRPG.et",
+     "classes": [
+      "large"
+     ],
+     "gameName": "Mobile RPG Group",
+     "gameNameRu": null,
+     "slots": 7,
+     "missing": null
+    }
+   ],
+   "label": "Mobile RPG Group",
+   "labelRu": "Мобильная группа РПГ",
+   "labelSource": "override",
+   "size": 7
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "KON",
+   "setLabel": "Konni (assault detachments)",
+   "stem": "ReconGroup",
+   "variants": [
+    {
+     "file": "Group_KON_KON_ReconGroup.et",
+     "ref": "{4DD155EC49219C04}Prefabs/Groups/KON/Group_KON_KON_ReconGroup.et",
+     "classes": [
+      "large"
+     ],
+     "gameName": "Reconnaissance Group",
+     "gameNameRu": null,
+     "slots": 6,
+     "missing": null
+    }
+   ],
+   "label": "Recon Group",
+   "labelRu": "Разведгруппа",
+   "labelSource": "override",
+   "size": 6
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "setLabel": "Komanda 07 (contract security)",
+   "stem": "Checkpoint",
+   "variants": [
+    {
+     "file": "Group_KON_K07_Checkpoint.et",
+     "ref": "{535CF418F007EF7D}Prefabs/Groups/KON/Group_KON_K07_Checkpoint.et",
+     "classes": [
+      "small",
+      "sentry"
+     ],
+     "gameName": "Komanda 07 Checkpoint",
+     "gameNameRu": null,
+     "slots": 2,
+     "missing": null
+    }
+   ],
+   "label": "Checkpoint Pair",
+   "labelRu": "Пост КПП",
+   "labelSource": "override",
+   "size": 2
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "setLabel": "Komanda 07 (contract security)",
+   "stem": "Team",
+   "variants": [
+    {
+     "file": "Group_KON_K07_Team.et",
+     "ref": "{1B4BC5ABC495D2E0}Prefabs/Groups/KON/Group_KON_K07_Team.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Komanda 07 Team",
+     "gameNameRu": null,
+     "slots": 4,
+     "missing": null
+    }
+   ],
+   "label": "Fire Team",
+   "labelRu": "Огневая группа",
+   "labelSource": "override",
+   "size": 4
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K07",
+   "setLabel": "Komanda 07 (contract security)",
+   "stem": "Detail",
+   "variants": [
+    {
+     "file": "Group_KON_K07_Detail.et",
+     "ref": "{5782209F612F1276}Prefabs/Groups/KON/Group_KON_K07_Detail.et",
+     "classes": [
+      "large",
+      "defense"
+     ],
+     "gameName": "Komanda 07 Security Detail",
+     "gameNameRu": null,
+     "slots": 6,
+     "missing": null
+    }
+   ],
+   "label": "Security Detail",
+   "labelRu": "Охранная группа",
+   "labelSource": "override",
+   "size": 6
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "setLabel": "Komanda 00 (special forces)",
+   "stem": "Pair",
+   "variants": [
+    {
+     "file": "Group_KON_K00_Pair.et",
+     "ref": "{2A571491805A11C5}Prefabs/Groups/KON/Group_KON_K00_Pair.et",
+     "classes": [
+      "small",
+      "sentry"
+     ],
+     "gameName": "Komanda 00 Pair",
+     "gameNameRu": null,
+     "slots": 2,
+     "missing": null
+    }
+   ],
+   "label": "SF Pair",
+   "labelRu": "Пара СпН",
+   "labelSource": "override",
+   "size": 2
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "setLabel": "Komanda 00 (special forces)",
+   "stem": "Team",
+   "variants": [
+    {
+     "file": "Group_KON_K00_Team.et",
+     "ref": "{02828EFC542937E2}Prefabs/Groups/KON/Group_KON_K00_Team.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Komanda 00 Team",
+     "gameNameRu": null,
+     "slots": 4,
+     "missing": null
+    }
+   ],
+   "label": "Fire Team",
+   "labelRu": "Огневая группа",
+   "labelSource": "override",
+   "size": 4
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "K00",
+   "setLabel": "Komanda 00 (special forces)",
+   "stem": "Element",
+   "variants": [
+    {
+     "file": "Group_KON_K00_Element.et",
+     "ref": "{8AA00E4ED1874B19}Prefabs/Groups/KON/Group_KON_K00_Element.et",
+     "classes": [
+      "large",
+      "defense"
+     ],
+     "gameName": "Komanda 00 Element",
+     "gameNameRu": null,
+     "slots": 6,
+     "missing": null
+    }
+   ],
+   "label": "SF Element",
+   "labelRu": "Группа СпН",
+   "labelSource": "override",
+   "size": 6
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "setLabel": "PMC Elite Group",
+   "stem": "SniperPair",
+   "variants": [
+    {
+     "file": "Group_KON_ELT_SniperPair.et",
+     "ref": "{997F3332C0D72F8C}Prefabs/Groups/KON/Group_KON_ELT_SniperPair.et",
+     "classes": [
+      "small",
+      "sentry"
+     ],
+     "gameName": "Elite Sniper Pair",
+     "gameNameRu": null,
+     "slots": 2,
+     "missing": null
+    }
+   ],
+   "label": "Sniper Pair",
+   "labelRu": "Снайперская пара",
+   "labelSource": "override",
+   "size": 2
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "setLabel": "PMC Elite Group",
+   "stem": "Team",
+   "variants": [
+    {
+     "file": "Group_KON_ELT_Team.et",
+     "ref": "{FF8713F6E56F252B}Prefabs/Groups/KON/Group_KON_ELT_Team.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Elite Team",
+     "gameNameRu": null,
+     "slots": 4,
+     "missing": null
+    }
+   ],
+   "label": "Fire Team",
+   "labelRu": "Огневая группа",
+   "labelSource": "override",
+   "size": 4
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "setLabel": "PMC Elite Group",
+   "stem": "ReconGroup",
+   "variants": [
+    {
+     "file": "Group_KON_ELT_ReconGroup.et",
+     "ref": "{E25464C77AEA2970}Prefabs/Groups/KON/Group_KON_ELT_ReconGroup.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Elite Reconnaissance Group",
+     "gameNameRu": null,
+     "slots": 5,
+     "missing": null
+    }
+   ],
+   "label": "Recon Group",
+   "labelRu": "Разведгруппа",
+   "labelSource": "override",
+   "size": 5
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "ELT",
+   "setLabel": "PMC Elite Group",
+   "stem": "AssaultGroup",
+   "variants": [
+    {
+     "file": "Group_KON_ELT_AssaultGroup.et",
+     "ref": "{2DAAB998450E64E7}Prefabs/Groups/KON/Group_KON_ELT_AssaultGroup.et",
+     "classes": [
+      "large",
+      "defense"
+     ],
+     "gameName": "Elite Assault Group",
+     "gameNameRu": null,
+     "slots": 8,
+     "missing": null
+    }
+   ],
+   "label": "Assault Group",
+   "labelRu": "Штурмовая группа",
+   "labelSource": "override",
+   "size": 8
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "setLabel": "Barkov's Forces (rogue army)",
+   "stem": "MarksmanPair",
+   "variants": [
+    {
+     "file": "Group_KON_BAR_MarksmanPair.et",
+     "ref": "{8CE018388AD99141}Prefabs/Groups/KON/Group_KON_BAR_MarksmanPair.et",
+     "classes": [
+      "small",
+      "sentry"
+     ],
+     "gameName": "Barkov Marksman Team",
+     "gameNameRu": null,
+     "slots": 2,
+     "missing": null
+    }
+   ],
+   "label": "Marksman Pair",
+   "labelRu": "Пара марксманов",
+   "labelSource": "override",
+   "size": 2
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "setLabel": "Barkov's Forces (rogue army)",
+   "stem": "FireTeam",
+   "variants": [
+    {
+     "file": "Group_KON_BAR_FireTeam.et",
+     "ref": "{F194A15AA93E3E81}Prefabs/Groups/KON/Group_KON_BAR_FireTeam.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Barkov Fire Team",
+     "gameNameRu": null,
+     "slots": 4,
+     "missing": null
+    }
+   ],
+   "label": "Fire Team",
+   "labelRu": "Огневая группа",
+   "labelSource": "stem",
+   "size": 4
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "setLabel": "Barkov's Forces (rogue army)",
+   "stem": "Spetsnaz",
+   "variants": [
+    {
+     "file": "Group_KON_BAR_Spetsnaz.et",
+     "ref": "{766AC09B124ECD84}Prefabs/Groups/KON/Group_KON_BAR_Spetsnaz.et",
+     "classes": [
+      "medium"
+     ],
+     "gameName": "Barkov Spetsnaz Group",
+     "gameNameRu": null,
+     "slots": 5,
+     "missing": null
+    }
+   ],
+   "label": "Spetsnaz Team",
+   "labelRu": "Группа спецназа",
+   "labelSource": "override",
+   "size": 5
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "setLabel": "Barkov's Forces (rogue army)",
+   "stem": "RifleSquad",
+   "variants": [
+    {
+     "file": "Group_KON_BAR_RifleSquad.et",
+     "ref": "{17BAA18DC8E1A485}Prefabs/Groups/KON/Group_KON_BAR_RifleSquad.et",
+     "classes": [
+      "large",
+      "defense"
+     ],
+     "gameName": "Barkov Rifle Squad",
+     "gameNameRu": null,
+     "slots": 8,
+     "missing": null
+    }
+   ],
+   "label": "Rifle Squad",
+   "labelRu": "Стрелковое отделение",
+   "labelSource": "stem",
+   "size": 8
+  },
+  {
+   "faction": "KONNI",
+   "setKey": "BAR",
+   "setLabel": "Barkov's Forces (rogue army)",
+   "stem": "GasMaskSquad",
+   "variants": [
+    {
+     "file": "Group_KON_BAR_GasMaskSquad.et",
+     "ref": "{4AD7EC739CA812F9}Prefabs/Groups/KON/Group_KON_BAR_GasMaskSquad.et",
+     "classes": [
+      "large"
+     ],
+     "gameName": "Barkov Gas Mask Squad",
+     "gameNameRu": null,
+     "slots": 6,
+     "missing": null
+    }
+   ],
+   "label": "Gas Mask Squad",
+   "labelRu": "Отделение в противогазах",
+   "labelSource": "override",
+   "size": 6
   }
  ],
  "excluded": [
@@ -30769,6 +34160,406 @@
    "faction": "BWAR",
    "file": "BWAR_Character_Officer_3FT.et",
    "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_AsstGunner.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_BarGasMask.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Commander.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Crew.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Grenadier.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_HVT.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_MG.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Medic.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_RPG.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Rifleman.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Sniper.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_SpzLeader.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_SpzMG.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_SpzOperator.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Unarmed.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Unarmed_A.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_BAR_Unarmed_B.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_AsstGunner.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Commander.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Grenadier.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_HVT.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_MG.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Medic.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_RPG.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Rifleman.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Sapper.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Scout.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Sniper.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Spotter.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Thermobaric.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Unarmed.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Unarmed_A.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Unarmed_B.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_ELT_Veteran.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_HVT.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_K00Breacher.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_K00Gunner.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_K00Leader.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_K00Marksman.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_K00Medic.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_K00Operator.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_Unarmed.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_Unarmed_A.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K00_Unarmed_B.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_Commander.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_Crew.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_Grenadier.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_HVT.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_MG.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_Medic.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_Rifleman.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_Unarmed.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_Unarmed_A.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_K07_Unarmed_B.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_AGLCrew.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_AsstGunner.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Bearer.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Commander.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Crew.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_FlightCrew.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Grenadier.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_HMGCrew.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_MG.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Medic.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Officer.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Pilot.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Probe.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_RPG.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Rifleman.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Sapper.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Scout.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Sniper.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Spotter.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Thermobaric.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_UAVAssistant.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_UAVOperator.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Unarmed.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Unarmed_A.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Unarmed_B.et",
+   "reason": "unarmed"
+  },
+  {
+   "faction": "KONNI",
+   "file": "Character_KON_KON_Veteran.et",
+   "reason": "uncataloged role base (the catalog lists the kits)"
   }
  ]
 }
