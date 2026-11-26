@@ -12,6 +12,9 @@
 //               base mission with both Areas renamed, QRF anchor groups follow)
 //   --time      build the start time + date variant (TS_WebSpikeTime: the base
 //               mission at 04:45 on 29 Feb 1988 — SCR_TimeAndWeatherHandlerComponent)
+//   --pregame   build the pre-game lobby variant (TS_WebSpikePreGame: the slots
+//               mission + TS_PreGameComponent enabled, auto-start after 240 s —
+//               toolkit SPIKE on branch feature/pregame-lobby)
 //   --slots     build the slot-roster variant (TS_WebSpikeSlots: squads 1'1/1'2
 //               carry named seats bound to loadouts — toolkit TS_SlotRoster, Arma 3
 //               style role slotting in the deploy menu; 1'3 stays vanilla)
@@ -2212,6 +2215,25 @@ const SLOTS_MISSION = {
   ],
 };
 
+// --pregame: pre-game lobby SPIKE (2026-11-24, toolkit branch feature/pregame-lobby).
+// The slots mission with TS_PreGameComponent switched on: players wait in the
+// deploy screens on a hidden VON proxy, spawning is held until /startgame or the
+// 240 s auto-start, then the server deploys every complete selection at once.
+const PREGAME_MISSION = {
+  ...SLOTS_MISSION,
+  addonId: "TSWebSpikePreGame",
+  dirName: "TS_WebSpikePreGame",
+  addonTitle: "TS Web Spike PreGame Mission",
+  name: "TS_WebSpikePreGame",
+  displayName: "TS Web Spike PreGame",
+  guids: {
+    addon: "E216219B1248D9F6",
+    world: "0E761E3547A5A3EA",
+    missionConf: "90AA74508D4AEA90",
+  },
+  preGame: { autoStartSeconds: 240 },
+};
+
 const BUILT = process.argv.includes("--advanced")
   ? ADVANCED_MISSION
   : process.argv.includes("--konni")
@@ -2220,6 +2242,8 @@ const BUILT = process.argv.includes("--advanced")
   ? ZONE_NAMES_MISSION
   : process.argv.includes("--time")
   ? TIME_MISSION
+  : process.argv.includes("--pregame")
+  ? PREGAME_MISSION
   : process.argv.includes("--slots")
   ? SLOTS_MISSION
   : process.argv.includes("--seitenbuch")

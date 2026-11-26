@@ -1192,6 +1192,10 @@ export const K = {
   // start); the generator flips it to 1 for rostered missions (Advanced
   // slotting), where the seats hand out the kits and the crate must not.
   CMP_LOADOUT_LOCK: "{6E4C10CC00000001}",
+  // TS_PreGameComponent instance GUID inside the toolkit's GameModeSF.et
+  // (pre-game lobby SPIKE, 2026-11-24, toolkit branch feature/pregame-lobby).
+  // The prefab leaves m_bEnabled 0; mission.preGame turns it on.
+  CMP_PRE_GAME: "{A1768C01858DA878}",
   // Vanilla SlotPlayerTrigger.et + its fixed component/plugin instance GUIDs
   // (Stop Artillery triggers; serialization ground truth: Operation_Base_Jumping
   // AO.layer SlotPlayerTrigger1). Plugin default m_eActivationPresence PLAYER

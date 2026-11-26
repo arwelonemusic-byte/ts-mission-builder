@@ -127,6 +127,21 @@ function loadoutLockBlock(groups) {
   }`;
 }
 
+// Pre-game lobby (SPIKE, pak-gated, toolkit branch feature/pregame-lobby):
+// TS_PreGameComponent override on the same GameModeSF entity. Players slot and
+// talk in the deploy screens until an admin types /startgame (or the optional
+// auto-start fires), then the server deploys everyone at once.
+// mission.preGame = { autoStartSeconds? } or absent = no block (byte-identical).
+function preGameBlock(preGame) {
+  if (!preGame) return "";
+  const auto = Math.max(0, Math.round(Number(preGame.autoStartSeconds) || 0));
+  return `
+  TS_PreGameComponent "${K.CMP_PRE_GAME}" {
+   m_bEnabled 1${auto > 0 ? `
+   m_iAutoStartSeconds ${auto}` : ""}
+  }`;
+}
+
 // Mission start time + date: SCR_TimeAndWeatherHandlerComponent is in neither
 // the vanilla nor the toolkit GameModeSF chain, so it is a NEW component on
 // the instance (fresh GUID — the production ops' default.layer pattern,
@@ -575,7 +590,7 @@ ${TERRAIN.parentHasRadioManager ? "" : `RadioManagerEntity RadioManager : "{B8E0
   SCR_RespawnSystemComponent "{56B2B4793051E7C9}" {
    m_SpawnLogic SCR_MenuSpawnLogic "{5D36888CC966608A}" {
    }
-  }${timeAndDateBlock(mission.time)}${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}${loadoutLockBlock(mission.groups)}
+  }${timeAndDateBlock(mission.time)}${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}${loadoutLockBlock(mission.groups)}${preGameBlock(mission.preGame)}
  }
  coords ${mgr(-20, 0, -21)}
 }
