@@ -1196,6 +1196,20 @@ export const K = {
   // (pre-game lobby SPIKE, 2026-11-24, toolkit branch feature/pregame-lobby).
   // The prefab leaves m_bEnabled 0; mission.preGame turns it on.
   CMP_PRE_GAME: "{A1768C01858DA878}",
+  // Lobby kit-out (toolkit 0bb6d45): a seated player waits on the "lobby
+  // version" of their seat kit, a child prefab of the kit carrying the naked
+  // TS_LobbyProxy.et's overrides (the VON acp is a prefab attribute with no
+  // runtime setter). Component instance GUIDs are Character_Base.et's, which
+  // every kit inherits. Same output as the toolkit's "Generate Lobby Proxies"
+  // World Editor plugin (Prefabs/TS_Lobby/<kit file>_Lobby.et), so the plugin
+  // keeps Builder-made lobby prefabs and only adds missing ones.
+  LOBBY_PREFAB_DIR: "Prefabs/TS_Lobby",
+  LOBBY_VON_ACP: "{A9617F7E12BEA162}Sounds/VON/TS_LobbyVON.acp",
+  CMP_CHAR_SOUND: "{520EA1D2F659CF84}",
+  CMP_CHAR_DAMAGE: "{55872AD7B4E959F2}",
+  CMP_CHAR_STAMINA: "{520EA1D2F659C824}",
+  CMP_CHAR_EDITABLE: "{520EA1D2F659C85C}",
+  CMP_CHAR_VON: "{520EA1D2F659C856}",
   // Vanilla SlotPlayerTrigger.et + its fixed component/plugin instance GUIDs
   // (Stop Artillery triggers; serialization ground truth: Operation_Base_Jumping
   // AO.layer SlotPlayerTrigger1). Plugin default m_eActivationPresence PLAYER

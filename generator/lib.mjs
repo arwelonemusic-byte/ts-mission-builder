@@ -132,14 +132,86 @@ function loadoutLockBlock(groups) {
 // talk in the deploy screens until an admin types /startgame (or the optional
 // auto-start fires), then the server deploys everyone at once.
 // mission.preGame = { autoStartSeconds? } or absent = no block (byte-identical).
-function preGameBlock(preGame) {
+// lobbyKits (from lobbyKitPrefabs) fill m_aLobbyKits: seated players wait on
+// the lobby version of their seat kit and kit out from the sky crates.
+function preGameBlock(preGame, lobbyKits = []) {
   if (!preGame) return "";
   const auto = Math.max(0, Math.round(Number(preGame.autoStartSeconds) || 0));
+  const kits = lobbyKits.length
+    ? `
+   m_aLobbyKits {
+${lobbyKits
+  .map((l) => `    TS_LobbyKitPrefab "{${mintGuid()}}" {
+     m_sKitPrefab "${l.kit}"
+     m_sLobbyPrefab "{${l.guid}}${l.path}"
+    }`)
+  .join("\n")}
+   }`
+    : "";
   return `
   TS_PreGameComponent "${K.CMP_PRE_GAME}" {
    m_bEnabled 1${auto > 0 ? `
-   m_iAutoStartSeconds ${auto}` : ""}
+   m_iAutoStartSeconds ${auto}` : ""}${kits}
   }`;
+}
+
+// Deterministic 16-hex id: two FNV-1a 32-bit passes over the seed. Lobby
+// prefabs derive every GUID from their kit ref, so each kit's lobby prefab is
+// byte-identical in every mission and on every re-export (the DestroyTargets
+// collide-by-design pattern) and needs no state in the mission JSON.
+function stableHex(seed) {
+  const fnv = (s) => {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h.toString(16).padStart(8, "0");
+  };
+  return (fnv(seed) + fnv(`${seed}\u0001`)).toUpperCase();
+}
+
+// Lobby kit-out: the lobby version of every distinct TS_MissionLoadouts.conf
+// kit (= what the crate serves; in Advanced squad mode exactly the seat kits),
+// at Prefabs/TS_Lobby/<kit file>_Lobby.et - the toolkit plugin's naming. A
+// second kit with the same file name gets _2, _3... Storage components are
+// never overridden: the arsenal save of the proxy matches the real kit's.
+function lobbyKitPrefabs(kitRefs) {
+  const out = [];
+  const usedNames = new Set();
+  for (const kit of kitRefs) {
+    if (out.some((l) => l.kit === kit)) continue;
+    const base = String(kit).split("/").pop().replace(/\.et$/i, "");
+    let name = `${base}_Lobby`;
+    for (let n = 2; usedNames.has(name.toLowerCase()); n++) name = `${base}_Lobby_${n}`;
+    usedNames.add(name.toLowerCase());
+    const path = `${K.LOBBY_PREFAB_DIR}/${name}.et`;
+    const content = `SCR_ChimeraCharacter : "${kit}" {
+ ID "${stableHex(`${kit}|lobby-id`)}"
+ components {
+  CharacterSoundComponent "${K.CMP_CHAR_SOUND}" {
+   Enabled 0
+  }
+  SCR_CharacterDamageManagerComponent "${K.CMP_CHAR_DAMAGE}" {
+   EnableDamage 0
+  }
+  SCR_CharacterStaminaComponent "${K.CMP_CHAR_STAMINA}" {
+   Enabled 0
+  }
+  SCR_EditableCharacterComponent "${K.CMP_CHAR_EDITABLE}" {
+   Enabled 0
+  }
+  SCR_VoNComponent "${K.CMP_CHAR_VON}" {
+   Filename "${K.LOBBY_VON_ACP}"
+  }
+  TS_LobbyProxySuspendComponent "{${stableHex(`${kit}|lobby-suspend`)}}" {
+  }
+ }
+}
+`;
+    out.push({ kit, path, guid: stableHex(`${kit}|lobby-prefab`), content });
+  }
+  return out;
 }
 
 // Mission start time + date: SCR_TimeAndWeatherHandlerComponent is in neither
@@ -340,6 +412,8 @@ ${taskTypes}
     .map((l) => `  TS_LoadoutConfig "{${mintGuid()}}" {\n   m_sName "${l.name}"\n   m_CharacterPrefab "${l.prefab}"\n  }`)
     .join("\n");
   const loadoutConfOverride = `TS_LoadoutListConfig {\n m_aLoadoutConfigs {\n${loadoutConfigs}\n }\n}\n`;
+  // Lobby kit-out: lobby versions of the conf's kits, only with the pre-game lobby on.
+  const lobbyKits = mission.preGame ? lobbyKitPrefabs(selectedLoadouts.map((l) => l.prefab)) : [];
 
   // --- Override 2: LoadoutCrates_Conf.et (faction affiliation only) ---
   // Loadouts live in the conf now; the crate override just brands the crate with
@@ -590,7 +664,7 @@ ${TERRAIN.parentHasRadioManager ? "" : `RadioManagerEntity RadioManager : "{B8E0
   SCR_RespawnSystemComponent "{56B2B4793051E7C9}" {
    m_SpawnLogic SCR_MenuSpawnLogic "{5D36888CC966608A}" {
    }
-  }${timeAndDateBlock(mission.time)}${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}${loadoutLockBlock(mission.groups)}${preGameBlock(mission.preGame)}
+  }${timeAndDateBlock(mission.time)}${fireSupportBlock(mission.arty)}${aiArtilleryBlock(mission.aiArty)}${loadoutLockBlock(mission.groups)}${preGameBlock(mission.preGame, lobbyKits)}
  }
  coords ${mgr(-20, 0, -21)}
 }
@@ -1805,6 +1879,11 @@ ${objectiveBlocks}
     [`${layersDir}/Objectives.layer`]: objectivesLayer,
     [`${layersDir}/Props.layer`]: propsLayer,
   };
+
+  for (const l of lobbyKits) {
+    files[l.path] = l.content;
+    files[`${l.path}.meta`] = meta("EntityTemplateResourceClass", l.guid, l.path);
+  }
 
   for (const [dPath, d] of Object.entries(destroyTargetFiles)) {
     files[dPath] = d.content;
