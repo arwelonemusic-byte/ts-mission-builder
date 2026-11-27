@@ -171,34 +171,27 @@ export async function toGeneratorMission(m: Mission) {
     });
   }
 
-  // Loadouts resolved to {name, prefab}, keeping catalogue order. Simple mode =
-  // the checked crate loadouts; Advanced = the distinct seat loadouts (the crate
-  // offers exactly the mission's roles, no extras — user decision 2026-10-26).
-  const advanced = m.squadMode === "advanced";
+  // Loadouts resolved to {name, prefab}, keeping catalogue order: the distinct
+  // seat loadouts (the crate offers exactly the mission's roles, no extras).
   const loadoutSet = FACTIONS[m.playableFaction]?.loadoutSets[m.playableSubfaction] ?? [];
-  const crateRefs = advanced
-    ? new Set(slotLoadoutRefs(m.groups, m.playableFaction, m.playableSubfaction))
-    : new Set(m.loadouts);
+  const crateRefs = new Set(slotLoadoutRefs(m.groups, m.playableFaction, m.playableSubfaction));
   const loadouts = loadoutSet.filter((l) => crateRefs.has(l.prefab));
-  // Squads: Simple = {id, name, size} only (seats left over from an Advanced
-  // detour must not reach the generator); Advanced = seats with the first seat
-  // as the leader, team omitted when none (white), size = seat count.
-  const groups = advanced
-    ? m.groups.map((g) => {
-        const slots = g.slots ?? [];
-        return {
-          id: g.id,
-          name: g.name,
-          size: Math.max(1, slots.length),
-          slots: slots.map((s, i) => ({
-            name: s.name,
-            loadout: s.loadout || undefined,
-            leader: i === 0,
-            team: s.team !== "none" ? s.team : undefined,
-          })),
-        };
-      })
-    : m.groups.map(({ id, name, size }) => ({ id, name, size }));
+  // Squads: seat-rostered (first seat is the leader, team omitted when white,
+  // size = seat count).
+  const groups = m.groups.map((g) => {
+    const slots = g.slots ?? [];
+    return {
+      id: g.id,
+      name: g.name,
+      size: Math.max(1, slots.length),
+      slots: slots.map((s, i) => ({
+        name: s.name,
+        loadout: s.loadout || undefined,
+        leader: i === 0,
+        team: s.team !== "none" ? s.team : undefined,
+      })),
+    };
+  });
 
   return {
     addonId: ids.addonId,

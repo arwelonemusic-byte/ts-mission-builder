@@ -4,33 +4,25 @@ import { useEffect, useState } from "react";
 import { FACTIONS, SLOT_PRESETS, resolveRoleLoadout, type SlotPreset } from "mission-gen";
 import {
   defaultArsenal,
-  defaultGroups,
-  defaultLoadouts,
-  ensureGroupSlots,
   factionMeta,
   freshGroupId,
   freshSlotId,
-  isDefaultGroups,
   isSlotTeam,
   MAX_SQUAD_SLOTS,
   newSlot,
   retargetSlots,
   SLOT_TEAM_COLORS,
   slotsFromPreset,
-  syncGroupSizes,
   type ArtySupport,
   type Mission,
   type MissionGroup,
   type SlotTeam,
-  type SquadMode,
   type SquadSlot,
 } from "@/lib/mission";
 import { useLang, useT } from "@/lib/i18n";
-import { CheckRow, Divider, Field, GhostButton, PlusIcon, Segmented, SelectInput, TextInput, Toggle, XButton } from "../ui";
+import { CheckRow, Divider, Field, GhostButton, PlusIcon, SelectInput, TextInput, Toggle, XButton } from "../ui";
 
 const MAX_GROUPS = 8;
-/** Simple-mode size spinner cap (vanilla "Empty slot" rows; Advanced seats go to MAX_SQUAD_SLOTS) */
-const MAX_GROUP_SIZE = 9;
 /** Team picker = a 2×2 grid of 14 px dots (Figma 140:30): white top-left, red
  * top-right, blue bottom-left, green bottom-right; the selected dot gets a
  * 2 px white ring. Yellow exists in the toolkit enum but is not offered. */
@@ -72,35 +64,6 @@ function TeamPicker({ value, onChange }: { value: SlotTeam; onChange: (team: Slo
 }
 
 type Roster = { name: string; prefab: string }[];
-
-/** Squad-size spinner (1–9): local text state so the field can be transiently
- * empty while typing; commits clamped, restores the last value on blur. */
-function SizeInput({ value, onCommit }: { value: number; onCommit: (v: number) => void }) {
-  const [text, setText] = useState(String(value));
-  useEffect(() => setText(String(value)), [value]);
-  return (
-    <input
-      type="number"
-      min={1}
-      max={MAX_GROUP_SIZE}
-      value={text}
-      onChange={(e) => {
-        const raw = e.target.value;
-        if (raw === "") {
-          setText("");
-          return;
-        }
-        const v = Math.min(MAX_GROUP_SIZE, Math.max(1, Math.floor(+raw) || 1));
-        setText(String(v));
-        onCommit(v);
-      }}
-      onBlur={() => {
-        if (text === "") setText(String(value));
-      }}
-      className="w-[52px] h-[28px] shrink-0 bg-[#202427] border border-[#2e3439] rounded-[4px] px-2 text-[12px] text-white text-center focus:border-[#f4db50] focus:outline-none"
-    />
-  );
-}
 
 /** Lowest unused 1'N callsign for a newly added squad. */
 function nextCallsign(groups: MissionGroup[]): string {
@@ -320,8 +283,10 @@ function SquadCard({
 }) {
   const t = useT();
   const slots = group.slots ?? [];
+  const [open, setOpen] = useState(true);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | null>(null);
+  const hasMissing = slots.some((s) => !s.loadout);
   const setSlots = (next: SquadSlot[]) => onChange({ ...group, slots: next, size: Math.max(1, next.length) });
   const move = (from: number, to: number) => {
     if (from === to || from < 0 || from >= slots.length) return;
@@ -331,8 +296,30 @@ function SquadCard({
     setSlots(next);
   };
   return (
-    <div className="bg-[#14181a] rounded-[8px] p-2 flex flex-col gap-2">
-      <div className="flex items-center gap-2">
+    <div
+      className={`bg-[#14181a] rounded-[8px] p-2 flex flex-col gap-2 ${
+        !open && hasMissing ? "ring-1 ring-[#f26f63]/60" : ""
+      }`}
+    >
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-label={t(open ? "Collapse squad" : "Expand squad")}
+          title={t(open ? "Collapse squad" : "Expand squad")}
+          onClick={() => setOpen((o) => !o)}
+          className="size-[24px] shrink-0 flex items-center justify-center rounded-[4px] hover:bg-[#2e3439] transition-colors"
+        >
+          <svg
+            width="6"
+            height="10"
+            viewBox="0 0 5.33 9.33"
+            className={`shrink-0 opacity-60 transition-transform ${open ? "rotate-90" : ""}`}
+            aria-hidden
+          >
+            <path d="M0.67 0.67 L4.67 4.67 L0.67 8.67" stroke="#fafafa" strokeWidth="1.4" fill="none" />
+          </svg>
+        </button>
         <TextInput
           className="flex-1 min-w-0"
           placeholder={t("Squad name")}
@@ -340,57 +327,61 @@ function SquadCard({
           value={group.name}
           onChange={(e) => onChange({ ...group, name: e.target.value })}
         />
-        <span className="shrink-0 text-[11px] text-white/40 tabular-nums">{slots.length}</span>
+        <span className="shrink-0 px-0.5 text-[11px] text-white/40 tabular-nums">{slots.length}</span>
         <DuplicateButton label={t("Duplicate squad")} onClick={onDuplicate} disabled={!canDuplicate} />
         <TrashButton label={t("Remove squad")} onClick={onDelete} />
       </div>
-      <div className="flex flex-col gap-[6px]">
-        {slots.map((slot, i) => (
-          <SlotRow
-            key={slot.id}
-            slot={slot}
-            index={i}
-            roster={roster}
-            faction={faction}
-            subfaction={subfaction}
-            canDelete={slots.length > 1}
-            dragOver={dragOver === i && dragFrom !== null && dragFrom !== i}
-            onChange={(s) => setSlots(slots.map((x) => (x.id === s.id ? s : x)))}
-            onDelete={() => setSlots(slots.filter((x) => x.id !== slot.id))}
-            onDragStart={(e) => {
-              e.dataTransfer.setData("text/plain", String(i));
-              e.dataTransfer.effectAllowed = "move";
-              setDragFrom(i);
-            }}
-            onDragOver={(e) => {
-              if (dragFrom === null) return;
-              e.preventDefault();
-              e.dataTransfer.dropEffect = "move";
-              if (dragOver !== i) setDragOver(i);
-            }}
-            onDragLeave={() => {
-              if (dragOver === i) setDragOver(null);
-            }}
-            onDrop={(e) => {
-              e.preventDefault();
-              const from = dragFrom ?? Number(e.dataTransfer.getData("text/plain"));
-              move(from, i);
-              setDragFrom(null);
-              setDragOver(null);
-            }}
-            onDragEnd={() => {
-              setDragFrom(null);
-              setDragOver(null);
-            }}
-            onMove={(delta) => move(i, Math.max(0, Math.min(slots.length - 1, i + delta)))}
-          />
-        ))}
-      </div>
-      {slots.length < MAX_SQUAD_SLOTS && (
-        <GhostButton small onClick={() => setSlots([...slots, newSlot(faction, subfaction, "RIFLE")])}>
-          <PlusIcon />
-          {t("Add slot")}
-        </GhostButton>
+      {open && (
+        <>
+          <div className="flex flex-col gap-[6px]">
+            {slots.map((slot, i) => (
+              <SlotRow
+                key={slot.id}
+                slot={slot}
+                index={i}
+                roster={roster}
+                faction={faction}
+                subfaction={subfaction}
+                canDelete={slots.length > 1}
+                dragOver={dragOver === i && dragFrom !== null && dragFrom !== i}
+                onChange={(s) => setSlots(slots.map((x) => (x.id === s.id ? s : x)))}
+                onDelete={() => setSlots(slots.filter((x) => x.id !== slot.id))}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("text/plain", String(i));
+                  e.dataTransfer.effectAllowed = "move";
+                  setDragFrom(i);
+                }}
+                onDragOver={(e) => {
+                  if (dragFrom === null) return;
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOver !== i) setDragOver(i);
+                }}
+                onDragLeave={() => {
+                  if (dragOver === i) setDragOver(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const from = dragFrom ?? Number(e.dataTransfer.getData("text/plain"));
+                  move(from, i);
+                  setDragFrom(null);
+                  setDragOver(null);
+                }}
+                onDragEnd={() => {
+                  setDragFrom(null);
+                  setDragOver(null);
+                }}
+                onMove={(delta) => move(i, Math.max(0, Math.min(slots.length - 1, i + delta)))}
+              />
+            ))}
+          </div>
+          {slots.length < MAX_SQUAD_SLOTS && (
+            <GhostButton small onClick={() => setSlots([...slots, newSlot(faction, subfaction, "RIFLE")])}>
+              <PlusIcon />
+              {t("Add slot")}
+            </GhostButton>
+          )}
+        </>
       )}
     </div>
   );
@@ -480,21 +471,8 @@ export default function PlayersPanel({
   const arty = mission.arty;
   const setArty = (patch: Partial<ArtySupport>) => update({ arty: { ...arty, ...patch } });
   const setGroups = (groups: MissionGroup[]) => update({ groups });
-  const advanced = mission.squadMode === "advanced";
   const [picker, setPicker] = useState(false);
   const seats = mission.groups.reduce((n, g) => n + (g.slots?.length ?? 0), 0);
-
-  const setMode = (squadMode: SquadMode) => {
-    if (squadMode === mission.squadMode) return;
-    if (squadMode === "advanced") {
-      // Untouched default squads → start empty (no squads by default in
-      // Advanced); edited squads convert to seats (SL + Riflemen) so nothing is lost
-      const groups = isDefaultGroups(mission.groups) ? [] : syncGroupSizes(ensureGroupSlots(mission.groups, faction, subfaction));
-      update({ squadMode, groups });
-    } else {
-      update({ squadMode, groups: mission.groups.length ? mission.groups : defaultGroups() });
-    }
-  };
 
   const addSquad = (presetId: string | null) => {
     setPicker(false);
@@ -545,7 +523,6 @@ export default function PlayersPanel({
           onChange={(e) =>
             update({
               playableSubfaction: e.target.value,
-              loadouts: defaultLoadouts(faction, e.target.value),
               arsenal: defaultArsenal(faction, e.target.value),
               groups: retargetSlots(mission.groups, { faction, subfaction }, { faction, subfaction: e.target.value }),
             })
@@ -559,127 +536,36 @@ export default function PlayersPanel({
         </SelectInput>
       </Field>
 
-      {/* Squad mode: Simple = squads by size + crate loadouts (original flow);
-          Advanced = seats bound to loadouts (toolkit slot roster, pak-gated) */}
-      <Segmented<SquadMode>
-        value={mission.squadMode}
-        onChange={setMode}
-        options={[
-          { value: "simple", label: t("Simple") },
-          { value: "advanced", label: t("Advanced") },
-        ]}
-      />
-
-      {advanced ? (
-        <>
-          <div className="flex items-center gap-2">
-            <span className="text-[12px] text-white flex-1">
-              {t("Squads")}{" "}
-              <span className="text-white/40">
-                · {mission.groups.length}/{MAX_GROUPS} · {t("{n} seats").replace("{n}", String(seats))}
-              </span>
-            </span>
-          </div>
-          <div className="flex flex-col gap-2">
-            {mission.groups.map((g, i) => (
-              <SquadCard
-                key={g.id}
-                group={g}
-                roster={loadoutSet}
-                faction={faction}
-                subfaction={subfaction}
-                canDuplicate={mission.groups.length < MAX_GROUPS}
-                onChange={(next) => setGroups(mission.groups.map((x) => (x.id === next.id ? next : x)))}
-                onDuplicate={() => duplicateSquad(i)}
-                onDelete={() => setGroups(mission.groups.filter((x) => x.id !== g.id))}
-              />
-            ))}
-            {mission.groups.length < MAX_GROUPS && (
-              <GhostButton onClick={() => setPicker(true)}>
-                <PlusIcon />
-                {t("Add squad")}
-              </GhostButton>
-            )}
-          </div>
-          {picker && <PresetPicker onPick={addSquad} onClose={() => setPicker(false)} />}
-        </>
-      ) : (
-        <>
-          {/* Player squads → playable faction m_aSquadNames + m_aPredefinedGroups */}
-          <div className="flex items-center gap-2">
-            <span className="text-[12px] text-white flex-1">
-              {t("Squads")}{" "}
-              <span className="text-white/40">
-                · {mission.groups.length}/{MAX_GROUPS}
-              </span>
-            </span>
-            <GhostButton small onClick={() => setGroups(defaultGroups())}>
-              {t("Reset")}
-            </GhostButton>
-          </div>
-          <div className="flex flex-col gap-2">
-            {mission.groups.map((g, i) => (
-              <div key={g.id} className="flex items-center gap-2">
-                <TextInput
-                  className="flex-1 min-w-0"
-                  placeholder={t("Squad name")}
-                  maxLength={24}
-                  value={g.name}
-                  onChange={(e) => setGroups(mission.groups.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
-                />
-                <SizeInput
-                  value={g.size}
-                  onCommit={(size) => setGroups(mission.groups.map((x, j) => (j === i ? { ...x, size } : x)))}
-                />
-                {mission.groups.length > 1 && (
-                  <TrashButton label={t("Remove squad")} onClick={() => setGroups(mission.groups.filter((_, j) => j !== i))} />
-                )}
-              </div>
-            ))}
-            {mission.groups.length < MAX_GROUPS && (
-              <GhostButton
-                onClick={() =>
-                  setGroups([...mission.groups, { id: freshGroupId(), name: nextCallsign(mission.groups), size: 9 }])
-                }
-              >
-                <PlusIcon />
-                {t("Add squad")}
-              </GhostButton>
-            )}
-          </div>
-
-          <Divider />
-
-          <div className="flex items-center gap-2">
-            <span className="text-[12px] text-white flex-1">
-              {t("Loadouts")}{" "}
-              <span className="text-white/40">
-                {t("· {n} selected").replace("{n}", String(mission.loadouts.length))}
-              </span>
-            </span>
-            <GhostButton small onClick={() => update({ loadouts: loadoutSet.map((l) => l.prefab) })}>
-              {t("All")}
-            </GhostButton>
-            <GhostButton small onClick={() => update({ loadouts: defaultLoadouts(faction, subfaction) })}>
-              {t("Reset")}
-            </GhostButton>
-          </div>
-          <div className="flex flex-col gap-2">
-            {loadoutSet.map((l) => (
-              <CheckRow
-                key={l.prefab}
-                checked={mission.loadouts.includes(l.prefab)}
-                onChange={(on) => {
-                  const next = on ? [...mission.loadouts, l.prefab] : mission.loadouts.filter((p) => p !== l.prefab);
-                  update({ loadouts: next });
-                }}
-              >
-                {l.name}
-              </CheckRow>
-            ))}
-          </div>
-        </>
-      )}
+      <div className="flex items-center gap-2">
+        <span className="text-[12px] text-white flex-1">
+          {t("Squads")}{" "}
+          <span className="text-white/40">
+            · {mission.groups.length}/{MAX_GROUPS} · {t("{n} seats").replace("{n}", String(seats))}
+          </span>
+        </span>
+      </div>
+      <div className="flex flex-col gap-2">
+        {mission.groups.map((g, i) => (
+          <SquadCard
+            key={g.id}
+            group={g}
+            roster={loadoutSet}
+            faction={faction}
+            subfaction={subfaction}
+            canDuplicate={mission.groups.length < MAX_GROUPS}
+            onChange={(next) => setGroups(mission.groups.map((x) => (x.id === next.id ? next : x)))}
+            onDuplicate={() => duplicateSquad(i)}
+            onDelete={() => setGroups(mission.groups.filter((x) => x.id !== g.id))}
+          />
+        ))}
+        {mission.groups.length < MAX_GROUPS && (
+          <GhostButton onClick={() => setPicker(true)}>
+            <PlusIcon />
+            {t("Add squad")}
+          </GhostButton>
+        )}
+      </div>
+      {picker && <PresetPicker onPick={addSquad} onClose={() => setPicker(false)} />}
 
       <Divider />
 

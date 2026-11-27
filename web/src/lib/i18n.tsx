@@ -99,6 +99,8 @@ const RU: Record<string, string> = {
   "Add squad": "Добавить отряд",
   "Remove squad": "Удалить отряд",
   "Duplicate squad": "Дублировать отряд",
+  "Expand squad": "Развернуть отряд",
+  "Collapse squad": "Свернуть отряд",
   "{n} seats": "Мест: {n}",
   "Add slot": "Добавить слот",
   "Remove slot": "Удалить слот",
@@ -114,8 +116,6 @@ const RU: Record<string, string> = {
   "{n} slots": "Слотов: {n}",
   "Add at least one squad (Players tab).": "Добавьте хотя бы один отряд (вкладка Игроки).",
   "Pick a loadout for every slot (Players tab).": "Выберите снаряжение для каждого слота (вкладка Игроки).",
-  Loadouts: "Снаряжение",
-  "· {n} selected": "· выбрано: {n}",
   All: "Все",
   Reset: "Сброс",
   "Artillery Support": "Артиллерийская поддержка",
@@ -604,8 +604,6 @@ const RU: Record<string, string> = {
   "the static soldier": "статичного бойца",
   "· press the button again to finish": "· нажмите кнопку ещё раз, чтобы закончить",
   "Place a spawn point first (Spawn tab).": "Сначала разместите точку спавна (вкладка «Спавн»).",
-  "Select at least one loadout (Players tab).":
-    "Выберите хотя бы один вариант снаряжения (вкладка «Игроки»).",
   "Export failed: {error}": "Ошибка экспорта: {error}",
   "This browser can't write the addon folder — use Chrome or Edge, or save the mission to a file (Mission tab) and generate it there.":
     "Этот браузер не может записать папку аддона — используйте Chrome или Edge либо сохраните миссию в файл (вкладка «Миссия») и создайте аддон там.",
@@ -613,6 +611,8 @@ const RU: Record<string, string> = {
   "Not a mission file.": "Это не файл миссии.",
   "Mission saved as {file}": "Миссия сохранена в {file}",
   "Loaded: {name}": "Загружено: {name}",
+  "Loaded: {name} — squads converted to slots (SL + Riflemen).":
+    "Загружено: {name} — отряды переведены в слоты (командир + стрелки).",
   Dismiss: "Закрыть",
 
   // Generate overlay

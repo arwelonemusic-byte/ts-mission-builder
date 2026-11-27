@@ -7,7 +7,6 @@ import {
   DEFAULT_DELIVER_VEHICLE,
   DEFAULT_DESTROY_OBJECT,
   defaultArsenal,
-  defaultLoadouts,
   retargetSlots,
   squadIssue,
   downloadMissionJson,
@@ -730,7 +729,6 @@ export default function Editor() {
     const patch: Partial<Mission> = {
       playableFaction: pf,
       playableSubfaction: sub,
-      loadouts: defaultLoadouts(pf, sub),
       arsenal: defaultArsenal(pf, sub),
       groups: retargetSlots(
         mission.groups,
@@ -765,12 +763,9 @@ export default function Editor() {
     const sub = F.riflemen[mission.playableSubfaction]
       ? mission.playableSubfaction
       : Object.keys(F.riflemen)[0];
-    const set = new Set((F.loadoutSets[sub] ?? []).map((l) => l.prefab));
-    const loadouts = mission.loadouts.filter((l) => set.has(l));
     return {
       playableFaction: pf,
       playableSubfaction: sub,
-      loadouts: loadouts.length ? loadouts : defaultLoadouts(pf, sub),
       groups: retargetSlots(
         mission.groups,
         { faction: mission.playableFaction, subfaction: mission.playableSubfaction },
@@ -807,7 +802,6 @@ export default function Editor() {
         Object.assign(patch, {
           playableFaction: playable,
           playableSubfaction: sub,
-          loadouts: defaultLoadouts(playable, sub),
           arsenal: defaultArsenal(playable, sub),
           groups: retargetSlots(
             mission.groups,
@@ -1320,20 +1314,14 @@ export default function Editor() {
       goStep("spawn");
       return;
     }
-    if (mission.squadMode === "advanced") {
-      const issue = squadIssue(mission);
-      if (issue === "no-groups") {
-        say(t("Add at least one squad (Players tab)."), "warn");
-        goStep("players");
-        return;
-      }
-      if (issue === "missing-loadout") {
-        say(t("Pick a loadout for every slot (Players tab)."), "warn");
-        goStep("players");
-        return;
-      }
-    } else if (mission.loadouts.length === 0) {
-      say(t("Select at least one loadout (Players tab)."), "warn");
+    const issue = squadIssue(mission);
+    if (issue === "no-groups") {
+      say(t("Add at least one squad (Players tab)."), "warn");
+      goStep("players");
+      return;
+    }
+    if (issue === "missing-loadout") {
+      say(t("Pick a loadout for every slot (Players tab)."), "warn");
       goStep("players");
       return;
     }
@@ -1435,11 +1423,17 @@ export default function Editor() {
   const onLoadFile = async (file: File) => {
     try {
       // Parse BEFORE asking — no point confirming a file we can't read
-      const loaded = parseMissionJson(await file.text());
+      const { mission: loaded, convertedSimpleSquads } = parseMissionJson(await file.text());
       if (!confirm(t("Replace the current mission with this file?"))) return;
       setMission(loaded);
       clearSelections();
-      say(t("Loaded: {name}").replace("{name}", loaded.displayName));
+      say(
+        t(
+          convertedSimpleSquads
+            ? "Loaded: {name} — squads converted to slots (SL + Riflemen)."
+            : "Loaded: {name}"
+        ).replace("{name}", loaded.displayName)
+      );
     } catch (err) {
       const msg = t(err instanceof Error ? err.message : String(err));
       say(t("Import failed: {error}").replace("{error}", msg), "warn");
@@ -1621,7 +1615,7 @@ export default function Editor() {
         onStep={goStep}
         onGenerate={doGenerate}
         busy={busy}
-        dots={{ spawn: !mission.spawn.placed, players: mission.loadouts.length === 0 }}
+        dots={{ spawn: !mission.spawn.placed, players: squadIssue(mission) !== null }}
         lang={lang}
         onLang={setLang}
       />
